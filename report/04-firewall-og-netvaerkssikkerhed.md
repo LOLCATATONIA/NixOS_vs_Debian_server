@@ -1,0 +1,87 @@
+# Modul 4: Firewall og netværkssikkerhed
+
+## Formål
+
+At reducere serverens angrebsflade til et minimum ved kun at tillade den netværkstrafik, der er
+strengt nødvendig for systemets funktion.
+
+## Sikkerhedsmæssig relevans
+
+Firewall-konfiguration er en direkte anvendelse af "default deny"-princippet. En veldokumenteret
+firewall-konfiguration er ofte det første, en sikkerhedsrevisor eller pentester kigger på ved en
+systemgennemgang.
+
+## Sammenligning: traditionel tilgang vs. NixOS
+
+| Opgave | Traditionel løsning | NixOS-løsning |
+|---|---|---|
+| Default-deny firewall | `ufw default deny incoming` | `networking.firewall.enable = true;` med `backend = "nftables";` |
+| Åbn kun nødvendige porte | `ufw allow 2222/tcp` | `services.openssh.ports = [ 2222 ]; services.openssh.openFirewall = false;` (se note nedenfor) |
+| Begræns kilde-IP | `ufw allow from 192.168.122.1 to any port 2222` | `networking.firewall.extraInputRules = "ip saddr 192.168.122.1 tcp dport 2222 accept";` |
+
+**Note:** `services.openssh.openFirewall` er sand som standard og åbner porten for *alle* kilder,
+uafhængigt af `extraInputRules`. Årsagen er at `allowedTCPPorts` er en liste-type: bidrag fra
+forskellige moduler lægges sammen i stedet for at overskrive hinanden. `openFirewall = false;` er
+derfor nødvendig, for at kilde-IP-begrænsningen reelt får effekt.
+
+## Design
+
+- **Default deny**: al indgående trafik blokeres, medmindre eksplicit tilladt.
+- **SSH flyttet til port 2222** (ikke standardport 22): reducerer støj fra automatiserede
+  scanninger, men er *ikke* i sig selv en sikkerhedskontrol. De reelle beskyttelser er nøglebaseret
+  auth, ingen root-login, og kilde-IP-begrænsningen.
+- **SSH begrænset til `192.168.122.1`**: værtens egen adresse på libvirts NAT-bro. Et enkelt
+  `/32`-interval er stadig et defineret interval, blot af størrelse 1. Da VM'en udelukkende
+  administreres fra denne ene maskine, ville et bredere interval tillade kilder, der aldrig reelt
+  skal have adgang.
+- **Ingen andre porte åbnes:** der er bevidst ikke opsat en demo-webservice udelukkende for at
+  udfylde portbegrundelsestabellen.
+
+## Portbegrundelsestabel
+
+| Port | Protokol | Tjeneste | Begrundelse | Risiko |
+|---|---|---|---|---|
+| 2222 | TCP | SSH (flyttet fra 22) | Eneste administrative adgangsvej til serveren | Fjernkodeudførelse ved kompromitteret nøgle. Afbødes af nøglebaseret auth, ingen root-login og kilde-IP-begrænsning |
+
+## Eksport af de aktive firewall-regler
+
+```
+$ sudo nft list ruleset
+table inet nixos-fw {
+	chain rpfilter {
+		type filter hook prerouting priority mangle + 10; policy drop;
+		meta nfproto ipv4 udp sport . udp dport { 67 . 68, 68 . 67 } accept comment "DHCPv4 client/server"
+		fib saddr . mark check exists accept
+		jump rpfilter-allow
+	}
+
+	chain input {
+		type filter hook input priority filter; policy drop;
+		iifname "lo" accept comment "trusted interfaces"
+		icmpv6 type echo-reply accept
+		ct state vmap { invalid : drop, established : accept, related : accept, new : jump input-allow, untracked : jump input-allow }
+	}
+
+	chain input-allow {
+		meta l4proto . th dport @temp-ports accept
+		icmp type echo-request accept comment "allow ping"
+		icmpv6 type != { nd-redirect, 139 } accept
+		ip6 daddr fe80::/64 udp dport 546 accept comment "DHCPv6 client"
+		ip saddr 192.168.122.1 tcp dport 2222 accept
+		udp sport 53 accept
+	}
+}
+```
+
+Politikken er `drop` (default deny). Kun loopback, etablerede/relaterede forbindelser, ICMP, DHCP,
+og SSH fra præcis `192.168.122.1` accepteres eksplicit.
+
+**Verifikation** (forsøgt fra en ikke-godkendt kilde-IP på samme undernet):
+
+```
+$ ssh -p 2222 -b 192.168.122.99 admin@192.168.122.10 'hostname'
+ssh: connect to host 192.168.122.10 port 2222: Connection timed out
+
+$ ssh -p 2222 admin@192.168.122.10 'hostname'   # fra 192.168.122.1 (tilladt)
+linux101-srv
+```
