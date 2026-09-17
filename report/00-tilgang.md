@@ -2,7 +2,7 @@
 title: "Linux 101"
 subtitle: "Design, hærdning og overvågning af en Linux-server:  \nNixOS sammenlignet med Debian"
 author: "Alexander Mangaard"
-date: "16. september 2026"
+date: "17. september 2026"
 ---
 
 # Overordnet tilgang og metodevalg
