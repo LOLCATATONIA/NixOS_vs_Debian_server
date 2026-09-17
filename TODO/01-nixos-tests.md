@@ -13,6 +13,14 @@ i modsætning til compliance-værktøjer der er klistret ovenpå en traditionel 
 InSpec/OpenSCAP for Debian). Det er det stærkeste konkrete "NixOS gør noget strukturelt anderledes"
 -argument i hele projektet, og meget få ansøgere kender til denne del af Nix-økosystemet.
 
+**Den strukturelle pointe, ikke kun en bekvemmelighed:** På Debian findes ingen indbygget vej til
+at teste konfigurationen direkte. Man må ty til et helt separat værktøj (typisk Ansible +
+Molecule), med sit eget sprog og sin egen repræsentation af "ønsket tilstand", som skal
+vedligeholdes manuelt i sync med den rigtige konfiguration, to kilder til sandhed, der kan glide fra
+hinanden. På NixOS er testen og konfigurationen bogstaveligt talt samme fil (`configuration.nix`
+importeres direkte ind i testen). Det er forskellen mellem "kan opnås med ekstra, adskilt værktøj"
+og "er indbygget i selve platformen".
+
 ## Vigtig arkitektonisk pointe (skal med i dokumentationen)
 
 `pkgs.nixosTest` bygger sin egen midlertidige VM direkte fra `configuration.nix`, via QEMU i Nix'

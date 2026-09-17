@@ -27,6 +27,30 @@ dyreste post på listen.
    nemmere på Debian. Det er et validt og mere troværdigt resultat end en tese, der vinder på alle
    punkter.
 
+## Struktur-forsøg: find de reelle mure, ikke kun tidsforskelle (vigtigt)
+
+Tidsmåling alene viser kun besvær, ikke evne. Tilføj derfor et eksplicit forsøg på at genskabe 2-3
+NixOS-specifikke garantier på Debian-VM'en, og dokumentér PRÆCIS hvor man rammer en mur, der kræver
+ekstra, adskilt værktøj, ikke bare mere tid:
+
+1. **Atomart rollback til en tidligere systemtilstand.** Lav en ændring (fx en firewall-regel),
+   forsøg derefter at "rulle tilbage" til tilstanden lige inden, med kun de værktøjer en vanilla
+   Debian-installation giver (`apt`/`dpkg` har intet begreb om en systemgeneration, der kan bootes
+   tilbage til). Dokumentér at dette kræver ekstern infrastruktur (Timeshift, Btrfs/LVM-snapshots),
+   som hverken er en del af standardopsætningen eller af opgavens egen ordlyd.
+2. **Bit-identisk reproducerbart build.** Forsøg at genskabe præcis samme systemtilstand fra
+   `apt`-baserede kommandoer to gange (fx fra en tilsvarende `preseed`/kickstart-liste). Dokumentér
+   at `apt install` kun pinner pakkeVERSION, ikke build-inputs eller binær-oprindelse, så to
+   installationer fra forskellige tidspunkter/spejle ikke er garanteret identiske, i modsætning til
+   `09-reproducerbarhedstest.md`s resultat.
+3. **To inkompatible versioner af samme afhængighed side om side.** Forsøg at installere to
+   programmer, der kræver hver sin, indbyrdes uforenelige version af et delt bibliotek. Dokumentér
+   at `dpkg` generelt håndhæver én version systemet-bredt, medmindre pakkevedligeholderen selv har
+   lavet en dedikeret side-om-side-pakke (sjældent, og uden for brugerens kontrol).
+
+Formuler resultatet eksplicit som: "dette er ikke opnåeligt uden at bygge/installere X ekstra
+værktøj", ikke kun "det tog længere tid".
+
 ## Rækkefølge ift. andre planer
 
 Bør ske sideløbende med eller efter `09-reproducerbarhedstest.md` og

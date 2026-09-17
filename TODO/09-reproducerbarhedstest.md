@@ -25,6 +25,17 @@ projektets egen etablerede metode: test påstanden, antag den ikke.
 5. (Stretch) Gentag på tværs af en lille tidsforskydning (byg i dag, byg igen om et par dage), for
    at vise at reproducerbarheden holder over tid, ikke kun i samme terminal-session.
 
+## Den strukturelle kontrast (skal med, ikke kun NixOS' eget bevis isoleret)
+
+Beviset er kun halvt så stærkt, hvis det står alene. Tilføj en kort, eksplicit forklaring af hvorfor
+det samme ikke kan garanteres på Debian uden ekstra værktøj: `apt install <pakke>=<version>` pinner
+kun pakkeVERSION, ikke de faktiske build-inputs eller den binære oprindelse. To installationer af
+"samme" version, foretaget på forskellige tidspunkter eller fra forskellige spejle, er derfor ikke
+garanteret at give identisk resultat. Nix' indholdsadresserede `/nix/store` og `flake.lock`
+fastlåser derimod hele afhængighedstræet, ikke kun et versionsnummer. Denne kontrast, ikke kun
+NixOS' eget positive resultat, er selve pointen med at inkludere testen i tesen. Se evt.
+`08-debian-ab-sammenligning.md`s tilsvarende forsøg på Debian-siden for et konkret modstykke.
+
 ## Estimeret indsats
 
 Lav. Kan sandsynligvis gennemføres på under en time, inklusiv dokumentation.

@@ -12,6 +12,14 @@ Modul 1 og 6 påstår begge, direkte eller indirekte, at det "slet og genskab fr
 en reel driftsmæssig fordel. Et konkret tidstal gør den påstand langt stærkere, og er billigt at
 producere, da scriptet allerede findes og er testet flere gange gennem projektet.
 
+**Den strukturelle pointe bag tallet:** RTO-forskellen er ikke bare "NixOS er hurtigere", den er en
+konsekvens af en evne, opgavens egen foreslåede "vanilla" Debian-arbejdsgang (installer, `useradd`,
+redigér filer manuelt) slet ikke har indbygget. Der findes intet i en almindelig Debian-opsætning,
+der svarer til "genskab hele systemet fra bunden med én kommando", det kræver at man selv bygger og
+vedligeholder den infrastruktur (Ansible-roller, Packer-images), hvilket er et helt separat projekt
+oven på selve serveropsætningen. Formulér derfor RTO-tallet som konsekvensen af en manglende evne i
+den traditionelle arbejdsgang, ikke kun som et tal, der tilfældigvis er lavere.
+
 ## Trin
 
 1. Kør `time ./scripts/setup.sh` fra en kold start (VM'en må gerne allerede eksistere, scriptet
