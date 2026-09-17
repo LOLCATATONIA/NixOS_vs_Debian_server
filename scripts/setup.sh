@@ -18,7 +18,7 @@ set -euo pipefail
 readonly VM_NAME="linux101-srv"
 readonly POOL_NAME="default"
 readonly POOL_PATH="/var/lib/libvirt/images"
-readonly DISK_SIZE_BYTES=5196742656
+readonly DISK_SIZE_BYTES=5196742656  # ~4.84 GiB, matcher diskstørrelsen fra modul 1
 readonly VCPUS=2
 readonly MEMORY_MB=3072
 readonly REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -28,6 +28,7 @@ log() {
 }
 
 ensure_nix_in_path() {
+  # nix er ikke nødvendigvis i PATH i en non-interaktiv shell (fx cron eller en frisk login-shell)
   if ! command -v nix &>/dev/null; then
     # shellcheck disable=SC1091
     source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh 2>/dev/null || true
@@ -46,7 +47,10 @@ ensure_storage_pool() {
   fi
   if ! sudo virsh pool-info "$POOL_NAME" | grep -q "State: *running"; then
     log "Starter storage pool '${POOL_NAME}'..."
-    sudo virsh pool-start "$POOL_NAME"
+    # "|| true": pool'en kan være blevet startet af andet end scriptet (fx libvirtds egen
+    # autostart) i tidsrummet mellem tjekket og dette kald. Målet er en kørende pool, ikke
+    # at scriptet selv skal have startet den, så "allerede aktiv" er ikke en reel fejl her.
+    sudo virsh pool-start "$POOL_NAME" || true
   fi
 }
 
@@ -71,6 +75,7 @@ import_vm() {
   sudo virsh vol-create-as "$POOL_NAME" "${VM_NAME}.qcow2" "$DISK_SIZE_BYTES" --format qcow2
   sudo virsh vol-upload --pool "$POOL_NAME" "${VM_NAME}.qcow2" "${REPO_DIR}/result/nixos.qcow2"
 
+  # --import: springer OS-installation over, da diskimagen allerede har NixOS installeret
   sudo virt-install \
     --name "$VM_NAME" \
     --memory "$MEMORY_MB" \

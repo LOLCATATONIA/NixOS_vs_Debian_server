@@ -197,7 +197,7 @@ check_firewall() {
   if sudo -n nft list ruleset &>/tmp/hc-nft.$$ 2>&1; then
     grep -E 'hook input|policy|accept|drop' /tmp/hc-nft.$$ | sed 's/^[[:space:]]*/  /'
   else
-    echo "ADVARSEL: kunne ikke laese firewall-status (mangler sudo-adgang til 'nft list ruleset')"
+    echo "ADVARSEL: kunne ikke læse firewall-status (mangler sudo-adgang til 'nft list ruleset')"
   fi
   rm -f /tmp/hc-nft.$$
 }
@@ -209,7 +209,7 @@ check_disk() {
   avail=$(df -h --output=avail / | tail -1 | tr -d '[:space:]')
   echo "Rodfilsystem: ${usage}% brugt, ${avail} ledig diskplads"
   if (( usage > DISK_WARN_THRESHOLD )); then
-    echo "ADVARSEL: diskforbrug overstiger taerskel paa ${DISK_WARN_THRESHOLD}%"
+    echo "ADVARSEL: diskforbrug overstiger tærskel på ${DISK_WARN_THRESHOLD}%"
   fi
   df -h /
 }
@@ -329,15 +329,15 @@ main() {
     eval --raw "${FLAKE_DIR}#${FLAKE_ATTR}")
   current_path=$(readlink -f /run/current-system)
 
-  echo "Koerende system:   ${current_path}"
+  echo "Kørende system:    ${current_path}"
   echo "Deklareret system: ${declared_path}"
 
   if [[ "$current_path" == "$declared_path" ]]; then
     echo "OK: systemet stemmer overens med den deklarerede konfiguration."
     exit 0
   else
-    echo "ADVARSEL: systemet er drevet vaek fra den deklarerede konfiguration."
-    echo "Koer: sudo nixos-rebuild switch --flake ${FLAKE_DIR}"
+    echo "ADVARSEL: systemet er drevet væk fra den deklarerede konfiguration."
+    echo "Kør: sudo nixos-rebuild switch --flake ${FLAKE_DIR}"
     exit 1
   fi
 }
@@ -365,7 +365,8 @@ main "$@"
    bruger nu `nix eval` i stedet for `nixos-rebuild build`. Nix' output-stier er
    indholdsadresserede og kan beregnes ud fra inputs alene, *uden* at bygge/realisere
    derivationen — hvilket gør sammenligningen både hurtigere (~6 sekunder mod flere minutter) og
-   helt uafhængig af netværksadgang.
+   helt uafhængig af netværksadgang. (DNS-begrænsningen selv blev senere identificeret og rettet,
+   se modul 4's Addendum 2 — men `nix eval` er stadig det bedre valg her, uafhængigt af det.)
 
 ### Bevis: begge grene af scriptet testet
 
@@ -395,6 +396,33 @@ Koer: sudo nixos-rebuild switch --flake /home/admin/linux101-config
 $ echo $?
 1
 ```
+
+(Begge transskripter ovenfor er ægte captures fra dengang scriptets tekststrenge stadig var
+ASCII-translittereret. De er bevidst ikke rettet i efterspilstid, ligesom kildekoden ovenfor nu er
+opdateret. Se addendummet nedenfor for selve beslutningen om at gå væk fra ASCII.)
+
+### Addendum: fra ASCII-translitteration til rigtig UTF-8 i logget output
+
+De to scripts ovenfor, samt `monitor.sh`, brugte oprindeligt en bevidst ASCII-transskription i alle
+strenge, der rent faktisk bliver skrevet til stdout/logfil (`taerskel`, `paa`, `Koerende`, `vaek`),
+mens kommentarer i de samme filer frit brugte æøå. Begrundelsen på daværende tidspunkt: `monitor.sh`
+køres af `cron`, som traditionelt kører med et minimalt miljø, uden garanti for en sat
+UTF-8-locale, og ASCII blev derfor valgt som en defensiv vane for alt logget output, ikke kun det
+faktisk cron-afhængige.
+
+Testet direkte mod VM'en, med et fuldstændigt tomt miljø (strengere end en typisk cron-kørsel):
+
+```
+$ env -i /bin/sh -c 'echo Overvaagning: kørende ædruelig test'
+Overvaagning: kM-CM-8rende M-CM-&druelig test
+```
+
+(`cat -A`-visning af samme output bekræfter at bytene for `ø`/`æ` er de korrekte, uskadte
+UTF-8-sekvenser.) Konklusion: `echo` sender blot de bytes, scriptfilen allerede indeholder, locale
+påvirker ikke selve gennemløbet, kun hvordan en visning *fortolker* dem bagefter, hvilket er et
+klient-side-anliggende. NixOS sætter desuden `en_US.UTF-8` som standard-locale. Der var derfor ingen
+reel risiko at beskytte sig imod på dette system, og strengene er efterfølgende rettet til korrekt
+`æøå` alle tre steder.
 
 ## Opgave 4: funktioner, variable, betingelser, fejlhåndtering
 

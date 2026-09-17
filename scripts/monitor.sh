@@ -17,6 +17,9 @@ log() {
 }
 
 get_cpu_usage() {
+  # CPU-forbrug findes ikke som et øjebliksbillede i /proc/stat, kun akkumulerede jiffies
+  # siden boot. Derfor tages to målinger med 1 sekunds mellemrum, og forbruget beregnes
+  # som andelen af det tidsrum, der IKKE var idle.
   local line1 line2
   local -a f1 f2
   line1=$(grep '^cpu ' /proc/stat)
@@ -25,6 +28,7 @@ get_cpu_usage() {
   read -r -a f1 <<< "$line1"
   read -r -a f2 <<< "$line2"
 
+  # felt 0 er teksten "cpu"; felt 4 er idle, felt 5 er iowait (tælles begge som ledig tid)
   local idle1=$(( f1[4] + f1[5] ))
   local idle2=$(( f2[4] + f2[5] ))
   local total1=0 total2=0 i
@@ -59,11 +63,11 @@ main() {
   log "CPU=${cpu}% DISK=${disk}% MEM=${mem}%"
 
   if (( disk > DISK_THRESHOLD )); then
-    log "ALERT: diskforbrug ${disk}% overstiger taerskel paa ${DISK_THRESHOLD}%"
+    log "ALERT: diskforbrug ${disk}% overstiger tærskel på ${DISK_THRESHOLD}%"
   fi
 
   if (( mem > MEM_THRESHOLD )); then
-    log "ALERT: hukommelsesforbrug ${mem}% overstiger taerskel paa ${MEM_THRESHOLD}%"
+    log "ALERT: hukommelsesforbrug ${mem}% overstiger tærskel på ${MEM_THRESHOLD}%"
   fi
 }
 

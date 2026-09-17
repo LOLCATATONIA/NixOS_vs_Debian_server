@@ -16,10 +16,11 @@ section() {
 
 check_firewall() {
   section "Firewall-status"
+  # $$ (scriptets PID) sikrer et unikt filnavn, hvis flere kørsler overlapper
   if sudo -n nft list ruleset &>/tmp/hc-nft.$$ 2>&1; then
     grep -E 'hook input|policy|accept|drop' /tmp/hc-nft.$$ | sed 's/^[[:space:]]*/  /'
   else
-    echo "ADVARSEL: kunne ikke laese firewall-status (mangler sudo-adgang til 'nft list ruleset')"
+    echo "ADVARSEL: kunne ikke læse firewall-status (mangler sudo-adgang til 'nft list ruleset')"
   fi
   rm -f /tmp/hc-nft.$$
 }
@@ -31,7 +32,7 @@ check_disk() {
   avail=$(df -h --output=avail / | tail -1 | tr -d '[:space:]')
   echo "Rodfilsystem: ${usage}% brugt, ${avail} ledig diskplads"
   if (( usage > DISK_WARN_THRESHOLD )); then
-    echo "ADVARSEL: diskforbrug overstiger taerskel paa ${DISK_WARN_THRESHOLD}%"
+    echo "ADVARSEL: diskforbrug overstiger tærskel på ${DISK_WARN_THRESHOLD}%"
   fi
   df -h /
 }
@@ -44,6 +45,7 @@ check_users() {
 check_uid_zero() {
   section "Brugere med UID 0 (ud over root)"
   local extra
+  # felt 3 i /etc/passwd er UID; kun 'root' bør have UID 0
   extra=$(awk -F: '$3 == 0 && $1 != "root" { print $1 }' /etc/passwd || true)
   if [[ -n "$extra" ]]; then
     echo "ADVARSEL: fandt uventede UID 0-brugere:"

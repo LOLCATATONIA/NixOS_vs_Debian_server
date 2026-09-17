@@ -35,19 +35,20 @@ main() {
 
   echo "Evaluerer (uden at bygge) den deklarerede konfigurations output-sti..."
   local declared_path current_path
+  # --raw undgår at output-stien bliver JSON-anført med citationstegn
   declared_path=$(nix --extra-experimental-features "nix-command flakes" \
     eval --raw "${FLAKE_DIR}#${FLAKE_ATTR}")
   current_path=$(readlink -f /run/current-system)
 
-  echo "Koerende system:   ${current_path}"
+  echo "Kørende system:    ${current_path}"
   echo "Deklareret system: ${declared_path}"
 
   if [[ "$current_path" == "$declared_path" ]]; then
     echo "OK: systemet stemmer overens med den deklarerede konfiguration."
     exit 0
   else
-    echo "ADVARSEL: systemet er drevet vaek fra den deklarerede konfiguration."
-    echo "Koer: sudo nixos-rebuild switch --flake ${FLAKE_DIR}"
+    echo "ADVARSEL: systemet er drevet væk fra den deklarerede konfiguration."
+    echo "Kør: sudo nixos-rebuild switch --flake ${FLAKE_DIR}"
     exit 1
   fi
 }

@@ -87,6 +87,11 @@ $ /tmp/test-monitor.sh && cat /tmp/test-monitor.log
 
 Begge alarm-grene udløses og formateres korrekt.
 
+(Outputtet ovenfor er en ægte capture fra dengang scriptets tekststrenge stadig var
+ASCII-translittereret, `taerskel`/`paa` i stedet for `tærskel`/`på`, se modul 6's addendum om
+hvorfor det senere blev ændret til rigtig UTF-8. Transskriptet er bevidst ikke rettet i
+efterspilstid, det er en faktisk kørsel, ikke et opdateret eksempel.)
+
 ## Opgave 3: Identifikation af mislykkede loginforsøg
 
 NixOS bruger udelukkende `journald` — der findes ikke en separat `/var/log/auth.log`-fil som på

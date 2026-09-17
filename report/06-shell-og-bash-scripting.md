@@ -10,6 +10,24 @@ konsistent og ikke afhængig af manuelle, fejlbarlige trin.
 Automatisering reducerer menneskelige fejlkonfigurationer. Idempotente scripts er en forudsætning
 for pålidelig, gentagelig systemhærdning.
 
+## Hvad vil det sige at et script er idempotent?
+
+Et idempotent script giver samme slutresultat, uanset om det køres én gang eller hundrede gange:
+
+```bash
+# Ikke idempotent: tilføjer en ny linje for hver kørsel
+echo "hello" >> /etc/myapp.conf
+
+# Idempotent: tilføjer kun linjen, hvis den ikke allerede findes
+grep -qxF "hello" /etc/myapp.conf || echo "hello" >> /etc/myapp.conf
+```
+
+Det samme gælder for et kald som `useradd alice`: kørt to gange fejler det, fordi brugeren allerede
+findes, mens `id alice &>/dev/null || useradd alice` kan gentages uden problemer. Princippet er
+grundlaget for infrastructure-as-code-værktøjer som Ansible, Puppet og NixOS: i stedet for at udføre
+en fast liste af kommandoer i rækkefølge, beregnes forskellen mellem den nuværende og den ønskede
+tilstand, og kun de nødvendige ændringer udføres.
+
 ## Sammenligning: traditionel tilgang vs. NixOS
 
 | Opgave | Traditionel løsning | NixOS-løsning |
@@ -32,7 +50,7 @@ set -euo pipefail
 readonly VM_NAME="linux101-srv"
 readonly POOL_NAME="default"
 readonly POOL_PATH="/var/lib/libvirt/images"
-readonly DISK_SIZE_BYTES=5196742656
+readonly DISK_SIZE_BYTES=5196742656  # ~4.84 GiB, matcher diskstørrelsen fra modul 1
 readonly VCPUS=2
 readonly MEMORY_MB=3072
 readonly REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -42,6 +60,7 @@ log() {
 }
 
 ensure_nix_in_path() {
+  # nix er ikke nødvendigvis i PATH i en non-interaktiv shell (fx cron eller en frisk login-shell)
   if ! command -v nix &>/dev/null; then
     # shellcheck disable=SC1091
     source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh 2>/dev/null || true
@@ -60,7 +79,10 @@ ensure_storage_pool() {
   fi
   if ! sudo virsh pool-info "$POOL_NAME" | grep -q "State: *running"; then
     log "Starter storage pool '${POOL_NAME}'..."
-    sudo virsh pool-start "$POOL_NAME"
+    # "|| true": pool'en kan være blevet startet af andet end scriptet (fx libvirtds egen
+    # autostart) i tidsrummet mellem tjekket og dette kald. Målet er en kørende pool, ikke
+    # at scriptet selv skal have startet den, så "allerede aktiv" er ikke en reel fejl her.
+    sudo virsh pool-start "$POOL_NAME" || true
   fi
 }
 
@@ -85,6 +107,7 @@ import_vm() {
   sudo virsh vol-create-as "$POOL_NAME" "${VM_NAME}.qcow2" "$DISK_SIZE_BYTES" --format qcow2
   sudo virsh vol-upload --pool "$POOL_NAME" "${VM_NAME}.qcow2" "${REPO_DIR}/result/nixos.qcow2"
 
+  # --import: springer OS-installation over, da diskimagen allerede har NixOS installeret
   sudo virt-install \
     --name "$VM_NAME" \
     --memory "$MEMORY_MB" \
@@ -110,15 +133,33 @@ main() {
 main "$@"
 ```
 
+**Hvorfor er scriptet idempotent?** Hver funktion tjekker den nuværende tilstand, før den handler,
+i stedet for at antage at intet findes endnu: `ensure_storage_pool` opretter kun storage pool'en,
+hvis den ikke allerede findes, og `remove_existing_vm` fjerner kun en eksisterende VM og dens
+volume, hvis de rent faktisk findes. `build_image` og `import_vm` bygger og opretter derefter altid
+VM'en på ny, men fordi en eventuel gammel version lige er ryddet væk, opstår der aldrig en fejl om
+en ressource, der allerede findes. Mønstret er "riv ned, hvis det findes, byg derefter altid op
+igen fra bunden": uanset om scriptet køres første eller femtende gang, konvergerer slutresultatet
+til det samme, nemlig præcis én VM ved navn `linux101-srv`, bygget fra den `flake.nix`, der ligger
+på tidspunktet for kørslen.
+
 **Idempotens, bevist ved to kørsler i træk:**
 
 ```
 $ ./scripts/setup.sh
+[setup.sh] Bygger diskimage fra flake.nix (kan tage nogle minutter)...
+[...]
 [setup.sh] Opretter volume og importerer image i libvirt...
+Vol linux101-srv.qcow2 created
 [setup.sh] Færdig. 'linux101-srv' kører nu med den konfiguration, der er deklareret i flake.nix.
 
 $ ./scripts/setup.sh
+[setup.sh] Fjerner eksisterende VM 'linux101-srv' (for idempotent genopbygning)...
 Vol linux101-srv.qcow2 deleted
+[setup.sh] Bygger diskimage fra flake.nix (kan tage nogle minutter)...
+[...]
+[setup.sh] Opretter volume og importerer image i libvirt...
+Vol linux101-srv.qcow2 created
 [setup.sh] Færdig. 'linux101-srv' kører nu med den konfiguration, der er deklareret i flake.nix.
 $ echo $?
 0
@@ -142,10 +183,11 @@ section() {
 
 check_firewall() {
   section "Firewall-status"
+  # $$ (scriptets PID) sikrer et unikt filnavn, hvis flere kørsler overlapper
   if sudo -n nft list ruleset &>/tmp/hc-nft.$$ 2>&1; then
     grep -E 'hook input|policy|accept|drop' /tmp/hc-nft.$$ | sed 's/^[[:space:]]*/  /'
   else
-    echo "ADVARSEL: kunne ikke laese firewall-status (mangler sudo-adgang til 'nft list ruleset')"
+    echo "ADVARSEL: kunne ikke læse firewall-status (mangler sudo-adgang til 'nft list ruleset')"
   fi
   rm -f /tmp/hc-nft.$$
 }
@@ -157,7 +199,7 @@ check_disk() {
   avail=$(df -h --output=avail / | tail -1 | tr -d '[:space:]')
   echo "Rodfilsystem: ${usage}% brugt, ${avail} ledig diskplads"
   if (( usage > DISK_WARN_THRESHOLD )); then
-    echo "ADVARSEL: diskforbrug overstiger taerskel paa ${DISK_WARN_THRESHOLD}%"
+    echo "ADVARSEL: diskforbrug overstiger tærskel på ${DISK_WARN_THRESHOLD}%"
   fi
   df -h /
 }
@@ -170,6 +212,7 @@ check_users() {
 check_uid_zero() {
   section "Brugere med UID 0 (ud over root)"
   local extra
+  # felt 3 i /etc/passwd er UID; kun 'root' bør have UID 0
   extra=$(awk -F: '$3 == 0 && $1 != "root" { print $1 }' /etc/passwd || true)
   if [[ -n "$extra" ]]; then
     echo "ADVARSEL: fandt uventede UID 0-brugere:"
@@ -233,19 +276,20 @@ main() {
 
   echo "Evaluerer (uden at bygge) den deklarerede konfigurations output-sti..."
   local declared_path current_path
+  # --raw undgår at output-stien bliver JSON-anført med citationstegn
   declared_path=$(nix --extra-experimental-features "nix-command flakes" \
     eval --raw "${FLAKE_DIR}#${FLAKE_ATTR}")
   current_path=$(readlink -f /run/current-system)
 
-  echo "Koerende system:   ${current_path}"
+  echo "Kørende system:    ${current_path}"
   echo "Deklareret system: ${declared_path}"
 
   if [[ "$current_path" == "$declared_path" ]]; then
     echo "OK: systemet stemmer overens med den deklarerede konfiguration."
     exit 0
   else
-    echo "ADVARSEL: systemet er drevet vaek fra den deklarerede konfiguration."
-    echo "Koer: sudo nixos-rebuild switch --flake ${FLAKE_DIR}"
+    echo "ADVARSEL: systemet er drevet væk fra den deklarerede konfiguration."
+    echo "Kør: sudo nixos-rebuild switch --flake ${FLAKE_DIR}"
     exit 1
   fi
 }
@@ -257,7 +301,7 @@ main "$@"
 
 ```
 $ ./verify-deploy.sh
-Koerende system:   /nix/store/r0vf...-nixos-system-linux101-srv-...
+Kørende system:    /nix/store/r0vf...-nixos-system-linux101-srv-...
 Deklareret system: /nix/store/r0vf...-nixos-system-linux101-srv-...
 OK: systemet stemmer overens med den deklarerede konfiguration.
 $ echo $?
@@ -265,9 +309,9 @@ $ echo $?
 
 $ sed -i 's/allowedTCPPorts = \[ \];/allowedTCPPorts = [ 9999 ];/' nixos/modules/firewall.nix
 $ ./verify-deploy.sh
-Koerende system:   /nix/store/r0vf...-nixos-system-linux101-srv-...
+Kørende system:    /nix/store/r0vf...-nixos-system-linux101-srv-...
 Deklareret system: /nix/store/agv1...-nixos-system-linux101-srv-...
-ADVARSEL: systemet er drevet vaek fra den deklarerede konfiguration.
+ADVARSEL: systemet er drevet væk fra den deklarerede konfiguration.
 $ echo $?
 1
 ```

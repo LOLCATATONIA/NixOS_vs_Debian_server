@@ -175,23 +175,76 @@ virker fint. Vi undersøgte tre hypoteser i rækkefølge:
 3. Direkte test mod en helt ekstern resolver (`8.8.8.8`) gav samme fejl som mod libvirts egen
    `dnsmasq` — udelukker at problemet er specifikt for libvirts DNS-forwarder.
 
-**Konklusion:** Vi kunne ikke inden for opgavens rammer identificere den præcise årsag til, at UDP
-request/reply (men ikke ICMP eller TCP) ikke får svar retur til gæsten. Fremfor at bruge
-uforholdsmæssigt meget tid på at fejlsøge en lavniveau netværksmekanisme, der ligger uden for
-opgavens pensum, traf vi en bevidst, dokumenteret beslutning: **VM'en har reelt ingen udgående
-DNS/internetadgang, og vi accepterer det som en driftsmæssig begrænsning snarere end en fejl, der
-skal rettes for enhver pris.**
+**Konklusion på daværende tidspunkt:** Vi kunne ikke inden for modul 5's rammer identificere den
+præcise årsag til, at UDP request/reply (men ikke ICMP eller TCP) ikke fik svar retur til gæsten.
+Fremfor at bruge uforholdsmæssigt meget tid på at fejlsøge en lavniveau netværksmekanisme, der lå
+uden for det daværende moduls pensum, accepterede vi det som en driftsmæssig begrænsning. Den blev
+senere, under modul 6-arbejdet, faktisk identificeret og løst, se addendummet nedenfor.
 
-Værd at bemærke: dette er ikke rent negativt. En server uden udgående internetadgang er en
-anerkendt hærdningsteknik (egress-filtrering) — mange virkelige produktionsservere har bevidst
-*ingen* generel udgående adgang, netop for at begrænse hvad en kompromitteret proces kan
-kommunikere med. Vores tilfælde er utilsigtet, men den praktiske konsekvens er sammenlignelig.
+**Praktisk konsekvens for vores eget deploy-workflow, mens begrænsningen stod ved magt:** Når en
+konfigurationsændring krævede nye pakker (som modul 5 gjorde), byggede og hentede vi disse på
+**værten** (som har fungerende internetadgang) via `nix build .#qcow`, og hele diskimaget blev
+genskabt og genimporteret i libvirt, det etablerede "slet og genskab fra flake"-mønster fra modul 1.
+Dette mønster er stadig det mest robuste for større ændringer, uafhængigt af DNS-fixet nedenfor.
 
-**Praktisk konsekvens for vores eget deploy-workflow:** Når en fremtidig konfigurationsændring
-kræver nye pakker (som modul 5 gjorde), bygges og hentes disse på **værten** (som har fungerende
-internetadgang) via `nix build .#qcow`, og hele diskimaget genskabes og genimporteres i libvirt —
-det etablerede "slet og genskab fra flake"-mønster fra modul 1, som vi nu har brugt gentagne gange
-som et reelt driftsværktøj, ikke kun et teoretisk argument.
+## Addendum 2 (opdaget under modul 6): den faktiske årsag til DNS/egress-begrænsningen
+
+Under modul 6-arbejdet installerede vi `tealdeer` (en `tldr`-klient) direkte i `configuration.nix`
+som et scenarie til at øve incremental pakke-tilføjelse. Det tvang os til for alvor at diagnosticere
+DNS-begrænsningen fra addendummet ovenfor, i stedet for blot at bygge om på værten, og det afslørede
+at den oprindelige konklusion ("uløst, accepteret begrænsning") var forhastet: årsagen lå slet ikke
+i NixOS' gæste-side-konfiguration, som addendummet ovenfor bruger langt de fleste kræfter på.
+
+**Nye observationer, som indsnævrede problemet:**
+
+- `ping 8.8.8.8` fra gæsten virker (rå IP-routing/NAT til internettet fungerer).
+- `dig github.com @192.168.122.1` virker fint, når kommandoen køres **fra værten selv**.
+- Den samme forespørgsel fra **gæsten** til samme adresse (`192.168.122.1:53`) fik intet svar.
+
+Det tredje punkt var nøglen: en forespørgsel fra værten til sin egen adresse (`192.168.122.1`)
+løses internt via loopback i kernen og rammer aldrig værtens rigtige `INPUT`-filtrering. En
+forespørgsel fra gæsten ankommer derimod reelt udefra, via `virbr0`, og rammer filtreringen for
+alvor. De to test så ens ud, men afprøvede reelt to forskellige kodeveje i kernen.
+
+**Rodårsag:** Værten kører `ufw` (traditionel, imperativ firewall-administration, i skarp kontrast
+til NixOS' deklarative `firewall.nix` på gæsten). `ufw` er implementeret oven på `iptables-nft` og
+opretter sine egne `INPUT`- og `FORWARD`-basiskæder i en helt separat nftables-tabel
+(`table ip filter`) end libvirts egen `table ip libvirt_network`. Begge tabellers kæder er hooket på
+samme punkt (`hook input`/`hook forward`, samme prioritet), og nftables evaluerer dem uafhængigt af
+hinanden: et `accept` i libvirts tabel forhindrer IKKE et efterfølgende `drop` i `ufw`s tabel.
+
+- `ufw`'s `INPUT`-kæde har `policy drop` og indeholdt ingen regel for port 53 på `virbr0`. Gæstens
+  DNS-forespørgsler, adresseret direkte til værten (`192.168.122.1`), faldt igennem alle `ufw`s
+  brugerdefinerede regler og ramte standardpolitikken: drop.
+- `ufw`'s `FORWARD`-kæde har også `policy drop`, og tillod kun ICMP og allerede etablerede
+  forbindelser, ikke nye TCP/UDP-forbindelser. Det forklarer hvorfor `ping` (ICMP) virkede, mens en
+  frisk TCP-forbindelse (som `tldr --update`s HTTPS-download) blev afvist, selvom libvirts egen
+  `guest_output`-kæde tillod præcis den samme trafik.
+
+**Fix (to `ufw`-regler, på værten, ikke i NixOS-konfigurationen):**
+
+```bash
+sudo ufw allow in on virbr0 to any port 53 proto udp
+sudo ufw allow in on virbr0 to any port 53 proto tcp
+sudo ufw route allow in on virbr0
+```
+
+**Verificeret end-to-end** efter fixet: `getent hosts github.com` resolver korrekt fra gæsten, og
+`tldr --update` gennemfører en fuld HTTPS-download og cache-opdatering uden fejl.
+
+**Hvorfor stod dette ikke i NixOS-konfigurationen?** Fordi det ikke var en fejl der. Gæstens egen
+firewall (`firewall.nix`, inklusiv `checkReversePath = "loose"` fra addendummet ovenfor) var korrekt
+hele tiden. Fejlen lå i et helt separat filter-lag: værtens egen, imperativt administrerede `ufw`,
+opbygget over tid via enkeltstående `ufw allow`-kommandoer uden et samlet overblik over det
+virtuelle netværks-interface. Det er selve pointen med dette modul i praksis: en deklarativ,
+ét-sted-defineret firewall er til at overskue i sin helhed; en traditionel, imperativt vedligeholdt
+firewall (her: værtens `ufw`, ikke engang en del af selve forsøgsopstillingen) kan sagtens gemme på
+en blind vinkel, selv når den ikke er det, man aktivt fejlsøger.
+
+**Konsekvens:** Begrænsningen i addendummet ovenfor er nu rettet på netværksniveau. Det etablerede
+"byg på værten, importér på ny"-mønster forbliver den mest robuste metode til større ændringer, men
+en enkelt ny pakke kan nu også installeres med den oprindeligt tiltænkte lokale
+`sudo nixos-rebuild switch --flake ~/linux101-config` direkte på gæsten, uden en fuld genopbygning.
 
 ## Arkitektur-revision: opgivelse af `--target-host`
 

@@ -14,5 +14,6 @@
     vim
     git
     acl
+    tealdeer
   ];
 }
