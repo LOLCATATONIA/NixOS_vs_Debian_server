@@ -40,7 +40,7 @@ som allerede overlapper med `healthcheck.sh`:
    fungerende Nix-opsætning), og få ÉN triviel test til at køre og bestå, før flere tilføjes.
 2. Skriv testene i `tests/*.nix`, importér `configuration.nix` direkte (ikke en kopi).
 3. Registrér dem som `checks.x86_64-linux.<navn>` i `flake.nix`, så `nix flake check` kører dem
-   automatisk (kobler denne plan sammen med CI-planen, se `02-ci-pipeline.md`).
+   automatisk, lokalt, uden behov for en separat CI-pipeline.
 4. Dokumentér i `docs/` (nyt modul eller tilføjelse til modul 4/6): hvad testene beviser, hvordan de
    køres lokalt (`nix flake check` eller `nix build .#checks.x86_64-linux.<navn>`), og eksempel på
    både en bestået og en bevidst fejlende test (for at bevise at testene faktisk fanger noget, samme
@@ -48,8 +48,7 @@ som allerede overlapper med `healthcheck.sh`:
 
 ## Rækkefølge ift. andre planer
 
-Gør denne færdig FØR `02-ci-pipeline.md` sættes op, for ikke at fejlsøge testenes korrekthed og
-CI-miljøets kvirks samtidig.
+Uafhængig af de øvrige planer, kan gennemføres når som helst i ugen.
 
 ## Estimeret indsats
 
