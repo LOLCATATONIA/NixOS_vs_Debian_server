@@ -37,7 +37,7 @@ nixpkgs og alle pakker, så to genopbygninger fra samme flake giver samme softwa
 konfiguration og samme sikkerhedsopsætning. Det er ikke det samme som at hver fil i disk-imaget er
 byte-for-byte identisk mellem to uafhængige builds — fx genererer `mkfs.ext4` et nyt, tilfældigt
 filsystem-UUID for hver build. Den relevante sikkerhedsgaranti er den første (konfigurationen kan
-ikke drifte), ikke den sidste.
+ikke afvige), ikke den sidste.
 
 **Ulempe/omkostning:** Bootstrap-processen kræver, at vi selv har sat Nix, `nixos-generators` og
 libvirt-værktøjerne op korrekt på værten først — der er altså mere forudgående værktøjsopsætning end
@@ -103,7 +103,7 @@ begrundelse:
 
 **Sikkerhedsargument for den deklarative SSH-hærdning:** På et traditionelt system er
 `sshd_config` en fil, der kan redigeres ad hoc af enhver med root-adgang, uden at ændringen
-nødvendigvis bliver dokumenteret eller versionsstyret — konfigurationen kan drifte væk fra det
+nødvendigvis bliver dokumenteret eller versionsstyret — konfigurationen kan gradvist afvige fra det
 oprindeligt godkendte setup uden at nogen opdager det. På NixOS er `sshd_config` en genereret fil:
 den eneste måde at ændre SSH-opsætningen varigt på er via `configuration.nix`, som er versionsstyret.
 En evt. "midlertidig" svækkelse (fx en tekniker der slår `PasswordAuthentication` til for at fejlsøge)

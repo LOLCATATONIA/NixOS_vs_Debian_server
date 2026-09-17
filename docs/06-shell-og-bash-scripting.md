@@ -22,7 +22,7 @@ fejle eller duplikere.
 
 Under NixOS er den situation allerede løst — af selve platformen, ikke af os. `nixos-rebuild
 switch` er i sig selv en idempotent automatisering af *hele* modul 1-5's konfiguration: at køre den
-to gange giver per definition nul drift og ingen duplikering, fordi hele systemtilstanden er en ren
+to gange giver per definition ingen afvigelse og ingen duplikering, fordi hele systemtilstanden er en ren
 funktion af `configuration.nix`. At genopfinde det i bash (fx et script, der selv kalder `useradd`
 og `chmod` for at nå samme mål) ville være at bygge en svagere, mindre pålidelig kopi af noget
 platformen allerede garanterer bedre.
@@ -383,7 +383,7 @@ $ echo $?
 ```
 
 **Ændret (men ikke-deployet) konfiguration** — en testændring i den lokale flake-kopi, uden at køre
-`nixos-rebuild switch`, for at bevise at scriptet reelt opdager drift og ikke bare altid siger "OK":
+`nixos-rebuild switch`, for at bevise at scriptet reelt opdager afvigelser og ikke bare altid siger "OK":
 
 ```
 $ sed -i 's/allowedTCPPorts = \[ \];/allowedTCPPorts = [ 9999 ];/' nixos/modules/firewall.nix

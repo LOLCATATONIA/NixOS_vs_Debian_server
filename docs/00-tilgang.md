@@ -50,7 +50,7 @@ imperative arbejdsgang som opgaven er skrevet ud fra.
 ### Konklusion
 
 NixOS er valgt, fordi de arkitektoniske fordele (reproducerbarhed, atomare rollbacks, umuliggørelse
-af konfigurationsdrift) er direkte relevante sikkerhedsegenskaber, og fordi opgaven selv lægger vægt
+af konfigurationsafvigelser) er direkte relevante sikkerhedsegenskaber, og fordi opgaven selv lægger vægt
 på automatisering og "scriptet, ikke klikket sammen". Hvor NixOS' model afviger fra opgavens
 forventede arbejdsgang (særligt modul 3, 4 og 6), dokumenterer vi eksplicit hvad forskellen er, og
 hvorfor vi vurderer den deklarative løsning som ligeværdig eller stærkere.

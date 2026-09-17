@@ -37,7 +37,7 @@ tilgang sammenlignet med den traditionelle, imperative arbejdsgang, som opgaven 
 
 | Aspekt | Traditionel (Debian/Ubuntu) | NixOS |
 |---|---|---|
-| Konfiguration | Frit redigerbare filer i `/etc`, ingen indbygget versionsstyring, kan derfor drifte uden at nogen opdager det | Deklareret i `configuration.nix`, genereret ved hver rebuild, naturligt versionsstyrbar i git |
+| Konfiguration | Frit redigerbare filer i `/etc`, ingen indbygget versionsstyring, kan derfor afvige uden at nogen opdager det | Deklareret i `configuration.nix`, genereret ved hver rebuild, naturligt versionsstyrbar i git |
 | Opgraderinger | Kan fejle midtvejs og efterlade systemet i en inkonsistent tilstand | Bygget som en samlet, fuldt evalueret generation før aktivering; en fejlkonfiguration kan rulles tilbage til en tidligere generation ved reboot |
 | Reproducerbarhed | Kræver ekstra værktøj (fx Packer/Ansible) for at være pålideligt reproducerbar | Indbygget via `flake.lock`, som fastlåser præcise versioner af alle pakker |
 | Pakke-integritet | Muterbart filsystem for installerede pakker | Skrivebeskyttet, indholdsadresseret `/nix/store` |
@@ -46,7 +46,7 @@ tilgang sammenlignet med den traditionelle, imperative arbejdsgang, som opgaven 
 | Match med opgavens ordlyd | Direkte match (`/etc/sudoers.d/`, `ufw`, `sshd_config`) | Kræver oversættelse og eksplicit argumentation per modul (se de enkelte moduler) |
 
 **Konklusion:** NixOS er valgt, fordi de arkitektoniske fordele (reproducerbarhed, rollback til en
-tidligere, fuldt bygget generation, umuliggørelse af konfigurationsdrift) er direkte relevante
+tidligere, fuldt bygget generation, umuliggørelse af konfigurationsafvigelser) er direkte relevante
 sikkerhedsegenskaber, og fordi
 opgaven selv lægger vægt på automatisering frem for manuel opsætning. Hvor NixOS' model afviger fra
 opgavens forventede arbejdsgang, dokumenteres eksplicit hvad forskellen er, og hvorfor den
