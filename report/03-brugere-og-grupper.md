@@ -19,10 +19,13 @@ rettigheder reducerer skadesomfanget, hvis en konto kompromitteres.
 | `developer` | `projekt` *(fra modul 2)* | Læse-/skriveadgang til `/srv/projekt` via gruppe-rettigheder | Udviklere skal kunne bidrage til det fælles projektområde |
 | `guest` | `guest` *(ny)* | Læseadgang til `/srv/projekt` via gruppe-ACL, ingen skriveadgang | En ekstern part skal kunne se, men ikke ændre, projektdata |
 
-`admin` er nominelt medlem af `wheel`. NixOS kræver dette af mindst én bruger, for at undgå at
-systemet låser sig selv ude. Medlemskabet giver dog ingen reel adgang: `security.sudo.wheelNeedsPassword`
-står på sin standardværdi (`true`), og `admin` har ingen adgangskode, så almindelig wheel-baseret
-sudo er uopnåeligt. Al faktisk adgang kommer fra `security.sudo.extraRules`.
+I Linux-verdenen refererer `wheel` til en speciel brugergruppe, hvor medlemmerne som udgangspunkt
+har tilladelse til at køre administrator-kommandoer via `sudo`. `admin` er medlem af `wheel` (og
+har dermed som udgangspunkt sudo-rettigheder), primært fordi NixOS kræver dette af mindst én
+bruger, for at undgå at systemet låser sig selv ude. I praksis er denne adgang dog neutraliseret:
+`security.sudo.wheelNeedsPassword` står på sin standardværdi (`true`), og `admin` har ingen
+adgangskode, så almindelig wheel-baseret sudo reelt er uopnåeligt. Al faktisk adgang kommer i
+stedet fra `security.sudo.extraRules`.
 
 ## Sammenligning: traditionel tilgang vs. NixOS
 

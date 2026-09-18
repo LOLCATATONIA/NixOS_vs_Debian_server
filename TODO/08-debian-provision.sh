@@ -149,6 +149,11 @@ setup_sudo_documentation_rules() {
   if ! grep -q "ufw status verbose" /etc/sudoers.d/admin 2>/dev/null; then
     echo "admin ALL=(ALL) NOPASSWD: /usr/sbin/ufw status verbose" >> /etc/sudoers.d/admin
   fi
+  # visudo -c blev kun kørt efter den FØRSTE sudoers-skrivning i setup_admin_sudo, ikke
+  # efter disse senere tilføjelser. Uden dette tjek her kunne en tastefejl i en append
+  # ovenfor stille og roligt gøre hele /etc/sudoers.d/admin ugyldig, uden at scriptet
+  # nogensinde ville opdage det.
+  visudo -c
 }
 
 main() {

@@ -895,13 +895,17 @@ skriveadgang</td>
 </tr>
 </tbody>
 </table>
-<p><code>admin</code> er nominelt medlem af <code>wheel</code>. NixOS
-kræver dette af mindst én bruger, for at undgå at systemet låser sig
-selv ude. Medlemskabet giver dog ingen reel adgang:
-<code>security.sudo.wheelNeedsPassword</code> står på sin standardværdi
-(<code>true</code>), og <code>admin</code> har ingen adgangskode, så
-almindelig wheel-baseret sudo er uopnåeligt. Al faktisk adgang kommer
-fra <code>security.sudo.extraRules</code>.</p>
+<p>I Linux-verdenen refererer <code>wheel</code> til en speciel
+brugergruppe, hvor medlemmerne som udgangspunkt har tilladelse til at
+køre administrator-kommandoer via <code>sudo</code>. <code>admin</code>
+er medlem af <code>wheel</code> (og har dermed som udgangspunkt
+sudo-rettigheder), primært fordi NixOS kræver dette af mindst én bruger,
+for at undgå at systemet låser sig selv ude. I praksis er denne adgang
+dog neutraliseret: <code>security.sudo.wheelNeedsPassword</code> står på
+sin standardværdi (<code>true</code>), og <code>admin</code> har ingen
+adgangskode, så almindelig wheel-baseret sudo reelt er uopnåeligt. Al
+faktisk adgang kommer i stedet fra
+<code>security.sudo.extraRules</code>.</p>
 <h2 id="sammenligning-traditionel-tilgang-vs.-nixos-2">Sammenligning:
 traditionel tilgang vs. NixOS</h2>
 <div class="compare">
