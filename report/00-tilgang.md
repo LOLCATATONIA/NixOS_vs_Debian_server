@@ -16,7 +16,7 @@ integration med Linux-værten og NixOS' eget værktøjsøkosystem.
 | Aspekt | VirtualBox/VMware | QEMU/KVM (libvirt) |
 |---|---|---|
 | Arkitektur og ydeevne | Kører som et separat program oven på værtens OS og emulerer hardware i brugerrum, hvilket typisk giver mere overhead | KVM er indbygget i Linux-kernen og udnytter CPU'ens VT-x/AMD-V-udvidelser direkte, tættere på native ydeevne |
-| Scriptbarhed | CLI findes (`VBoxManage`), men værktøjet er primært bygget til den grafiske brugerflade | `virt-install`/`virsh` er fuldt scriptbare kommandolinjeværktøjer, i tråd med opgavens egen vægt på "scriptet, ikke klikket sammen" |
+| Scriptbarhed | CLI findes (`VBoxManage`), men værktøjet er primært bygget til den grafiske brugerflade | `virt-install`/`virsh` er fuldt scriptbare kommandolinjeværktøjer, uden en grafisk brugerflade som primær arbejdsgang |
 | Licens/åbenhed | VirtualBox's kerne er GPL, men Extension Pack (USB 2/3, RDP) er proprietær. VMware Workstation er kommerciel | QEMU, KVM og libvirt er fuldt open source i alle dele, ingen separate proprietære tilføjelser |
 | Brugervenlighed | Modent, grafisk værktøj med lav indlæringskurve, især med forudgående VirtualBox-erfaring | Kræver CLI-fortrolighed. `virt-manager` findes som GUI, men projektets daglige arbejdsgang er CLI-baseret |
 
@@ -24,8 +24,8 @@ integration med Linux-værten og NixOS' eget værktøjsøkosystem.
 (`nixos-generators`, `nixos-rebuild build-vm`) er bygget direkte til QEMU. At vælge VirtualBox eller
 VMware ville have betydet at opgive den ubrudte "flake til kørende server"-arbejdsgang, som hele
 modul 1's reproducerbarhedsargument bygger på, til fordel for en manuel eksport/import-proces. Dertil
-kommer en fuldt åben værktøjskæde (Nix, NixOS, QEMU, KVM, libvirt) uden proprietære komponenter, som
-afspejler den samme "åbenhed og gennemsigtighed" opgaven selv fremhæver som en styrke ved Linux. Den
+kommer en fuldt åben værktøjskæde (Nix, NixOS, QEMU, KVM, libvirt) uden proprietære komponenter, i
+modsætning til VirtualBox' Extension Pack og VMwares kommercielle licens (se tabellen ovenfor). Den
 reelle omkostning er en stejlere indlæringskurve, men til gengæld fås en ubrudt, scriptbar vej fra
 flake til kørende server og et fuldt åbent værktøjsøkosystem hele vejen igennem.
 
@@ -46,11 +46,10 @@ tilgang sammenlignet med den traditionelle, imperative arbejdsgang, som opgaven 
 
 **Konklusion:** NixOS er valgt, fordi de arkitektoniske fordele (reproducerbarhed, rollback til en
 tidligere, fuldt bygget generation, umuliggørelse af konfigurationsafvigelser) er direkte relevante
-sikkerhedsegenskaber, og fordi
-opgaven selv lægger vægt på automatisering frem for manuel opsætning. Hvor NixOS' model afviger fra
-opgavens forventede arbejdsgang, dokumenteres eksplicit hvad forskellen er, og hvorfor den
-deklarative løsning vurderes som ligeværdig eller stærkere. Se sammenligningstabellen i hvert
-modul.
+sikkerhedsegenskaber, opnået gennem automatisering af hele systemtilstanden frem for den
+traditionelle tilgangs afhængighed af manuelle, gentagne trin. Hvor NixOS' arbejdsgang adskiller sig
+væsentligt fra Debians, dokumenteres eksplicit hvad forskellen konkret er, og hvorfor den
+deklarative løsning vurderes som ligeværdig eller stærkere, side om side i hvert modul.
 
 ### Samlet billede: spredte konfigurationsfiler vs. én `configuration.nix`
 

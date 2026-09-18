@@ -11,7 +11,7 @@ Forkerte fil- og mapperettigheder er en af de hyppigste årsager til privilege e
 ACL'er gør det muligt at implementere finkornet adgangsstyring, når standard
 bruger/gruppe/andre-modellen ikke er tilstrækkelig præcis.
 
-## Opgave 1: Formålet med de vigtigste mapper i FHS
+## Opgave 1: Formålet med de vigtigste mapper i Filesystem Hierarchy Standard (FHS)
 
 | Mappe | Formål |
 |---|---|
@@ -33,10 +33,31 @@ normalt samme `/usr/lib`), mens de to versioner på NixOS blot er to forskellige
 
 ## Sammenligning: traditionel tilgang vs. NixOS
 
-| Opgave | Traditionel løsning | NixOS-løsning |
-|---|---|---|
-| Delt projektmappe via gruppe-rettigheder | `mkdir`, `chown`, `chmod 2770` manuelt | `systemd.tmpfiles.rules = [ "d /srv/projekt 2770 admin projekt -" ];` i `nixos/modules/filesystem.nix` |
-| ACL til afgrænset adgang | `setfacl` kørt manuelt, ikke sporet nogen steder | Samme `setfacl`-kommandoer. NixOS overtager ikke ACL'er på datafiler deklarativt, så metoden forbliver identisk med den traditionelle |
+::: {.compare}
+::: {.compare-side}
+#### Traditionel: tre kommandoer, hver gang
+
+```bash
+$ sudo mkdir /srv/projekt
+$ sudo chown admin:projekt /srv/projekt
+$ sudo chmod 2770 /srv/projekt
+```
+:::
+::: {.compare-side}
+#### NixOS: én deklareret linje
+
+```nix
+# nixos/modules/filesystem.nix
+systemd.tmpfiles.rules = [
+  "d /srv/projekt 2770 admin projekt -"
+];
+```
+:::
+:::
+
+**ACL til afgrænset adgang** bruger derimod nøjagtig de samme `setfacl`-kommandoer på begge
+platforme, NixOS overtager ikke ACL'er på datafiler deklarativt, så metoden forbliver identisk med
+den traditionelle, se `Opgave 4` nedenfor.
 
 ## Opgave 2: Delt projektmappe (ikke `chmod 777`)
 

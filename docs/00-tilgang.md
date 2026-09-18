@@ -138,7 +138,7 @@ Linux_101/
     └── verify-deploy.sh       (modul 6 — se argumentation i 06-shell-og-bash-scripting.md)
 ```
 
-Ved aflevering samles alle filer i `docs/` til ét dokument. Da filnavnene er nummereret, sorterer et
-simpelt wildcard korrekt i modulrækkefølge. Kommandoen køres fra `docs/`-mappen (ikke fra
-repo-roden), så relative billedstier til `screenshots/` kan resolves korrekt af pandoc:
-`cd docs && pandoc *.md -o ../aflevering.odt --toc`.
+`docs/` er den interne logbog og indgår ikke i selve afleveringen. Den samles og publiceres i stedet
+fra `report/`, en separat, mere kortfattet version af de samme moduler, til `index.html`
+(`report/build-html.sh`), som er den primære, aktivt vedligeholdte afleveringsform, se
+`README.md`.

@@ -13,11 +13,34 @@ systemgennemgang.
 
 ## Sammenligning: traditionel tilgang vs. NixOS
 
-| Opgave | Traditionel løsning | NixOS-løsning |
-|---|---|---|
-| Default-deny firewall | `ufw default deny incoming` | `networking.firewall.enable = true;` med `backend = "nftables";` |
-| Åbn kun nødvendige porte | `ufw allow 2222/tcp` | `services.openssh.ports = [ 2222 ]; services.openssh.openFirewall = false;` (se note nedenfor) |
-| Begræns kilde-IP | `ufw allow from 192.168.122.1 to any port 2222` | `networking.firewall.extraInputRules = "ip saddr 192.168.122.1 tcp dport 2222 accept";` |
+Samme tre opgaver (default-deny, kun nødvendige porte åbne, kilde-IP-begrænsning), side om side:
+
+::: {.compare}
+::: {.compare-side}
+#### Traditionel: tre `ufw`-kommandoer
+
+```bash
+$ sudo ufw default deny incoming
+$ sudo ufw allow 2222/tcp
+$ sudo ufw allow from 192.168.122.1 to any port 2222
+$ sudo ufw enable
+```
+:::
+::: {.compare-side}
+#### NixOS: én deklareret blok
+
+```nix
+# nixos/modules/firewall.nix
+networking.firewall.enable = true;
+networking.firewall.backend = "nftables";
+services.openssh.ports = [ 2222 ];
+services.openssh.openFirewall = false;  # se note nedenfor
+networking.firewall.extraInputRules = ''
+  ip saddr 192.168.122.1 tcp dport 2222 accept
+'';
+```
+:::
+:::
 
 **Note:** `services.openssh.openFirewall` er sand som standard og åbner porten for *alle* kilder,
 uafhængigt af `extraInputRules`. Årsagen er at `allowedTCPPorts` er en liste-type: bidrag fra

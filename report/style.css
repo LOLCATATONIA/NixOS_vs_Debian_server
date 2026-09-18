@@ -33,7 +33,7 @@ body {
   color: var(--fg);
   font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.55;
-  max-width: 880px;
+  max-width: 1180px;
   margin: 0 auto;
   padding: 0 1.25rem 4rem;
 }
@@ -64,6 +64,12 @@ header#title-block-header p.date {
 }
 
 h1, h2, h3 { color: var(--accent); }
+
+/* Brødtekst holdes på en behagelig læsebredde, selvom body er bred nok til at give
+   sammenligninger, tabeller og kode plads til at ånde. */
+p, li, blockquote {
+  max-width: 75ch;
+}
 
 h1 {
   border-bottom: 2px solid var(--accent);
@@ -97,7 +103,7 @@ nav#TOC a:hover { text-decoration: underline; }
    placering øverst på smalle skærme (inkl. telefonbredde). */
 @media (min-width: 900px) {
   body {
-    max-width: 880px;
+    max-width: 1180px;
     margin: 0 auto;
     margin-left: calc(var(--toc-width) + 2.5rem);
   }
@@ -212,6 +218,47 @@ details pre {
   border-top: 1px solid var(--code-border);
   border-radius: 0;
   box-shadow: none;
+}
+
+/* Side-om-side sammenligning: ::: {.compare} med to indlejrede ::: {.compare-side} i markdown. */
+.compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin: 1.5rem 0;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .compare {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+.compare-side {
+  min-width: 0;
+}
+
+.compare-side > :first-child {
+  margin-top: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 2px solid var(--border);
+  color: var(--muted);
+}
+
+.compare-side:last-child > :first-child {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.compare-side pre {
+  margin-top: 0;
 }
 
 blockquote {

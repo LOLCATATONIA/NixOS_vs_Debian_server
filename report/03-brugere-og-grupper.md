@@ -26,12 +26,47 @@ sudo er uopnåeligt. Al faktisk adgang kommer fra `security.sudo.extraRules`.
 
 ## Sammenligning: traditionel tilgang vs. NixOS
 
-| Opgave | Traditionel løsning | NixOS-løsning |
-|---|---|---|
-| Brugerroller | `useradd developer`, `useradd guest` | `users.users.developer`/`users.users.guest` i `nixos/modules/users.nix` |
-| Granulær sudo | Filer i `/etc/sudoers.d/` | `security.sudo.extraRules`, genererer **én samlet** `/etc/sudoers`-fil, ikke separate drop-in-filer (se nedenfor) |
+::: {.compare}
+::: {.compare-side}
+#### Traditionel: `useradd` + `/etc/sudoers.d/`
 
-**Ift. opgavens ordlyd** ("via `/etc/sudoers.d/`"): `/etc/sudoers.d/` findes ikke på systemet,
+```bash
+$ sudo useradd -m -G projekt developer
+$ sudo useradd -m -G guest guest
+
+# /etc/sudoers.d/admin
+admin ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart sshd.service
+admin ALL=(ALL) NOPASSWD: /usr/bin/chmod g+s /srv/projekt
+admin ALL=(ALL) NOPASSWD: /usr/sbin/nft list ruleset
+```
+:::
+::: {.compare-side}
+#### NixOS: `users.nix`
+
+```nix
+users.users.developer = {
+  isNormalUser = true;
+  extraGroups = [ "projekt" ];
+};
+users.users.guest = {
+  isNormalUser = true;
+  extraGroups = [ "guest" ];
+};
+
+security.sudo.extraRules = [{
+  users = [ "admin" ];
+  commands = [
+    { command = "/run/current-system/sw/bin/systemctl restart sshd.service"; options = [ "NOPASSWD" ]; }
+    { command = "/run/current-system/sw/bin/chmod g+s /srv/projekt"; options = [ "NOPASSWD" ]; }
+    { command = "/run/current-system/sw/bin/nft list ruleset"; options = [ "NOPASSWD" ]; }
+  ];
+}];
+```
+:::
+:::
+
+Begge tilgange giver samme granulære, kommando-specifikke sudo, men mekanikken er forskellig:
+Debian samler regler i separate filer under `/etc/sudoers.d/`, NixOS har slet ikke denne mappe,
 verificeret direkte:
 
 ```
@@ -39,9 +74,9 @@ $ ls /etc/sudoers.d/
 ls: cannot access '/etc/sudoers.d/': No such file or directory
 ```
 
-NixOS genererer i stedet én skrivebeskyttet `/etc/sudoers`-fil ud fra hele konfigurationen. Dette
-vurderes at opfylde opgavens *underliggende* krav (granulær, kommando-specifik sudo, ikke
-ubegrænset root-adgang) fuldt ud, selvom filmekanikken er en anden.
+NixOS genererer i stedet **én samlet**, skrivebeskyttet `/etc/sudoers`-fil ud fra hele
+konfigurationen ved hver rebuild, ikke separate drop-in-filer, der kan glemmes eller efterlades
+uden versionsstyring.
 
 ## Bevis: granulær sudo virker
 

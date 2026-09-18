@@ -87,14 +87,53 @@ root@192.168.122.10: Permission denied (publickey).
 Root afvises fordi `PermitRootLogin = "no"`. Root har derudover ingen gyldig adgangskode
 (`users.users.root.hashedPassword = "!"`), hvilket lukker adgangsvejen helt af.
 
-**Konfigurationsuddrag** (`nixos/modules/network.nix`):
+**Samme fire opgaver, side om side** (statisk IP, hostname, deaktiveret root-login, kun
+nøglebaseret SSH):
+
+::: {.compare}
+::: {.compare-side}
+#### Traditionel: fire filer, tre kommandoer
+
+```bash
+# /etc/hostname
+linux101-srv
+
+# /etc/network/interfaces
+auto eth0
+iface eth0 inet static
+    address 192.168.122.10/24
+
+# /etc/ssh/sshd_config
+PermitRootLogin no
+PasswordAuthentication no
+```
+```bash
+$ systemctl restart networking
+$ systemctl restart sshd
+```
+:::
+::: {.compare-side}
+#### NixOS: én fil, ingen manuel genstart
 
 ```nix
+# nixos/modules/network.nix
 networking.hostName = "linux101-srv";
-networking.interfaces.eth0.ipv4.addresses = [{ address = "192.168.122.10"; prefixLength = 24; }];
+networking.interfaces.eth0.ipv4.addresses = [
+  { address = "192.168.122.10"; prefixLength = 24; }
+];
 
 services.openssh.settings = {
   PermitRootLogin = "no";
   PasswordAuthentication = false;
 };
 ```
+```bash
+$ sudo nixos-rebuild switch --flake .
+```
+:::
+:::
+
+Samme resultat, men den traditionelle version er spredt over tre filer og kræver at huske at
+genstarte to tjenester manuelt bagefter. Den deklarative version er én fil, og `nixos-rebuild
+switch` sørger selv for at aktivere ændringen korrekt, uanset hvilke tjenester der reelt er
+berørt.
