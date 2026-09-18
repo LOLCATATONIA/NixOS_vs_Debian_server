@@ -16,7 +16,15 @@ analytiker kigger efter tegn på uautoriserede loginforsøg.
 |---|---|---|
 | Cron-baseret overvågning | `crontab -e`, script i `/usr/local/bin` | `services.cron.systemCronJobs`, ingen strukturel forskel. NixOS understøtter cron som en almindelig service |
 | Logrotation | `/etc/logrotate.d/monitor` | `services.logrotate.settings."/var/log/monitor.log"` |
-| Fejlede loginforsøg | `/var/log/auth.log` | `journalctl -u sshd` (NixOS bruger udelukkende journald, ingen separat auth.log) |
+| Fejlede loginforsøg | `journalctl -u ssh` (ikke `/var/log/auth.log`, se note nedenfor) | `journalctl -u sshd` |
+
+**Rettelse, verificeret direkte på en frisk Debian-installation:** `/var/log/auth.log` findes ikke
+automatisk. Det kræver `rsyslog`, som ikke er en del af en minimal installation. En moderne, minimal
+Debian-server bruger, ligesom NixOS, udelukkende `journald` som standard, indtil `rsyslog` eksplicit
+installeres. Forskellen mellem platformene ligger derfor ikke i *om* `journald` bruges, begge gør,
+men i at NixOS aldrig kan ende med en separat `auth.log`, da `rsyslog` ikke er en mulighed at
+tilføje ved et uheld eller en vane, mens Debian kan udvides til begge dele afhængigt af hvad der er
+installeret.
 
 ## Design
 

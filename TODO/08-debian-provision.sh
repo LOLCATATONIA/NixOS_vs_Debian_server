@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
-# Modul 1-3 (Debian-siden af A/B-sammenligningen): traditionel, imperativ opsætning af
-# admin/developer/guest, SSH-hærdning, og den delte projektmappe med gruppe- og ACL-styring.
+# Modul 1-5 (Debian-siden af A/B-sammenligningen): traditionel, imperativ opsætning af
+# admin/developer/guest, SSH-hærdning, den delte projektmappe med gruppe- og ACL-styring,
+# firewall (modul 4), og overvågning/logrotation (modul 5).
 #
 # Dette script er skrevet EFTER at have udført og målt hvert trin manuelt (se
 # TODO/08-resultater-modul1-6.md for de faktiske tider og fejl undervejs). Det fanger den
-# rækkefølge, der reelt virkede, inklusiv rettelserne for de tre uventede fund
-# (manglende `sudo`-pakke, manglende `acl`-pakke, `useradd -G`/`-g`-kollisionen).
+# rækkefølge, der reelt virkede, inklusiv rettelserne for de uventede fund undervejs
+# (manglende `sudo`/`acl`/`ufw`/`cron`-pakker, `useradd -G`/`-g`-kollisionen, manglende
+# `rsyslog` (se modul 5-rapporten)).
+#
+# Forudsætning: `monitor.sh` (fra scripts/) ligger i samme mappe som dette script.
 #
 # Køres som root PÅ SERVEREN (ikke via SSH med sudo, da admin bevidst er password-låst,
 # ligesom på NixOS-siden, og derfor ikke kan sudo'e uden en forudgående NOPASSWD-regel).
@@ -106,17 +110,63 @@ setup_guest_acl() {
   fi
 }
 
+setup_firewall() {
+  log "Konfigurerer ufw: default-deny, kun SSH på 2222 fra værten (modul 4)"
+  sed -i 's/^#\?Port .*/Port 2222/' /etc/ssh/sshd_config
+  grep -q '^Port' /etc/ssh/sshd_config || echo "Port 2222" >> /etc/ssh/sshd_config
+  ufw allow from 192.168.122.1 to any port 2222 proto tcp
+  ufw default deny incoming
+  ufw default allow outgoing
+  systemctl restart sshd
+  ufw --force enable
+}
+
+setup_monitoring() {
+  log "Sætter overvågningsscript op via cron og logrotate (modul 5)"
+  mkdir -p /etc/scripts
+  cp "$(dirname "${BASH_SOURCE[0]}")/monitor.sh" /etc/scripts/monitor.sh
+  chmod +x /etc/scripts/monitor.sh
+  if ! crontab -l 2>/dev/null | grep -qF '/etc/scripts/monitor.sh'; then
+    (crontab -l 2>/dev/null; echo "*/5 * * * * /etc/scripts/monitor.sh") | crontab -
+  fi
+  cat > /etc/logrotate.d/monitor <<'EOF'
+/var/log/monitor.log {
+    daily
+    rotate 7
+    compress
+    missingok
+    notifempty
+}
+EOF
+}
+
+setup_sudo_documentation_rules() {
+  # Tilføjet i takt med at modul 4/5's dokumentationskrav gjorde det nødvendigt, samme
+  # granulære filosofi som modul 2/3's regler ovenfor.
+  if ! grep -q "nft list ruleset" /etc/sudoers.d/admin 2>/dev/null; then
+    echo "admin ALL=(ALL) NOPASSWD: /usr/sbin/nft list ruleset" >> /etc/sudoers.d/admin
+  fi
+  if ! grep -q "ufw status verbose" /etc/sudoers.d/admin 2>/dev/null; then
+    echo "admin ALL=(ALL) NOPASSWD: /usr/sbin/ufw status verbose" >> /etc/sudoers.d/admin
+  fi
+}
+
 main() {
   apt-get update -qq
   ensure_package sudo
   ensure_package acl
+  ensure_package ufw
+  ensure_package cron
   setup_admin
   harden_ssh
   setup_admin_sudo
   setup_shared_project_folder
   setup_developer_and_guest
   setup_guest_acl
-  log "Færdig. Modul 1-3 er nu opsat traditionelt/imperativt på denne server."
+  setup_firewall
+  setup_monitoring
+  setup_sudo_documentation_rules
+  log "Færdig. Modul 1-5 er nu opsat traditionelt/imperativt på denne server."
 }
 
 main "$@"

@@ -1150,12 +1150,23 @@ NixOS understøtter cron som en almindelig service</td>
 </tr>
 <tr>
 <td>Fejlede loginforsøg</td>
-<td><code>/var/log/auth.log</code></td>
-<td><code>journalctl -u sshd</code> (NixOS bruger udelukkende journald,
-ingen separat auth.log)</td>
+<td><code>journalctl -u ssh</code> (ikke <code>/var/log/auth.log</code>,
+se note nedenfor)</td>
+<td><code>journalctl -u sshd</code></td>
 </tr>
 </tbody>
 </table>
+<p><strong>Rettelse, verificeret direkte på en frisk
+Debian-installation:</strong> <code>/var/log/auth.log</code> findes ikke
+automatisk. Det kræver <code>rsyslog</code>, som ikke er en del af en
+minimal installation. En moderne, minimal Debian-server bruger, ligesom
+NixOS, udelukkende <code>journald</code> som standard, indtil
+<code>rsyslog</code> eksplicit installeres. Forskellen mellem
+platformene ligger derfor ikke i <em>om</em> <code>journald</code>
+bruges, begge gør, men i at NixOS aldrig kan ende med en separat
+<code>auth.log</code>, da <code>rsyslog</code> ikke er en mulighed at
+tilføje ved et uheld eller en vane, mens Debian kan udvides til begge
+dele afhængigt af hvad der er installeret.</p>
 <h2 id="design-1">Design</h2>
 <ul>
 <li><strong>Cron-job</strong>: kører
