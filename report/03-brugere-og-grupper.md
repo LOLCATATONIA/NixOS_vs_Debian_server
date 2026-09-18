@@ -13,11 +13,15 @@ rettigheder reducerer skadesomfanget, hvis en konto kompromitteres.
 
 ## Rollestruktur
 
-| Bruger | Primær gruppe | Rolle-specifik adgang | Begrundelse |
+| Bruger | Sekundær gruppe (`extraGroups`) | Rolle-specifik adgang | Begrundelse |
 |---|---|---|---|
 | `admin` | `wheel` (medlemskab alene giver ingen adgang, se nedenfor) | Granulære, navngivne `sudo`-regler | Skal kunne drifte serveren uden ubegrænset root-adgang |
 | `developer` | `projekt` *(fra modul 2)* | Læse-/skriveadgang til `/srv/projekt` via gruppe-rettigheder | Udviklere skal kunne bidrage til det fælles projektområde |
 | `guest` | `guest` *(ny)* | Læseadgang til `/srv/projekt` via gruppe-ACL, ingen skriveadgang | En ekstern part skal kunne se, men ikke ændre, projektdata |
+
+Alle tre brugeres faktiske primære gruppe er `users` (gid 100), NixOS' standard for
+`isNormalUser = true`, se `id`-output nedenfor. Den rolle-specifikke adgang kommer fra
+gruppemedlemsskabet ovenfor, sat via `extraGroups`, ikke fra selve den primære gruppe.
 
 I Linux-verdenen refererer `wheel` til en speciel brugergruppe, hvor medlemmerne som udgangspunkt
 har tilladelse til at køre administrator-kommandoer via `sudo`. `admin` er medlem af `wheel` (og

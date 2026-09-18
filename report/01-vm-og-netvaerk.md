@@ -92,7 +92,7 @@ nøglebaseret SSH):
 
 ::: {.compare}
 ::: {.compare-side}
-#### Traditionel: fire filer, tre kommandoer
+#### Traditionel: tre filer, to kommandoer
 
 ```bash
 # /etc/hostname

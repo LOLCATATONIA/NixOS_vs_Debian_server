@@ -83,6 +83,7 @@ Alt dette samles i én `configuration.nix`, der importerer de fem modulfiler:
     vim
     git
     acl
+    tealdeer
   ];
 }
 ```
@@ -110,7 +111,7 @@ VM'en køres under QEMU/KVM via libvirt på en CachyOS-vært, og opbygges i tre 
 1. **Bootstrap:** `flake.nix` definerer hele serverens konfiguration. `nix build .#qcow` bygger et
    qcow2-diskimage direkte fra flaken; `virt-install --import` opretter VM'en i libvirt fra dette
    image. Hele processen er én reproducerbar kommandosekvens uden manuelle installationstrin. Se
-   [`scripts/setup.sh`](../scripts/setup.sh).
+   [`scripts/setup.sh`](scripts/setup.sh).
 2. **Iteration:** Ændringer laves ved at redigere `.nix`-filerne, kopiere flake-kilden til VM'en
    (`~/linux101-config`), og køre `sudo nixos-rebuild switch --flake ~/linux101-config` lokalt på
    serveren.

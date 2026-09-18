@@ -17,14 +17,19 @@ Samme tre opgaver (default-deny, kun nødvendige porte åbne, kilde-IP-begrænsn
 
 ::: {.compare}
 ::: {.compare-side}
-#### Traditionel: tre `ufw`-kommandoer
+#### Traditionel: fire `ufw`-kommandoer
 
 ```bash
+$ sudo ufw allow from 192.168.122.1 to any port 2222 proto tcp
 $ sudo ufw default deny incoming
-$ sudo ufw allow 2222/tcp
-$ sudo ufw allow from 192.168.122.1 to any port 2222
+$ sudo ufw default allow outgoing
 $ sudo ufw enable
 ```
+
+(Bevidst **ingen** separat `ufw allow 2222/tcp`, den ville tillade porten fra *alle* kilder og
+dermed underminere kilde-IP-reglen ovenfor, samme faldgrube som NixOS-sidens `openFirewall`,
+beskrevet i noten nedenfor. Kommandorækkefølgen her er den faktisk testede, se
+`TODO/08-resultater-modul1-6.md`.)
 :::
 ::: {.compare-side}
 #### NixOS: én deklareret blok

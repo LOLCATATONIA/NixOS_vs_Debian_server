@@ -439,7 +439,7 @@ otte forskellige filer og kommandoer:</p>
 </table>
 <p>Alt dette samles i én <code>configuration.nix</code>, der importerer
 de fem modulfiler:</p>
-<details><summary>Vis kode (18 linjer)</summary>
+<details><summary>Vis kode (19 linjer)</summary>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode nix"><code class="sourceCode nix"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span> <span class="va">config</span><span class="op">,</span> <span class="va">pkgs</span><span class="op">,</span> <span class="op">...</span> <span class="op">}</span>:</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
@@ -457,8 +457,9 @@ class="sourceCode nix"><code class="sourceCode nix"><span id="cb1-1"><a href="#c
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    vim</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    git</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    acl</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="op">];</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    tealdeer</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="op">];</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 </details>
 <p><code>nixos-rebuild switch</code> bygger hele den ønskede
 konfiguration som én samlet, identificerbar generation, som derefter
@@ -489,7 +490,7 @@ serverens konfiguration. <code>nix build .#qcow</code> bygger et
 qcow2-diskimage direkte fra flaken; <code>virt-install --import</code>
 opretter VM’en i libvirt fra dette image. Hele processen er én
 reproducerbar kommandosekvens uden manuelle installationstrin. Se <a
-href="../scripts/setup.sh"><code>scripts/setup.sh</code></a>.</li>
+href="scripts/setup.sh"><code>scripts/setup.sh</code></a>.</li>
 <li><strong>Iteration:</strong> Ændringer laves ved at redigere
 <code>.nix</code>-filerne, kopiere flake-kilden til VM’en
 (<code>~/linux101-config</code>), og køre
@@ -657,9 +658,8 @@ adgangsvejen helt af.</p>
 <p><strong>Samme fire opgaver, side om side</strong> (statisk IP,
 hostname, deaktiveret root-login, kun nøglebaseret SSH):</p>
 <div class="compare">
-<section id="traditionel-fire-filer-tre-kommandoer"
-class="compare-side">
-<h4>Traditionel: fire filer, tre kommandoer</h4>
+<section id="traditionel-tre-filer-to-kommandoer" class="compare-side">
+<h4>Traditionel: tre filer, to kommandoer</h4>
 <div class="sourceCode" id="cb7"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/hostname</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">linux101-srv</span></span>
@@ -866,7 +866,7 @@ reducerer skadesomfanget, hvis en konto kompromitteres.</p>
 <thead>
 <tr>
 <th>Bruger</th>
-<th>Primær gruppe</th>
+<th>Sekundær gruppe (<code>extraGroups</code>)</th>
 <th>Rolle-specifik adgang</th>
 <th>Begrundelse</th>
 </tr>
@@ -895,6 +895,11 @@ skriveadgang</td>
 </tr>
 </tbody>
 </table>
+<p>Alle tre brugeres faktiske primære gruppe er <code>users</code> (gid
+100), NixOS’ standard for <code>isNormalUser = true</code>, se
+<code>id</code>-output nedenfor. Den rolle-specifikke adgang kommer fra
+gruppemedlemsskabet ovenfor, sat via <code>extraGroups</code>, ikke fra
+selve den primære gruppe.</p>
 <p>I Linux-verdenen refererer <code>wheel</code> til en speciel
 brugergruppe, hvor medlemmerne som udgangspunkt har tilladelse til at
 køre administrator-kommandoer via <code>sudo</code>. <code>admin</code>
@@ -1002,13 +1007,19 @@ traditionel tilgang vs. NixOS</h2>
 <p>Samme tre opgaver (default-deny, kun nødvendige porte åbne,
 kilde-IP-begrænsning), side om side:</p>
 <div class="compare">
-<section id="traditionel-tre-ufw-kommandoer" class="compare-side">
-<h4>Traditionel: tre <code>ufw</code>-kommandoer</h4>
+<section id="traditionel-fire-ufw-kommandoer" class="compare-side">
+<h4>Traditionel: fire <code>ufw</code>-kommandoer</h4>
 <div class="sourceCode" id="cb24"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default deny incoming</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw allow 2222/tcp</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw allow from 192.168.122.1 to any port 2222</span>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw allow from 192.168.122.1 to any port 2222 proto tcp</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default deny incoming</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default allow outgoing</span>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw enable</span></code></pre></div>
+<p>(Bevidst <strong>ingen</strong> separat
+<code>ufw allow 2222/tcp</code>, den ville tillade porten fra
+<em>alle</em> kilder og dermed underminere kilde-IP-reglen ovenfor,
+samme faldgrube som NixOS-sidens <code>openFirewall</code>, beskrevet i
+noten nedenfor. Kommandorækkefølgen her er den faktisk testede, se
+<code>TODO/08-resultater-modul1-6.md</code>.)</p>
 </section>
 <section id="nixos-én-deklareret-blok" class="compare-side">
 <h4>NixOS: én deklareret blok</h4>
