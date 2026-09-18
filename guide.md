@@ -27,6 +27,19 @@ værten.
 
 ::: {.compare}
 ::: {.compare-side}
+#### Debian: `debian-comparison` (192.168.122.11)
+
+```bash
+ssh -i ~/.ssh/debian_comparison_admin_ed25519 -p 2222 admin@192.168.122.11
+```
+
+Andre roller:
+```bash
+ssh -i ~/.ssh/debian_comparison_developer_ed25519 -p 2222 developer@192.168.122.11
+ssh -i ~/.ssh/debian_comparison_guest_ed25519 -p 2222 guest@192.168.122.11
+```
+:::
+::: {.compare-side}
 #### NixOS: `linux101-srv` (192.168.122.10)
 
 ```bash
@@ -37,19 +50,6 @@ Andre roller:
 ```bash
 ssh -i ~/.ssh/linux101_developer_ed25519 -p 2222 developer@192.168.122.10
 ssh -i ~/.ssh/linux101_guest_ed25519 -p 2222 guest@192.168.122.10
-```
-:::
-::: {.compare-side}
-#### Debian: `debian-comparison` (192.168.122.50)
-
-```bash
-ssh -i ~/.ssh/debian_comparison_admin_ed25519 -p 2222 admin@192.168.122.50
-```
-
-Andre roller:
-```bash
-ssh -i ~/.ssh/debian_comparison_developer_ed25519 -p 2222 developer@192.168.122.50
-ssh -i ~/.ssh/debian_comparison_guest_ed25519 -p 2222 guest@192.168.122.50
 ```
 :::
 :::
@@ -73,7 +73,10 @@ VM'erne):
 ```bash
 sudo virsh console linux101-srv      # eller: debian-comparison
 ```
-Root-login-oplysninger til Debian-VM'en (kun via konsol): `root` / `comparison-temp-pw`.
+Kommandoen ovenfor beder om login. På **Debian**-VM'en: brugernavn `root`, adgangskode
+`comparison-temp-pw` (sat under selve installationen). På **NixOS**-VM'en findes der slet ingen
+adgangskode at logge ind med, `root` er helt låst (`hashedPassword = "!"`), heller ikke via
+konsollen, kun `admin`/`developer`/`guest` kan tilgås, og kun via SSH-nøgle.
 
 ## Fejlfinding
 
@@ -92,22 +95,18 @@ sudo virsh start linux101-srv        # eller: debian-comparison
 ```bash
 # [vært]
 ssh-keygen -R '[192.168.122.10]:2222'    # NixOS
-ssh-keygen -R '[192.168.122.50]:2222'    # Debian
+ssh-keygen -R '[192.168.122.11]:2222'    # Debian
 ```
+
+Fjerner den gemte, forældede værtsnøgle for den pågældende IP+port fra `~/.ssh/known_hosts`. En
+genopbygget eller geninstalleret VM får altid en ny værtsnøgle, men din lokale `known_hosts`-fil
+husker stadig den gamle, hvilket får SSH til at nægte forbindelse med en alvorlig sikkerheds-
+advarsel, indtil den forældede indgang fjernes. Sket i praksis for begge VM'er under selve
+projektet, ikke kun en teoretisk mulighed.
 
 ## Når du er logget ind
 
 ::: {.compare}
-::: {.compare-side}
-#### NixOS
-
-```bash
-sudo -l                          # hvad admin må som root
-sudo nft list ruleset            # firewall-status
-~/linux101-config/scripts/healthcheck.sh
-~/linux101-config/scripts/verify-deploy.sh
-```
-:::
 ::: {.compare-side}
 #### Debian
 
@@ -116,6 +115,16 @@ sudo -l                          # hvad admin må som root
 sudo ufw status verbose          # firewall-status
 sudo nft list ruleset            # samme kommando virker også (ufw's backend)
 bash /tmp/healthcheck.sh         # samme, uændrede script som NixOS-siden
+```
+:::
+::: {.compare-side}
+#### NixOS
+
+```bash
+sudo -l                          # hvad admin må som root
+sudo nft list ruleset            # firewall-status
+~/linux101-config/scripts/healthcheck.sh
+~/linux101-config/scripts/verify-deploy.sh
 ```
 :::
 :::
@@ -128,6 +137,27 @@ traditionel server har ingen deklareret, evaluerbar facitliste at holde op imod.
 ## Deploy en konfigurationsændring
 
 ::: {.compare}
+::: {.compare-side}
+#### Debian: ingen tilsvarende, generel vej
+
+`admin`s sudo-rettigheder er granulære og opremsede (se `sudo -l`), ikke ét universelt
+"anvend hele den ønskede tilstand"-kald. En helt ny slags ændring kræver enten:
+
+1. Direkte konsol-adgang som `root` (se ovenfor), eller
+2. En ny, eksplicit linje i `/etc/sudoers.d/admin` for netop den kommando, hvilket i sig selv
+   kræver adgang som `root` at tilføje.
+
+```bash
+# [vært], kopiér opdateret script over
+scp -i ~/.ssh/debian_comparison_admin_ed25519 -P 2222 \
+  TODO/08-debian-provision.sh scripts/monitor.sh \
+  admin@192.168.122.11:/tmp/
+```
+```bash
+# [debian-vm], via konsol som root, IKKE via SSH som admin
+bash /tmp/08-debian-provision.sh
+```
+:::
 ::: {.compare-side}
 #### NixOS: én kommando, uanset ændringens omfang
 
@@ -143,27 +173,6 @@ sudo nixos-rebuild switch --flake ~/linux101-config
 Dette er den eneste `nixos-rebuild`-kommando, `admin` må køre, men den kan udtrykke *enhver*
 ændring, der er beskrevet i `configuration.nix`.
 :::
-::: {.compare-side}
-#### Debian: ingen tilsvarende, generel vej
-
-`admin`s sudo-rettigheder er granulære og opremsede (se `sudo -l`), ikke ét universelt
-"anvend hele den ønskede tilstand"-kald. En helt ny slags ændring kræver enten:
-
-1. Direkte konsol-adgang som `root` (se ovenfor), eller
-2. En ny, eksplicit linje i `/etc/sudoers.d/admin` for netop den kommando, hvilket i sig selv
-   kræver adgang som `root` at tilføje.
-
-```bash
-# [vært], kopiér opdateret script over
-scp -i ~/.ssh/debian_comparison_admin_ed25519 -P 2222 \
-  TODO/08-debian-provision.sh scripts/monitor.sh \
-  admin@192.168.122.50:/tmp/
-```
-```bash
-# [debian-vm], via konsol som root, IKKE via SSH som admin
-bash /tmp/08-debian-provision.sh
-```
-:::
 :::
 
 **Dette er ikke et mindre praktisk problem, det er en strukturel forskel:** NixOS' granulære sudo
@@ -176,6 +185,14 @@ udvidelse af listen først. Se `TODO/07-syntese-nixos-fremtidens-valg.md`.
 
 ::: {.compare}
 ::: {.compare-side}
+#### Debian: intet tilsvarende script findes
+
+Der er ikke bygget et enkelt "riv ned og genskab helt fra bunden"-script for Debian-VM'en, fordi
+selve installationsprocessen (preseed + `virt-install --location`) er den skrøbelige, tidskrævende
+del af hele forsøget (se `TODO/08-log-debian-vs-nixos-install.md`). Fuld genopbygning betyder i
+praksis at gentage hele installationsforløbet forfra, ikke køre én kommando.
+:::
+::: {.compare-side}
 #### NixOS: ét, idempotent script
 
 ```bash
@@ -184,13 +201,5 @@ udvidelse af listen først. Se `TODO/07-syntese-nixos-fremtidens-valg.md`.
 ```
 Sletter og genskaber VM'en fra `flake.nix`. Al imperativ tilstand (fx testfiler fra modul 2)
 forsvinder og skal genskabes manuelt bagefter.
-:::
-::: {.compare-side}
-#### Debian: intet tilsvarende script findes
-
-Der er ikke bygget et enkelt "riv ned og genskab helt fra bunden"-script for Debian-VM'en, fordi
-selve installationsprocessen (preseed + `virt-install --location`) er den skrøbelige, tidskrævende
-del af hele forsøget (se `TODO/08-log-debian-vs-nixos-install.md`). Fuld genopbygning betyder i
-praksis at gentage hele installationsforløbet forfra, ikke køre én kommando.
 :::
 :::

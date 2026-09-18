@@ -145,24 +145,24 @@ den <em>faktiske</em> tilstand var et stykke tid ikke identiske).</li>
 nyt terminalvindue. Det starter altid på værten.</p>
 <h2 id="ssh-adgang">SSH-adgang</h2>
 <div class="compare">
-<section id="nixos-linux101-srv-192.168.122.10" class="compare-side">
-<h4>NixOS: <code>linux101-srv</code> (192.168.122.10)</h4>
+<section id="debian-debian-comparison-192.168.122.11"
+class="compare-side">
+<h4>Debian: <code>debian-comparison</code> (192.168.122.11)</h4>
 <div class="sourceCode" id="cb2"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/linux101_ed25519 <span class="at">-p</span> 2222 admin@192.168.122.10</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_admin_ed25519 <span class="at">-p</span> 2222 admin@192.168.122.11</span></code></pre></div>
 <p>Andre roller:</p>
 <div class="sourceCode" id="cb3"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/linux101_developer_ed25519 <span class="at">-p</span> 2222 developer@192.168.122.10</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/linux101_guest_ed25519 <span class="at">-p</span> 2222 guest@192.168.122.10</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_developer_ed25519 <span class="at">-p</span> 2222 developer@192.168.122.11</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_guest_ed25519 <span class="at">-p</span> 2222 guest@192.168.122.11</span></code></pre></div>
 </section>
-<section id="debian-debian-comparison-192.168.122.50"
-class="compare-side">
-<h4>Debian: <code>debian-comparison</code> (192.168.122.50)</h4>
+<section id="nixos-linux101-srv-192.168.122.10" class="compare-side">
+<h4>NixOS: <code>linux101-srv</code> (192.168.122.10)</h4>
 <div class="sourceCode" id="cb4"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_admin_ed25519 <span class="at">-p</span> 2222 admin@192.168.122.50</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/linux101_ed25519 <span class="at">-p</span> 2222 admin@192.168.122.10</span></code></pre></div>
 <p>Andre roller:</p>
 <div class="sourceCode" id="cb5"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_developer_ed25519 <span class="at">-p</span> 2222 developer@192.168.122.50</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_guest_ed25519 <span class="at">-p</span> 2222 guest@192.168.122.50</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/linux101_developer_ed25519 <span class="at">-p</span> 2222 developer@192.168.122.10</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/linux101_guest_ed25519 <span class="at">-p</span> 2222 guest@192.168.122.10</span></code></pre></div>
 </section>
 </div>
 <p>Begge VM’er: ingen adgangskoder findes nogen steder (alle konti
@@ -180,8 +180,14 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="
 VM’erne):</p>
 <div class="sourceCode" id="cb7"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh console linux101-srv      <span class="co"># eller: debian-comparison</span></span></code></pre></div>
-<p>Root-login-oplysninger til Debian-VM’en (kun via konsol):
-<code>root</code> / <code>comparison-temp-pw</code>.</p>
+<p>Kommandoen ovenfor beder om login. På <strong>Debian</strong>-VM’en:
+brugernavn <code>root</code>, adgangskode
+<code>comparison-temp-pw</code> (sat under selve installationen). På
+<strong>NixOS</strong>-VM’en findes der slet ingen adgangskode at logge
+ind med, <code>root</code> er helt låst
+(<code>hashedPassword = "!"</code>), heller ikke via konsollen, kun
+<code>admin</code>/<code>developer</code>/<code>guest</code> kan tilgås,
+og kun via SSH-nøgle.</p>
 <h2 id="fejlfinding">Fejlfinding</h2>
 <p><strong>“Identity file … not accessible” / “Permission denied
 (publickey)” med det samme:</strong> Kør <code>hostname</code>,
@@ -199,24 +205,31 @@ genopbygning af en VM fra bunden):</p>
 <div class="sourceCode" id="cb9"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært]</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh-keygen</span> <span class="at">-R</span> <span class="st">&#39;[192.168.122.10]:2222&#39;</span>    <span class="co"># NixOS</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh-keygen</span> <span class="at">-R</span> <span class="st">&#39;[192.168.122.50]:2222&#39;</span>    <span class="co"># Debian</span></span></code></pre></div>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh-keygen</span> <span class="at">-R</span> <span class="st">&#39;[192.168.122.11]:2222&#39;</span>    <span class="co"># Debian</span></span></code></pre></div>
+<p>Fjerner den gemte, forældede værtsnøgle for den pågældende IP+port
+fra <code>~/.ssh/known_hosts</code>. En genopbygget eller geninstalleret
+VM får altid en ny værtsnøgle, men din lokale
+<code>known_hosts</code>-fil husker stadig den gamle, hvilket får SSH
+til at nægte forbindelse med en alvorlig sikkerheds- advarsel, indtil
+den forældede indgang fjernes. Sket i praksis for begge VM’er under
+selve projektet, ikke kun en teoretisk mulighed.</p>
 <h2 id="når-du-er-logget-ind">Når du er logget ind</h2>
 <div class="compare">
-<section id="nixos" class="compare-side">
-<h4>NixOS</h4>
-<div class="sourceCode" id="cb10"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> <span class="at">-l</span>                          <span class="co"># hvad admin må som root</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> nft list ruleset            <span class="co"># firewall-status</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">~/linux101-config/scripts/healthcheck.sh</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">~/linux101-config/scripts/verify-deploy.sh</span></span></code></pre></div>
-</section>
 <section id="debian" class="compare-side">
 <h4>Debian</h4>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> <span class="at">-l</span>                          <span class="co"># hvad admin må som root</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw status verbose          <span class="co"># firewall-status</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> nft list ruleset            <span class="co"># samme kommando virker også (ufw&#39;s backend)</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> /tmp/healthcheck.sh         <span class="co"># samme, uændrede script som NixOS-siden</span></span></code></pre></div>
+</section>
+<section id="nixos" class="compare-side">
+<h4>NixOS</h4>
 <div class="sourceCode" id="cb11"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> <span class="at">-l</span>                          <span class="co"># hvad admin må som root</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw status verbose          <span class="co"># firewall-status</span></span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> nft list ruleset            <span class="co"># samme kommando virker også (ufw&#39;s backend)</span></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> /tmp/healthcheck.sh         <span class="co"># samme, uændrede script som NixOS-siden</span></span></code></pre></div>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> nft list ruleset            <span class="co"># firewall-status</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="ex">~/linux101-config/scripts/healthcheck.sh</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="ex">~/linux101-config/scripts/verify-deploy.sh</span></span></code></pre></div>
 </section>
 </div>
 <p><code>healthcheck.sh</code> er bevidst identisk på begge platforme,
@@ -228,20 +241,6 @@ deklareret, evaluerbar facitliste at holde op imod.</p>
 <h2 id="deploy-en-konfigurationsændring">Deploy en
 konfigurationsændring</h2>
 <div class="compare">
-<section id="nixos-én-kommando-uanset-ændringens-omfang"
-class="compare-side">
-<h4>NixOS: én kommando, uanset ændringens omfang</h4>
-<div class="sourceCode" id="cb12"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært]</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> <span class="at">-i</span> ~/.ssh/linux101_ed25519 <span class="at">-P</span> 2222 <span class="at">-r</span> flake.nix flake.lock nixos scripts <span class="dt">\</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  admin@192.168.122.10:~/linux101-config/</span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [nixos-vm]</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> nixos-rebuild switch <span class="at">--flake</span> ~/linux101-config</span></code></pre></div>
-<p>Dette er den eneste <code>nixos-rebuild</code>-kommando,
-<code>admin</code> må køre, men den kan udtrykke <em>enhver</em>
-ændring, der er beskrevet i <code>configuration.nix</code>.</p>
-</section>
 <section id="debian-ingen-tilsvarende-generel-vej" class="compare-side">
 <h4>Debian: ingen tilsvarende, generel vej</h4>
 <p><code>admin</code>s sudo-rettigheder er granulære og opremsede (se
@@ -253,14 +252,28 @@ tilstand”-kald. En helt ny slags ændring kræver enten:</p>
 den kommando, hvilket i sig selv kræver adgang som <code>root</code> at
 tilføje.</li>
 </ol>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært], kopiér opdateret script over</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> <span class="at">-i</span> ~/.ssh/debian_comparison_admin_ed25519 <span class="at">-P</span> 2222 <span class="dt">\</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  TODO/08-debian-provision.sh scripts/monitor.sh <span class="dt">\</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  admin@192.168.122.11:/tmp/</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [debian-vm], via konsol som root, IKKE via SSH som admin</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> /tmp/08-debian-provision.sh</span></code></pre></div>
+</section>
+<section id="nixos-én-kommando-uanset-ændringens-omfang"
+class="compare-side">
+<h4>NixOS: én kommando, uanset ændringens omfang</h4>
 <div class="sourceCode" id="cb14"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært], kopiér opdateret script over</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> <span class="at">-i</span> ~/.ssh/debian_comparison_admin_ed25519 <span class="at">-P</span> 2222 <span class="dt">\</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  TODO/08-debian-provision.sh scripts/monitor.sh <span class="dt">\</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  admin@192.168.122.50:/tmp/</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært]</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> <span class="at">-i</span> ~/.ssh/linux101_ed25519 <span class="at">-P</span> 2222 <span class="at">-r</span> flake.nix flake.lock nixos scripts <span class="dt">\</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  admin@192.168.122.10:~/linux101-config/</span></code></pre></div>
 <div class="sourceCode" id="cb15"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [debian-vm], via konsol som root, IKKE via SSH som admin</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> /tmp/08-debian-provision.sh</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [nixos-vm]</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> nixos-rebuild switch <span class="at">--flake</span> ~/linux101-config</span></code></pre></div>
+<p>Dette er den eneste <code>nixos-rebuild</code>-kommando,
+<code>admin</code> må køre, men den kan udtrykke <em>enhver</em>
+ændring, der er beskrevet i <code>configuration.nix</code>.</p>
 </section>
 </div>
 <p><strong>Dette er ikke et mindre praktisk problem, det er en
@@ -274,15 +287,6 @@ administrativ udvidelse af listen først. Se
 <h2 id="hvis-noget-går-grueligt-galt-fuld-genopbygning">Hvis noget går
 grueligt galt: fuld genopbygning</h2>
 <div class="compare">
-<section id="nixos-ét-idempotent-script" class="compare-side">
-<h4>NixOS: ét, idempotent script</h4>
-<div class="sourceCode" id="cb16"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært]</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/setup.sh</span></span></code></pre></div>
-<p>Sletter og genskaber VM’en fra <code>flake.nix</code>. Al imperativ
-tilstand (fx testfiler fra modul 2) forsvinder og skal genskabes manuelt
-bagefter.</p>
-</section>
 <section id="debian-intet-tilsvarende-script-findes"
 class="compare-side">
 <h4>Debian: intet tilsvarende script findes</h4>
@@ -293,6 +297,15 @@ tidskrævende del af hele forsøget (se
 <code>TODO/08-log-debian-vs-nixos-install.md</code>). Fuld genopbygning
 betyder i praksis at gentage hele installationsforløbet forfra, ikke
 køre én kommando.</p>
+</section>
+<section id="nixos-ét-idempotent-script" class="compare-side">
+<h4>NixOS: ét, idempotent script</h4>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært]</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/setup.sh</span></span></code></pre></div>
+<p>Sletter og genskaber VM’en fra <code>flake.nix</code>. Al imperativ
+tilstand (fx testfiler fra modul 2) forsvinder og skal genskabes manuelt
+bagefter.</p>
 </section>
 </div>
 </body>
