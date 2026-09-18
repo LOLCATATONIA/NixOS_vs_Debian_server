@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.10.2" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Driftsguide</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        background-color: #0b0e1a;
+        color: #4a4a7a;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #4a4a7a;  padding-left: 4px; }
+    div.sourceCode
+      { color: #e6e6f5; background-color: #0b0e1a; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #e6e6f5; } /* Normal */
+    code span.al { color: #ff2fb0; background-color: #2a0a3d; font-weight: bold; } /* Alert */
+    code span.an { color: #8888c0; font-style: italic; } /* Annotation */
+    code span.at { color: #00e5ff; } /* Attribute */
+    code span.bn { color: #ff9f1c; } /* BaseN */
+    code span.bu { color: #7fdbff; } /* BuiltIn */
+    code span.cf { color: #ff2fb0; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #f9f871; } /* Char */
+    code span.cn { color: #00e5ff; font-weight: bold; } /* Constant */
+    code span.co { color: #8888c0; font-style: italic; } /* Comment */
+    code span.cv { color: #8888c0; font-style: italic; } /* CommentVar */
+    code span.do { color: #8888c0; font-style: italic; } /* Documentation */
+    code span.dt { color: #00e5ff; } /* DataType */
+    code span.dv { color: #ff9f1c; } /* DecVal */
+    code span.er { color: #ff3860; font-weight: bold; text-decoration: underline; } /* Error */
+    code span.ex { color: #00e5ff; font-weight: bold; } /* Extension */
+    code span.fl { color: #ff9f1c; } /* Float */
+    code span.fu { color: #39ff88; } /* Function */
+    code span.im { color: #39ff88; } /* Import */
+    code span.in { color: #00e5ff; } /* Information */
+    code span.kw { color: #ff2fb0; font-weight: bold; } /* Keyword */
+    code span.op { color: #ff8ad8; } /* Operator */
+    code span.ot { color: #39ff88; } /* Other */
+    code span.pp { color: #39ff88; } /* Preprocessor */
+    code span.re { color: #00e5ff; background-color: #122a3a; } /* RegionMarker */
+    code span.sc { color: #f9f871; } /* SpecialChar */
+    code span.ss { color: #ffe066; } /* SpecialString */
+    code span.st { color: #f9f871; } /* String */
+    code span.va { color: #7fdbff; } /* Variable */
+    code span.vs { color: #ffe066; } /* VerbatimString */
+    code span.wa { color: #ff3860; font-weight: bold; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Driftsguide</h1>
+<p class="subtitle">linux101-srv (NixOS) og debian-comparison (Debian),
+side om side</p>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#ssh-adgang" id="toc-ssh-adgang">SSH-adgang</a></li>
+<li><a href="#vm-status-og-livscyklus"
+id="toc-vm-status-og-livscyklus">VM-status og livscyklus</a></li>
+<li><a href="#fejlfinding" id="toc-fejlfinding">Fejlfinding</a></li>
+<li><a href="#når-du-er-logget-ind" id="toc-når-du-er-logget-ind">Når du
+er logget ind</a></li>
+<li><a href="#deploy-en-konfigurationsændring"
+id="toc-deploy-en-konfigurationsændring">Deploy en
+konfigurationsændring</a></li>
+<li><a href="#hvis-noget-går-grueligt-galt-fuld-genopbygning"
+id="toc-hvis-noget-går-grueligt-galt-fuld-genopbygning">Hvis noget går
+grueligt galt: fuld genopbygning</a></li>
+</ul>
+</nav>
+<p><strong>Vigtigst at forstå:</strong> Der er nu <strong>tre</strong>
+steder, en kommando kan køres: værten, NixOS-VM’en
+(<code>linux101-srv</code>), eller Debian-VM’en
+(<code>debian-comparison</code>). Hver kommando nedenfor er mærket
+<code>[vært]</code>, <code>[nixos-vm]</code> eller
+<code>[debian-vm]</code>, aldrig blandet.</p>
+<p><strong>Sådan tjekker du hvor du er:</strong></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hostname</span></span></code></pre></div>
+<ul>
+<li><code>cachyos-x8664</code> → du er på <strong>værten</strong>.</li>
+<li><code>linux101-srv</code> → du er på
+<strong>NixOS-VM’en</strong>.</li>
+<li><code>debian-comparison</code> → du er på
+<strong>Debian-VM’en</strong> (hed oprindeligt <code>debian-tmp</code>,
+det midlertidige navn fra preseed-installationen, blev aldrig rettet,
+før det blev opdaget og rettet manuelt, se
+<code>TODO/08-log-debian-vs-nixos-install.md</code>, et lille, ægte
+eksempel på konfigurationsafvigelse: den <em>tiltænkte</em> tilstand og
+den <em>faktiske</em> tilstand var et stykke tid ikke identiske).</li>
+</ul>
+<p><strong>I tvivl om hvor mange niveauer du er “inde”?</strong> Åbn et
+nyt terminalvindue. Det starter altid på værten.</p>
+<h2 id="ssh-adgang">SSH-adgang</h2>
+<div class="compare">
+<section id="nixos-linux101-srv-192.168.122.10" class="compare-side">
+<h4>NixOS: <code>linux101-srv</code> (192.168.122.10)</h4>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/linux101_ed25519 <span class="at">-p</span> 2222 admin@192.168.122.10</span></code></pre></div>
+<p>Andre roller:</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/linux101_developer_ed25519 <span class="at">-p</span> 2222 developer@192.168.122.10</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/linux101_guest_ed25519 <span class="at">-p</span> 2222 guest@192.168.122.10</span></code></pre></div>
+</section>
+<section id="debian-debian-comparison-192.168.122.50"
+class="compare-side">
+<h4>Debian: <code>debian-comparison</code> (192.168.122.50)</h4>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_admin_ed25519 <span class="at">-p</span> 2222 admin@192.168.122.50</span></code></pre></div>
+<p>Andre roller:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_developer_ed25519 <span class="at">-p</span> 2222 developer@192.168.122.50</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_guest_ed25519 <span class="at">-p</span> 2222 guest@192.168.122.50</span></code></pre></div>
+</section>
+</div>
+<p>Begge VM’er: ingen adgangskoder findes nogen steder (alle konti
+password-låste, <code>root</code> uden gyldig hash), kun nøglebaseret
+login, kun fra <code>192.168.122.1</code> (værten selv), kun på port
+<code>2222</code>.</p>
+<h2 id="vm-status-og-livscyklus">VM-status og livscyklus</h2>
+<p><strong>[vært]</strong></p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh list <span class="at">--all</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh start linux101-srv        <span class="co"># eller: debian-comparison</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh shutdown linux101-srv     <span class="co"># ordentlig nedlukning</span></span></code></pre></div>
+<p><strong>Direkte konsol-adgang</strong> (eneste vej ind som
+<code>root</code>, siden <code>root</code> ikke kan SSH’e på nogen af
+VM’erne):</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh console linux101-srv      <span class="co"># eller: debian-comparison</span></span></code></pre></div>
+<p>Root-login-oplysninger til Debian-VM’en (kun via konsol):
+<code>root</code> / <code>comparison-temp-pw</code>.</p>
+<h2 id="fejlfinding">Fejlfinding</h2>
+<p><strong>“Identity file … not accessible” / “Permission denied
+(publickey)” med det samme:</strong> Kør <code>hostname</code>,
+kommandoen blev sandsynligvis kørt fra en VM i stedet for fra
+værten.</p>
+<p><strong>“No route to host”:</strong> VM’en er sandsynligvis
+slukket.</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært]</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh list <span class="at">--all</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh start linux101-srv        <span class="co"># eller: debian-comparison</span></span></code></pre></div>
+<p><strong>SSH hænger, eller kan slet ikke forbinde, men VM’en
+kører:</strong> Forældet <code>known_hosts</code>-indgang (sker efter
+genopbygning af en VM fra bunden):</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært]</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh-keygen</span> <span class="at">-R</span> <span class="st">&#39;[192.168.122.10]:2222&#39;</span>    <span class="co"># NixOS</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh-keygen</span> <span class="at">-R</span> <span class="st">&#39;[192.168.122.50]:2222&#39;</span>    <span class="co"># Debian</span></span></code></pre></div>
+<h2 id="når-du-er-logget-ind">Når du er logget ind</h2>
+<div class="compare">
+<section id="nixos" class="compare-side">
+<h4>NixOS</h4>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> <span class="at">-l</span>                          <span class="co"># hvad admin må som root</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> nft list ruleset            <span class="co"># firewall-status</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="ex">~/linux101-config/scripts/healthcheck.sh</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="ex">~/linux101-config/scripts/verify-deploy.sh</span></span></code></pre></div>
+</section>
+<section id="debian" class="compare-side">
+<h4>Debian</h4>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> <span class="at">-l</span>                          <span class="co"># hvad admin må som root</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw status verbose          <span class="co"># firewall-status</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> nft list ruleset            <span class="co"># samme kommando virker også (ufw&#39;s backend)</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> /tmp/healthcheck.sh         <span class="co"># samme, uændrede script som NixOS-siden</span></span></code></pre></div>
+</section>
+</div>
+<p><code>healthcheck.sh</code> er bevidst identisk på begge platforme,
+det er selve pointen med rapportens påstand om at scriptet er
+almindelig, portabel bash. Der findes intet Debian-modstykke til
+<code>verify-deploy.sh</code>, fordi der ikke findes noget at
+sammenligne en “kørende tilstand” med, en traditionel server har ingen
+deklareret, evaluerbar facitliste at holde op imod.</p>
+<h2 id="deploy-en-konfigurationsændring">Deploy en
+konfigurationsændring</h2>
+<div class="compare">
+<section id="nixos-én-kommando-uanset-ændringens-omfang"
+class="compare-side">
+<h4>NixOS: én kommando, uanset ændringens omfang</h4>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært]</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> <span class="at">-i</span> ~/.ssh/linux101_ed25519 <span class="at">-P</span> 2222 <span class="at">-r</span> flake.nix flake.lock nixos scripts <span class="dt">\</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  admin@192.168.122.10:~/linux101-config/</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [nixos-vm]</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> nixos-rebuild switch <span class="at">--flake</span> ~/linux101-config</span></code></pre></div>
+<p>Dette er den eneste <code>nixos-rebuild</code>-kommando,
+<code>admin</code> må køre, men den kan udtrykke <em>enhver</em>
+ændring, der er beskrevet i <code>configuration.nix</code>.</p>
+</section>
+<section id="debian-ingen-tilsvarende-generel-vej" class="compare-side">
+<h4>Debian: ingen tilsvarende, generel vej</h4>
+<p><code>admin</code>s sudo-rettigheder er granulære og opremsede (se
+<code>sudo -l</code>), ikke ét universelt “anvend hele den ønskede
+tilstand”-kald. En helt ny slags ændring kræver enten:</p>
+<ol type="1">
+<li>Direkte konsol-adgang som <code>root</code> (se ovenfor), eller</li>
+<li>En ny, eksplicit linje i <code>/etc/sudoers.d/admin</code> for netop
+den kommando, hvilket i sig selv kræver adgang som <code>root</code> at
+tilføje.</li>
+</ol>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært], kopiér opdateret script over</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">scp</span> <span class="at">-i</span> ~/.ssh/debian_comparison_admin_ed25519 <span class="at">-P</span> 2222 <span class="dt">\</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  TODO/08-debian-provision.sh scripts/monitor.sh <span class="dt">\</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  admin@192.168.122.50:/tmp/</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [debian-vm], via konsol som root, IKKE via SSH som admin</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">bash</span> /tmp/08-debian-provision.sh</span></code></pre></div>
+</section>
+</div>
+<p><strong>Dette er ikke et mindre praktisk problem, det er en
+strukturel forskel:</strong> NixOS’ granulære sudo kan alligevel
+udtrykke vilkårlige ændringer, fordi den ene tilladte kommando
+(<code>nixos-rebuild switch</code>) selv læser en fuldstændig,
+deklareret tilstand. Debians granulære sudo er <em>reelt</em> begrænset
+til den opremsede kommandoliste, en helt ny opgave kræver altid en
+administrativ udvidelse af listen først. Se
+<code>TODO/07-syntese-nixos-fremtidens-valg.md</code>.</p>
+<h2 id="hvis-noget-går-grueligt-galt-fuld-genopbygning">Hvis noget går
+grueligt galt: fuld genopbygning</h2>
+<div class="compare">
+<section id="nixos-ét-idempotent-script" class="compare-side">
+<h4>NixOS: ét, idempotent script</h4>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært]</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/setup.sh</span></span></code></pre></div>
+<p>Sletter og genskaber VM’en fra <code>flake.nix</code>. Al imperativ
+tilstand (fx testfiler fra modul 2) forsvinder og skal genskabes manuelt
+bagefter.</p>
+</section>
+<section id="debian-intet-tilsvarende-script-findes"
+class="compare-side">
+<h4>Debian: intet tilsvarende script findes</h4>
+<p>Der er ikke bygget et enkelt “riv ned og genskab helt fra
+bunden”-script for Debian-VM’en, fordi selve installationsprocessen
+(preseed + <code>virt-install --location</code>) er den skrøbelige,
+tidskrævende del af hele forsøget (se
+<code>TODO/08-log-debian-vs-nixos-install.md</code>). Fuld genopbygning
+betyder i praksis at gentage hele installationsforløbet forfra, ikke
+køre én kommando.</p>
+</section>
+</div>
+</body>
+</html>

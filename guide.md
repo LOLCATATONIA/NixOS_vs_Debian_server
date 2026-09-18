@@ -1,135 +1,196 @@
-# Adgangsguide: linux101-srv
+---
+title: "Driftsguide"
+subtitle: "linux101-srv (NixOS) og debian-comparison (Debian), side om side"
+---
 
-**Vigtigst at forstå:** Alle kommandoer i dette dokument køres på ét af to steder, aldrig blandet.
-Hver kommando nedenfor er mærket `[vært]` eller `[vm]`.
+**Vigtigst at forstå:** Der er nu **tre** steder, en kommando kan køres: værten, NixOS-VM'en
+(`linux101-srv`), eller Debian-VM'en (`debian-comparison`). Hver kommando nedenfor er mærket
+`[vært]`, `[nixos-vm]` eller `[debian-vm]`, aldrig blandet.
 
-**Den mest almindelige fejl er at køre en `[vært]`-kommando, mens man allerede er logget ind på
-VM'en**, fx `ssh -i ~/.ssh/linux101_ed25519 -p 2222 admin@192.168.122.10` inde fra VM'en selv. Det
-fejler altid med *"Identity file ... not accessible: No such file or directory"* efterfulgt af
-*"Permission denied (publickey)"*, fordi den private nøgle bevidst kun findes på værten, aldrig på
-gæsten (hvis VM'en nogensinde blev kompromitteret, skal en angriber ikke kunne bruge den til at
-hoppe videre til værten). At SSH'e til VM'en fra VM'en selv vil ALDRIG virke, uanset hvad, fordi
-nøglen slet ikke er der. Dette er ikke en fejl i opsætningen, det er et tegn på at kommandoen blev
-kørt det forkerte sted.
-
-**Sådan tjekker du hvor du er, uden at skulle læse prompten:** Kør denne ene kommando, uanset hvor
-du er:
+**Sådan tjekker du hvor du er:**
 
 ```bash
 hostname
 ```
 
-- Svarer den `cachyos-x8664`: du er på **værten**. `[vært]`-kommandoer kan køres direkte.
-- Svarer den `linux101-srv`: du er på **VM'en**. Kør `exit` for at komme tilbage til værten, før
-  du kører en `[vært]`-kommando.
+- `cachyos-x8664` → du er på **værten**.
+- `linux101-srv` → du er på **NixOS-VM'en**.
+- `debian-comparison` → du er på **Debian-VM'en** (hed oprindeligt `debian-tmp`, det midlertidige
+  navn fra preseed-installationen, blev aldrig rettet, før det blev opdaget og rettet manuelt,
+  se `TODO/08-log-debian-vs-nixos-install.md`, et lille, ægte eksempel på konfigurationsafvigelse:
+  den *tiltænkte* tilstand og den *faktiske* tilstand var et stykke tid ikke identiske).
 
-**Hvis du er i tvivl om, hvor mange niveauer du er "inde", eller `exit` ikke ser ud til at virke:**
-Spring det hele over, og åbn i stedet et helt nyt terminalvindue. Et nyt vindue starter altid på
-værten, garanteret, uden at skulle regne ud hvor det forrige endte.
+**I tvivl om hvor mange niveauer du er "inde"?** Åbn et nyt terminalvindue. Det starter altid på
+værten.
 
-## SSH ind på serveren
+## SSH-adgang
 
-**Ingen af brugerne har en adgangskode.** Det er ikke en mangel, det er bevidst (modul 1):
-`admin`, `developer` og `guest` har slet ikke noget adgangskode-felt sat, og `root` er eksplicit
-låst (`hashedPassword = "!"`). Den eneste gyldige legitimation er SSH-nøglerne nedenfor. Der er
-derfor intet at slå op eller huske, kun hvilken nøglefil der hører til hvilken bruger.
-
-**[vært]**
+::: {.compare}
+::: {.compare-side}
+#### NixOS: `linux101-srv` (192.168.122.10)
 
 ```bash
 ssh -i ~/.ssh/linux101_ed25519 -p 2222 admin@192.168.122.10
 ```
 
-- Nøgle: `~/.ssh/linux101_ed25519` (findes kun på værten)
-- Port: `2222`, ikke standard-port 22 (se modul 4)
-- Virker kun fra denne vært, firewallen accepterer udelukkende SSH fra `192.168.122.1`
-
-Andre rollekonti, hvis der er brug for dem (samme mønster, andet nøglenavn):
-
+Andre roller:
 ```bash
 ssh -i ~/.ssh/linux101_developer_ed25519 -p 2222 developer@192.168.122.10
 ssh -i ~/.ssh/linux101_guest_ed25519 -p 2222 guest@192.168.122.10
 ```
+:::
+::: {.compare-side}
+#### Debian: `debian-comparison` (192.168.122.50)
+
+```bash
+ssh -i ~/.ssh/debian_comparison_admin_ed25519 -p 2222 admin@192.168.122.50
+```
+
+Andre roller:
+```bash
+ssh -i ~/.ssh/debian_comparison_developer_ed25519 -p 2222 developer@192.168.122.50
+ssh -i ~/.ssh/debian_comparison_guest_ed25519 -p 2222 guest@192.168.122.50
+```
+:::
+:::
+
+Begge VM'er: ingen adgangskoder findes nogen steder (alle konti password-låste, `root` uden gyldig
+hash), kun nøglebaseret login, kun fra `192.168.122.1` (værten selv), kun på port `2222`.
 
 ## VM-status og livscyklus
 
 **[vært]**
 
 ```bash
-sudo virsh list --all           # se om VM'en kører
-sudo virsh start linux101-srv   # start den, hvis den er slukket
-sudo virsh shutdown linux101-srv  # ordentlig nedlukning
+sudo virsh list --all
+sudo virsh start linux101-srv        # eller: debian-comparison
+sudo virsh shutdown linux101-srv     # ordentlig nedlukning
 ```
+
+**Direkte konsol-adgang** (eneste vej ind som `root`, siden `root` ikke kan SSH'e på nogen af
+VM'erne):
+
+```bash
+sudo virsh console linux101-srv      # eller: debian-comparison
+```
+Root-login-oplysninger til Debian-VM'en (kun via konsol): `root` / `comparison-temp-pw`.
 
 ## Fejlfinding
 
-**"Identity file ... not accessible" og/eller "Permission denied (publickey)" med det samme, ingen
-prompt om password:** Kør `hostname` (se øverst i dette dokument). Svarer den `linux101-srv`, blev
-kommandoen kørt inde fra VM'en i stedet for fra værten, den mest almindelige årsag til netop denne
-fejl.
+**"Identity file ... not accessible" / "Permission denied (publickey)" med det samme:** Kør
+`hostname`, kommandoen blev sandsynligvis kørt fra en VM i stedet for fra værten.
 
-**"No route to host":** VM'en er sandsynligvis slukket (sker fx efter en genstart af værten).
-Bekræft og start den:
-
+**"No route to host":** VM'en er sandsynligvis slukket.
 ```bash
 # [vært]
-sudo virsh list --all           # State: shut off?
-sudo virsh start linux101-srv
+sudo virsh list --all
+sudo virsh start linux101-srv        # eller: debian-comparison
 ```
 
-VM'en er sat til autostart sammen med libvirt (`virsh autostart linux101-srv`), så dette burde
-normalt ikke ske efter en genstart af værten fremover, men kan stadig forekomme hvis VM'en er
-slukket manuelt.
-
-**SSH hænger, eller kan slet ikke forbinde, men VM'en kører ifølge `virsh list`:**
-`known_hosts`-indgangen kan være forældet (sker efter genopbygning af VM'en fra bunden):
-
+**SSH hænger, eller kan slet ikke forbinde, men VM'en kører:** Forældet `known_hosts`-indgang
+(sker efter genopbygning af en VM fra bunden):
 ```bash
 # [vært]
-ssh-keygen -R '[192.168.122.10]:2222'
+ssh-keygen -R '[192.168.122.10]:2222'    # NixOS
+ssh-keygen -R '[192.168.122.50]:2222'    # Debian
 ```
 
-**Prøv derefter at oprette forbindelse igen.** Den vil bede om at bekræfte værtens nøgle-fingeraftryk
-igen (normalt, ikke en fejl).
+## Når du er logget ind
 
-## Når du er logget ind (`[vm]`)
+::: {.compare}
+::: {.compare-side}
+#### NixOS
 
-- `sudo -l` viser præcis hvad `admin` må gøre som root, bevidst meget snævert (modul 3).
-- Firewall-status: `sudo nft list ruleset`.
-- Healthcheck: `~/linux101-config/scripts/healthcheck.sh`.
-- Drift-tjek (stemmer den kørende konfiguration overens med det deklarerede?):
-  `~/linux101-config/scripts/verify-deploy.sh`.
+```bash
+sudo -l                          # hvad admin må som root
+sudo nft list ruleset            # firewall-status
+~/linux101-config/scripts/healthcheck.sh
+~/linux101-config/scripts/verify-deploy.sh
+```
+:::
+::: {.compare-side}
+#### Debian
+
+```bash
+sudo -l                          # hvad admin må som root
+sudo ufw status verbose          # firewall-status
+sudo nft list ruleset            # samme kommando virker også (ufw's backend)
+bash /tmp/healthcheck.sh         # samme, uændrede script som NixOS-siden
+```
+:::
+:::
+
+`healthcheck.sh` er bevidst identisk på begge platforme, det er selve pointen med rapportens
+påstand om at scriptet er almindelig, portabel bash. Der findes intet Debian-modstykke til
+`verify-deploy.sh`, fordi der ikke findes noget at sammenligne en "kørende tilstand" med, en
+traditionel server har ingen deklareret, evaluerbar facitliste at holde op imod.
 
 ## Deploy en konfigurationsændring
 
-Konfigurationskilden ligger i **repoet på værten**. Ændringer skal kopieres til VM'en og aktiveres
-der, det er ikke automatisk.
-
-**[vært]**, kopiér ændringerne over:
+::: {.compare}
+::: {.compare-side}
+#### NixOS: én kommando, uanset ændringens omfang
 
 ```bash
+# [vært]
 scp -i ~/.ssh/linux101_ed25519 -P 2222 -r flake.nix flake.lock nixos scripts \
   admin@192.168.122.10:~/linux101-config/
 ```
-
-**[vm]**, aktivér dem (log ind først, se ovenfor):
-
 ```bash
+# [nixos-vm]
 sudo nixos-rebuild switch --flake ~/linux101-config
 ```
+Dette er den eneste `nixos-rebuild`-kommando, `admin` må køre, men den kan udtrykke *enhver*
+ændring, der er beskrevet i `configuration.nix`.
+:::
+::: {.compare-side}
+#### Debian: ingen tilsvarende, generel vej
 
-Dette er den eneste `nixos-rebuild`-kommando, `admin` har lov til at køre som root, jf. de
-granulære sudo-regler fra modul 3.
+`admin`s sudo-rettigheder er granulære og opremsede (se `sudo -l`), ikke ét universelt
+"anvend hele den ønskede tilstand"-kald. En helt ny slags ændring kræver enten:
+
+1. Direkte konsol-adgang som `root` (se ovenfor), eller
+2. En ny, eksplicit linje i `/etc/sudoers.d/admin` for netop den kommando, hvilket i sig selv
+   kræver adgang som `root` at tilføje.
+
+```bash
+# [vært], kopiér opdateret script over
+scp -i ~/.ssh/debian_comparison_admin_ed25519 -P 2222 \
+  TODO/08-debian-provision.sh scripts/monitor.sh \
+  admin@192.168.122.50:/tmp/
+```
+```bash
+# [debian-vm], via konsol som root, IKKE via SSH som admin
+bash /tmp/08-debian-provision.sh
+```
+:::
+:::
+
+**Dette er ikke et mindre praktisk problem, det er en strukturel forskel:** NixOS' granulære sudo
+kan alligevel udtrykke vilkårlige ændringer, fordi den ene tilladte kommando (`nixos-rebuild
+switch`) selv læser en fuldstændig, deklareret tilstand. Debians granulære sudo er *reelt*
+begrænset til den opremsede kommandoliste, en helt ny opgave kræver altid en administrativ
+udvidelse af listen først. Se `TODO/07-syntese-nixos-fremtidens-valg.md`.
 
 ## Hvis noget går grueligt galt: fuld genopbygning
 
-**[vært]**, sletter og genskaber VM'en helt fra bunden ud fra `flake.nix`. Idempotent, kan køres
-igen og igen:
+::: {.compare}
+::: {.compare-side}
+#### NixOS: ét, idempotent script
 
 ```bash
+# [vært]
 ./scripts/setup.sh
 ```
+Sletter og genskaber VM'en fra `flake.nix`. Al imperativ tilstand (fx testfiler fra modul 2)
+forsvinder og skal genskabes manuelt bagefter.
+:::
+::: {.compare-side}
+#### Debian: intet tilsvarende script findes
 
-Bemærk: al imperativ tilstand, der ikke er en del af den deklarerede konfiguration (fx testfilerne i
-`/srv/projekt` fra modul 2's demonstration), forsvinder ved en fuld genopbygning og skal genskabes
-manuelt, hvis den ønskes igen.
+Der er ikke bygget et enkelt "riv ned og genskab helt fra bunden"-script for Debian-VM'en, fordi
+selve installationsprocessen (preseed + `virt-install --location`) er den skrøbelige, tidskrævende
+del af hele forsøget (se `TODO/08-log-debian-vs-nixos-install.md`). Fuld genopbygning betyder i
+praksis at gentage hele installationsforløbet forfra, ikke køre én kommando.
+:::
+:::
