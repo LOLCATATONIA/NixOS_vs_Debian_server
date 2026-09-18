@@ -5,6 +5,7 @@ Design, hærdning og overvågning af en Linux-server, implementeret deklarativt 
 tilgange i hvert modul.
 
 **[Læs rapporten](https://lolcatatonia.github.io/NixOS_vs_Debian_server/)**
+
 **[Driftsguide til begge VM'er](https://lolcatatonia.github.io/NixOS_vs_Debian_server/guide.html)**
 
 ## Struktur
