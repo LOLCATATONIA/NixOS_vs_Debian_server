@@ -43,7 +43,6 @@ tilgang sammenlignet med den traditionelle, imperative arbejdsgang, som opgaven 
 | Pakke-integritet | Muterbart filsystem for installerede pakker | Skrivebeskyttet, indholdsadresseret `/nix/store` |
 | Sikkerheds-patch-hastighed | Dedikeret `debian-security`-repo, hurtigt patch-flow | Kræver typisk en fuld rebuild via nixpkgs-kanalen, historisk langsommere på akutte CVE'er |
 | Hærdningsøkosystem (CIS/STIG) | Meget modent, skrevet direkte til Debian/RHEL | Mindre modent end for Debian/RHEL |
-| Match med opgavens ordlyd | Direkte match (`/etc/sudoers.d/`, `ufw`, `sshd_config`) | Kræver oversættelse og eksplicit argumentation per modul (se de enkelte moduler) |
 
 **Konklusion:** NixOS er valgt, fordi de arkitektoniske fordele (reproducerbarhed, rollback til en
 tidligere, fuldt bygget generation, umuliggørelse af konfigurationsafvigelser) er direkte relevante

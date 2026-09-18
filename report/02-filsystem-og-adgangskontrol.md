@@ -23,6 +23,14 @@ bruger/gruppe/andre-modellen ikke er tilstrækkelig præcis.
 | `/srv` | Data for services, som systemet stiller til rådighed. Her ligger `/srv/projekt` (se opgave 2). |
 | `/nix/store` *(NixOS-specifikt)* | Indholdsadresseret, skrivebeskyttet lager for alle pakker og genererede konfigurationsfiler. |
 
+`/nix/store` er ikke blot endnu en mappe føjet til FHS, NixOS bryder reelt med hierarkiet: `/bin`,
+`/usr/lib` og tilsvarende er i praksis tomme, og programmer linkes i stedet direkte til deres egen,
+unikke sti i `/nix/store` (navngivet med en kryptografisk hash af alle dens input). Det løser
+konkret et problem, FHS-modellen strukturelt ikke kan: kræver `program A` `libssl 1.1` og
+`program B` `libssl 3.0`, er det på et traditionelt FHS-system en reel konflikt (begge deler
+normalt samme `/usr/lib`), mens de to versioner på NixOS blot er to forskellige stier i
+`/nix/store`, som aldrig kan kollidere.
+
 ## Sammenligning: traditionel tilgang vs. NixOS
 
 | Opgave | Traditionel løsning | NixOS-løsning |

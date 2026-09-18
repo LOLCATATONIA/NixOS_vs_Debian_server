@@ -371,13 +371,6 @@ langsommere på akutte CVE’er</td>
 <td>Meget modent, skrevet direkte til Debian/RHEL</td>
 <td>Mindre modent end for Debian/RHEL</td>
 </tr>
-<tr>
-<td>Match med opgavens ordlyd</td>
-<td>Direkte match (<code>/etc/sudoers.d/</code>, <code>ufw</code>,
-<code>sshd_config</code>)</td>
-<td>Kræver oversættelse og eksplicit argumentation per modul (se de
-enkelte moduler)</td>
-</tr>
 </tbody>
 </table>
 <p><strong>Konklusion:</strong> NixOS er valgt, fordi de arkitektoniske
@@ -728,6 +721,18 @@ genererede konfigurationsfiler.</td>
 </tr>
 </tbody>
 </table>
+<p><code>/nix/store</code> er ikke blot endnu en mappe føjet til FHS,
+NixOS bryder reelt med hierarkiet: <code>/bin</code>,
+<code>/usr/lib</code> og tilsvarende er i praksis tomme, og programmer
+linkes i stedet direkte til deres egen, unikke sti i
+<code>/nix/store</code> (navngivet med en kryptografisk hash af alle
+dens input). Det løser konkret et problem, FHS-modellen strukturelt ikke
+kan: kræver <code>program A</code> <code>libssl 1.1</code> og
+<code>program B</code> <code>libssl 3.0</code>, er det på et
+traditionelt FHS-system en reel konflikt (begge deler normalt samme
+<code>/usr/lib</code>), mens de to versioner på NixOS blot er to
+forskellige stier i <code>/nix/store</code>, som aldrig kan
+kollidere.</p>
 <h2 id="sammenligning-traditionel-tilgang-vs.-nixos-1">Sammenligning:
 traditionel tilgang vs. NixOS</h2>
 <table>
