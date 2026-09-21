@@ -158,6 +158,15 @@ pre {
   box-shadow: 0 0 12px rgba(255, 47, 176, 0.08), 0 0 12px rgba(0, 229, 255, 0.06);
 }
 
+/* Pandocs eget indlejrede <style> sætter ".sourceCode { overflow: visible; }" (klasse-
+   selektor), som pga. højere specificitet altid slår "pre { overflow-x: auto; }" ovenfor,
+   uanset cascade-rækkefølge. Uden denne override males pre'ens farvede border ved dens
+   oprindelige, uudvidede bredde, mens koden blot visuelt "stikker ud" og rulles i den ydre
+   div.sourceCode i stedet — så borderen ikke følger med ved horisontal scrolling. */
+pre.sourceCode {
+  overflow-x: auto;
+}
+
 pre code {
   background: none;
   color: inherit;
