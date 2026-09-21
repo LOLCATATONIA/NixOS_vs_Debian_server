@@ -366,15 +366,23 @@ versioner af alle pakker</td>
 <td>Sikkerheds-patch-hastighed</td>
 <td>Dedikeret <code>debian-security</code>-repo, hurtigt patch-flow</td>
 <td>Kræver typisk en fuld rebuild via nixpkgs-kanalen, historisk
-langsommere på akutte CVE’er</td>
+langsommere på akutte CVE’er <em>(se note)</em></td>
 </tr>
 <tr>
 <td>Hærdningsøkosystem (CIS/STIG)</td>
-<td>Meget modent, skrevet direkte til Debian/RHEL</td>
-<td>Mindre modent end for Debian/RHEL</td>
+<td>Officielle CIS Benchmarks og OpenSCAP-profiler findes direkte til
+Debian, klar til brug</td>
+<td>Ingen officielle CIS/STIG-benchmarks for NixOS; tilsvarende hærdning
+skal udtrykkes manuelt i <code>configuration.nix</code>, modul for
+modul</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Note om patch-hastighed:</strong> I modsætning til projektets
+øvrige sammenligninger er dette punkt endnu ikke selvstændigt
+efterprøvet empirisk her (kun en velkendt, generel observation fra
+økosystemet). Se <code>TODO/04-cve-patch-latency.md</code> for planen om
+at teste det konkret.</p>
 <p><strong>Konklusion:</strong> NixOS er valgt, fordi de arkitektoniske
 fordele (reproducerbarhed, rollback til en tidligere, fuldt bygget
 generation, umuliggørelse af konfigurationsafvigelser) er direkte
@@ -507,7 +515,9 @@ firewall/sudo) deployes, testes den lokalt med
 <code>nixos-rebuild build-vm</code>, som bygger en midlertidig, isoleret
 test-VM uden at røre den rigtige server.</li>
 </ol>
-<p>VM’en tildeles 2 vCPU, 3-4 GB RAM og 20 GB disk (qcow2).</p>
+<p>VM’en tildeles 2 vCPU og 3 GB RAM. Diskstørrelsen bestemmes
+automatisk af <code>nixos-generators</code>’ qcow- format (se tabel og
+forklaring nedenfor).</p>
 <h3 id="begge-vmer-side-om-side">Begge VM’er, side om side</h3>
 <p>Ud over <code>linux101-srv</code> køres der til denne rapport også en
 <strong>rigtig</strong> Debian-VM (<code>debian-comparison</code>),

@@ -41,8 +41,12 @@ tilgang sammenlignet med den traditionelle, imperative arbejdsgang, som opgaven 
 | Opgraderinger | Kan fejle midtvejs og efterlade systemet i en inkonsistent tilstand | Bygget som en samlet, fuldt evalueret generation før aktivering; en fejlkonfiguration kan rulles tilbage til en tidligere generation ved reboot |
 | Reproducerbarhed | Kræver ekstra værktøj (fx Packer/Ansible) for at være pålideligt reproducerbar | Indbygget via `flake.lock`, som fastlåser præcise versioner af alle pakker |
 | Pakke-integritet | Muterbart filsystem for installerede pakker | Skrivebeskyttet, indholdsadresseret `/nix/store` |
-| Sikkerheds-patch-hastighed | Dedikeret `debian-security`-repo, hurtigt patch-flow | Kræver typisk en fuld rebuild via nixpkgs-kanalen, historisk langsommere på akutte CVE'er |
-| Hærdningsøkosystem (CIS/STIG) | Meget modent, skrevet direkte til Debian/RHEL | Mindre modent end for Debian/RHEL |
+| Sikkerheds-patch-hastighed | Dedikeret `debian-security`-repo, hurtigt patch-flow | Kræver typisk en fuld rebuild via nixpkgs-kanalen, historisk langsommere på akutte CVE'er *(se note)* |
+| Hærdningsøkosystem (CIS/STIG) | Officielle CIS Benchmarks og OpenSCAP-profiler findes direkte til Debian, klar til brug | Ingen officielle CIS/STIG-benchmarks for NixOS; tilsvarende hærdning skal udtrykkes manuelt i `configuration.nix`, modul for modul |
+
+**Note om patch-hastighed:** I modsætning til projektets øvrige sammenligninger er dette punkt endnu
+ikke selvstændigt efterprøvet empirisk her (kun en velkendt, generel observation fra økosystemet).
+Se `TODO/04-cve-patch-latency.md` for planen om at teste det konkret.
 
 **Konklusion:** NixOS er valgt, fordi de arkitektoniske fordele (reproducerbarhed, rollback til en
 tidligere, fuldt bygget generation, umuliggørelse af konfigurationsafvigelser) er direkte relevante
@@ -120,7 +124,8 @@ VM'en køres under QEMU/KVM via libvirt på en CachyOS-vært, og opbygges i tre 
    `nixos-rebuild build-vm`, som bygger en midlertidig, isoleret test-VM uden at røre den rigtige
    server.
 
-VM'en tildeles 2 vCPU, 3-4 GB RAM og 20 GB disk (qcow2).
+VM'en tildeles 2 vCPU og 3 GB RAM. Diskstørrelsen bestemmes automatisk af `nixos-generators`' qcow-
+format (se tabel og forklaring nedenfor).
 
 ### Begge VM'er, side om side
 
