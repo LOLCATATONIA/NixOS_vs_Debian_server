@@ -76,3 +76,14 @@ samme eller forskellige brugernavne tyder på automatiseret brute-forcing. Fors�
 kilde-IP end `192.168.122.1` ville slet ikke nå sshd (blokeret af firewallen, modul 4). Gentagne
 forsøg på at logge ind som `root` ville vise, at nogen afprøver kendte standardkonti på trods af at
 root-login er deaktiveret (modul 1).
+
+## Delkonklusion
+
+Modul 5 er et af de mest symmetriske i rapporten: cron, logrotation og `journald` fungerer stort
+set ens på begge platforme, og NixOS' fordel her er organisatorisk (samlet i én fil) snarere end
+arkitektonisk. Den mest lærerige erfaring kom, da en oprindelig antagelse om at Debian bruger
+`/var/log/auth.log` viste sig at være forkert på en frisk, minimal installation uden `rsyslog`, en
+fejl der først blev fanget ved faktisk at teste på den rigtige Debian-VM, ikke ved at antage
+kendskab til platformen. Den reelle, mere subtile forskel ligger derfor ikke i hvilke værktøjer der
+bruges, men i at NixOS strukturelt ikke *kan* ende med en separat `auth.log` ved et uheld eller en
+vane, mens Debian kan udvides til begge dele afhængigt af hvad der installeres senere.

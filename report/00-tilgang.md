@@ -20,14 +20,16 @@ integration med Linux-værten og NixOS' eget værktøjsøkosystem.
 | Licens/åbenhed | VirtualBox's kerne er GPL, men Extension Pack (USB 2/3, RDP) er proprietær. VMware Workstation er kommerciel | QEMU, KVM og libvirt er fuldt open source i alle dele, ingen separate proprietære tilføjelser |
 | Brugervenlighed | Modent, grafisk værktøj med lav indlæringskurve, især med forudgående VirtualBox-erfaring | Kræver CLI-fortrolighed. `virt-manager` findes som GUI, men projektets daglige arbejdsgang er CLI-baseret |
 
-**Konklusion:** QEMU/KVM via libvirt er valgt, primært fordi NixOS' eget værktøjsøkosystem
-(`nixos-generators`, `nixos-rebuild build-vm`) er bygget direkte til QEMU. At vælge VirtualBox eller
-VMware ville have betydet at opgive den ubrudte "flake til kørende server"-arbejdsgang, som hele
-modul 1's reproducerbarhedsargument bygger på, til fordel for en manuel eksport/import-proces. Dertil
-kommer en fuldt åben værktøjskæde (Nix, NixOS, QEMU, KVM, libvirt) uden proprietære komponenter, i
-modsætning til VirtualBox' Extension Pack og VMwares kommercielle licens (se tabellen ovenfor). Den
-reelle omkostning er en stejlere indlæringskurve, men til gengæld fås en ubrudt, scriptbar vej fra
-flake til kørende server og et fuldt åbent værktøjsøkosystem hele vejen igennem.
+**Delkonklusion:** QEMU/KVM via libvirt er valgt, primært fordi NixOS' eget værktøjsøkosystem
+(`nixos-generators`, `nixos-rebuild build-vm`) er bygget direkte til QEMU — at vælge VirtualBox eller
+VMware ville betyde at opgive den ubrudte "flake til kørende server"-arbejdsgang, som modul 1's
+reproducerbarhedsargument bygger på, til fordel for en manuel eksport/import-proces. Dertil kommer en
+fuldt åben værktøjskæde uden proprietære komponenter, i modsætning til VirtualBox' Extension Pack og
+VMwares kommercielle licens (se tabellen ovenfor). Oplevelsesmæssigt er forskellen tydelig: uden
+VirtualBox' grafiske feedback tager det længere at komme i gang, og de første `virsh`/`virt-install`-
+kommandoer kræver at man selv slår ting op, som en GUI ellers ville have vist direkte. Den
+omkostning betales dog kun én gang, til gengæld fås en ubrudt, scriptbar vej fra flake til kørende
+server, som betaler sig igen og igen gennem resten af projektet.
 
 ## Valg af styresystem: NixOS frem for Debian/Ubuntu
 
@@ -48,12 +50,16 @@ tilgang sammenlignet med den traditionelle, imperative arbejdsgang, som opgaven 
 ikke selvstændigt efterprøvet empirisk her (kun en velkendt, generel observation fra økosystemet).
 Se `TODO/04-cve-patch-latency.md` for planen om at teste det konkret.
 
-**Konklusion:** NixOS er valgt, fordi de arkitektoniske fordele (reproducerbarhed, rollback til en
-tidligere, fuldt bygget generation, umuliggørelse af konfigurationsafvigelser) er direkte relevante
-sikkerhedsegenskaber, opnået gennem automatisering af hele systemtilstanden frem for den
-traditionelle tilgangs afhængighed af manuelle, gentagne trin. Hvor NixOS' arbejdsgang adskiller sig
-væsentligt fra Debians, dokumenteres eksplicit hvad forskellen konkret er, og hvorfor den
-deklarative løsning vurderes som ligeværdig eller stærkere, side om side i hvert modul.
+**Delkonklusion:** NixOS er valgt, fordi de arkitektoniske fordele, reproducerbarhed, rollback til en
+tidligere, fuldt bygget generation, og umuliggørelse af konfigurationsafvigelse, er direkte relevante
+sikkerhedsegenskaber, opnået ved at automatisere hele systemtilstanden i stedet for at stole på
+manuelle, gentagne trin. I praksis er forskellen dog ikke entydigt en fordel: NixOS kræver et
+reelt paradigmeskifte, fra at tænke i en *sekvens af kommandoer* til at tænke i en *deklareret
+sluttilstand*, og en fejl i konfigurationen viser sig ofte som en kryptisk Nix-evalueringsfejl, hvor
+den traditionelle tilgangs fejlmeddelelser (fra `useradd`, `systemctl`, `ufw`) typisk er mere
+umiddelbart genkendelige. Hvor NixOS' arbejdsgang adskiller sig væsentligt fra Debians, dokumenteres
+eksplicit hvad forskellen konkret er, og hvorfor den deklarative løsning vurderes som ligeværdig
+eller stærkere, side om side i hvert modul.
 
 ### Samlet billede: spredte konfigurationsfiler vs. én `configuration.nix`
 
@@ -136,16 +142,16 @@ efterprøvet A/B-test i stedet for kun en teoretisk modstilling.
 
 <table>
 <thead>
-<tr><th>Aspekt</th><th>NixOS (<code>linux101-srv</code>)</th><th>Debian (<code>debian-comparison</code>)</th></tr>
+<tr><th>Aspekt</th><th>Debian (<code>debian-comparison</code>)</th><th>NixOS (<code>linux101-srv</code>)</th></tr>
 </thead>
 <tbody>
-<tr><td>Diskimage</td><td><code>/var/lib/libvirt/images/linux101-srv.qcow2</code></td><td><code>/var/lib/libvirt/images/debian-comparison.qcow2</code></td></tr>
-<tr><td>Diskstørrelse</td><td>4,83 GiB</td><td>8,00 GiB</td></tr>
-<tr><td>Statisk IP</td><td><code>192.168.122.10</code></td><td><code>192.168.122.11</code></td></tr>
+<tr><td>Diskimage</td><td><code>/var/lib/libvirt/images/debian-comparison.qcow2</code></td><td><code>/var/lib/libvirt/images/linux101-srv.qcow2</code></td></tr>
+<tr><td>Diskstørrelse</td><td>8,00 GiB</td><td>4,83 GiB</td></tr>
+<tr><td>Statisk IP</td><td><code>192.168.122.11</code></td><td><code>192.168.122.10</code></td></tr>
 <tr><td>vCPU / RAM</td><td colspan="2" style="text-align:center">2 vCPU / 3072 MB (begge, for en fair sammenligning)</td></tr>
 <tr><td>SSH-port</td><td colspan="2" style="text-align:center">2222 (begge)</td></tr>
 <tr><td>libvirt-netværk</td><td colspan="2" style="text-align:center"><code>default</code> (NAT-bro <code>virbr0</code>, gateway <code>192.168.122.1</code>)</td></tr>
-<tr><td>Root-adgang (konsol)</td><td>Ingen adgangskode sat, login umuligt (<code>hashedPassword = "!"</code>)</td><td><code>root</code> / <code>comparison-temp-pw</code>, kun via <code>virsh console</code></td></tr>
+<tr><td>Root-adgang (konsol)</td><td><code>root</code> / <code>comparison-temp-pw</code>, kun via <code>virsh console</code></td><td>Ingen adgangskode sat, login umuligt (<code>hashedPassword = "!"</code>)</td></tr>
 </tbody>
 </table>
 

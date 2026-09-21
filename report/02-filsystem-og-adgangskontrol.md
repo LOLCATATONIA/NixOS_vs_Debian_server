@@ -122,3 +122,13 @@ other::---
 ```
 
 Gruppen `projekt` har fortsat ingen nye medlemmer. `revisor` fik adgang udelukkende via ACL'en.
+
+## Delkonklusion
+
+For selve mappeoprettelsen er NixOS' fordel klar: én deklareret linje
+(`systemd.tmpfiles.rules`) erstatter tre kommandoer, der ellers skal huskes og gentages identisk
+hver gang. For ACL-delen (opgave 4) er der derimod slet ingen forskel: `setfacl`/`getfacl` bruges
+uændret på begge platforme, fordi NixOS ikke forsøger at gøre datafil-rettigheder deklarative.
+Det gør modul 2 til det første sted i projektet, hvor NixOS ikke automatisk vinder, en påmindelse om
+at vurdere hver opgave for sig, i stedet for at antage at den deklarative tilgang er bedre alle
+steder blot fordi den er bedre nogle steder.

@@ -137,3 +137,18 @@ Samme resultat, men den traditionelle version er spredt over tre filer og kræve
 genstarte to tjenester manuelt bagefter. Den deklarative version er én fil, og `nixos-rebuild
 switch` sørger selv for at aktivere ændringen korrekt, uanset hvilke tjenester der reelt er
 berørt.
+
+## Delkonklusion
+
+Modul 1 viser den tydeligste strukturelle forskel i hele rapporten: NixOS har reelt intet
+installationstrin. `nix build .#qcow` producerer et færdigt, konfigureret image, og `virt-install
+--import` importerer det uden en eneste interaktiv beslutning, mens Debian kræver en rigtig
+installationsproces, før modul 1's egentlige opgaver (statisk IP, ny bruger, SSH-hærdning) kan
+starte. Konkret var forskellen stor: at få `debian-comparison` til at boote krævede en længere
+fejlsøgningsrunde med flere afkræftede hypoteser (forkert NIC-model, forkert diskbus, og til sidst
+et host-side `ufw`-problem, der blokerede DHCP, se `TODO/DONE/08-log-debian-vs-nixos-install.md`),
+mens NixOS-siden virkede første
+gang `setup.sh` blev kørt. Det er ikke et bevis på at NixOS generelt er "nemmere" — kun at dens
+bootstrap har færre bevægelige dele, når den først er sat korrekt op. Til gengæld er Debians
+fejlsøgningsterræn (DHCP, netværksinterfaces) langt mere almindeligt kendt end at fejlsøge Nix'
+eget evalueringslag.

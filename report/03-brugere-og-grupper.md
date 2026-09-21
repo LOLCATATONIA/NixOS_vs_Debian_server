@@ -127,3 +127,17 @@ uid=1001(developer) gid=100(users) groups=100(users),997(projekt)
 $ id guest
 uid=1002(guest) gid=100(users) groups=100(users),999(guest)
 ```
+
+## Delkonklusion
+
+Begge platforme kan opnå præcis samme granulære, kommando-specifikke sudo-adgang, blot udtrykt
+forskelligt (separate `/etc/sudoers.d/`-filer vs. én genereret `/etc/sudoers`). Den erfaring, der er
+værd at fremhæve, er dog at den deklarative tilgang ikke er immun over for reelle fejl: den
+oprindelige `security.sudo.extraRules`-regel for fjern-deployment *så* korrekt ud (`sudo -l` viste
+den rigtige adgang), men fejlede alligevel ved et faktisk deploy-forsøg, fordi den forsøgte at
+forudsige `nixos-rebuild`s interne kommandoindpakning i stedet for at pege på selve værktøjet (se
+kommentaren "ARKITEKTUR-REVISION" i `nixos/modules/users.nix`). Der blev også fundet en konkret,
+uventet faldgrube: `#`-tegnet i en flake-reference (`--flake sti#attribut`) bliver læst som
+sudoers' eget kommentartegn og afkorter resten af linjen. Pointen er ikke at NixOS er skrøbeligt,
+men at den deklarative tilgang flytter fejlene, den fjerner dem ikke, og de kræver stadig at man
+rent faktisk tester et deploy, ikke kun læser konfigurationen.

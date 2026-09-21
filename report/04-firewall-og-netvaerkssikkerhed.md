@@ -113,3 +113,16 @@ ssh: connect to host 192.168.122.10 port 2222: Connection timed out
 $ ssh -p 2222 admin@192.168.122.10 'hostname'   # fra 192.168.122.1 (tilladt)
 linux101-srv
 ```
+
+## Delkonklusion
+
+Begge platforme lander på samme sikre slutresultat: default deny, kun SSH åbent, og kun fra
+værtens egen adresse. Modul 4 er dog det sted i projektet, hvor NixOS' egne abstraktioner skabte
+mest reel fejlsøgning: `services.openssh.openFirewall`s standardværdi lægger sig oveni en eksplicit
+kilde-IP-regel i stedet for at blive overskrevet af den (fordi porte-lister merges på tværs af
+moduler), og en separat, streng `rpfilter`-kæde blokerede DNS-svar helt uden om selve
+input-kæden, længe efter den tilsyneladende rigtige regel var sat. Ingen af de to fejl var synlige
+ved at læse konfigurationen alene, begge krævede faktisk at teste adgangen fra en anden kilde-IP og
+fejlsøge live. Oplevelsen modsiger dermed en for simpel fortælling om at "deklarativt er
+gennemsigtigt": NixOS' lag af sammenlagte standardværdier kan skjule fejl lige så effektivt som
+Debians spredte konfigurationsfiler, blot af en anden art.

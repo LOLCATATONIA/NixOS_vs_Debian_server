@@ -142,6 +142,8 @@ id="toc-sikkerhedsbegrundelse-for-hvert-valg">Sikkerhedsbegrundelse for
 hvert valg</a></li>
 <li><a href="#dokumentationoutput"
 id="toc-dokumentationoutput">Dokumentation/output</a></li>
+<li><a href="#delkonklusion"
+id="toc-delkonklusion">Delkonklusion</a></li>
 </ul></li>
 <li><a href="#modul-2-filsystemet-og-adgangskontrol"
 id="toc-modul-2-filsystemet-og-adgangskontrol">Modul 2: Filsystemet og
@@ -169,6 +171,8 @@ rettigheder</a></li>
 <li><a href="#opgave-4-acl-til-midlertidig-afgrænset-adgang"
 id="toc-opgave-4-acl-til-midlertidig-afgrænset-adgang">Opgave 4: ACL til
 midlertidig, afgrænset adgang</a></li>
+<li><a href="#delkonklusion-1"
+id="toc-delkonklusion-1">Delkonklusion</a></li>
 </ul></li>
 <li><a href="#modul-3-bruger--og-gruppestyring"
 id="toc-modul-3-bruger--og-gruppestyring">Modul 3: Bruger- og
@@ -187,6 +191,8 @@ id="toc-bevis-granulær-sudo-virker">Bevis: granulær sudo virker</a></li>
 <li><a href="#dokumentation-etcgroup-og-id"
 id="toc-dokumentation-etcgroup-og-id">Dokumentation:
 <code>/etc/group</code> og <code>id</code></a></li>
+<li><a href="#delkonklusion-2"
+id="toc-delkonklusion-2">Delkonklusion</a></li>
 </ul></li>
 <li><a href="#modul-4-firewall-og-netværkssikkerhed"
 id="toc-modul-4-firewall-og-netværkssikkerhed">Modul 4: Firewall og
@@ -204,6 +210,8 @@ id="toc-portbegrundelsestabel">Portbegrundelsestabel</a></li>
 <li><a href="#eksport-af-de-aktive-firewall-regler"
 id="toc-eksport-af-de-aktive-firewall-regler">Eksport af de aktive
 firewall-regler</a></li>
+<li><a href="#delkonklusion-3"
+id="toc-delkonklusion-3">Delkonklusion</a></li>
 </ul></li>
 <li><a href="#modul-5-system-monitoring-og-logging"
 id="toc-modul-5-system-monitoring-og-logging">Modul 5: System monitoring
@@ -223,6 +231,8 @@ id="toc-evidens-uddrag-af-logfilen">Evidens: uddrag af logfilen</a></li>
 <li><a href="#identifikation-af-mislykkede-loginforsøg"
 id="toc-identifikation-af-mislykkede-loginforsøg">Identifikation af
 mislykkede loginforsøg</a></li>
+<li><a href="#delkonklusion-4"
+id="toc-delkonklusion-4">Delkonklusion</a></li>
 </ul></li>
 <li><a href="#modul-6-shell-og-bash-scripting"
 id="toc-modul-6-shell-og-bash-scripting">Modul 6: Shell og Bash
@@ -244,6 +254,8 @@ id="toc-scriptshealthcheck.sh-opgave-3"><code>scripts/healthcheck.sh</code>
 (opgave 3)</a></li>
 <li><a href="#scriptsverify-deploy.sh"
 id="toc-scriptsverify-deploy.sh"><code>scripts/verify-deploy.sh</code></a></li>
+<li><a href="#delkonklusion-5"
+id="toc-delkonklusion-5">Delkonklusion</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -302,18 +314,22 @@ men projektets daglige arbejdsgang er CLI-baseret</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Konklusion:</strong> QEMU/KVM via libvirt er valgt, primært
-fordi NixOS’ eget værktøjsøkosystem (<code>nixos-generators</code>,
-<code>nixos-rebuild build-vm</code>) er bygget direkte til QEMU. At
-vælge VirtualBox eller VMware ville have betydet at opgive den ubrudte
-“flake til kørende server”-arbejdsgang, som hele modul 1’s
-reproducerbarhedsargument bygger på, til fordel for en manuel
-eksport/import-proces. Dertil kommer en fuldt åben værktøjskæde (Nix,
-NixOS, QEMU, KVM, libvirt) uden proprietære komponenter, i modsætning
-til VirtualBox’ Extension Pack og VMwares kommercielle licens (se
-tabellen ovenfor). Den reelle omkostning er en stejlere indlæringskurve,
-men til gengæld fås en ubrudt, scriptbar vej fra flake til kørende
-server og et fuldt åbent værktøjsøkosystem hele vejen igennem.</p>
+<p><strong>Delkonklusion:</strong> QEMU/KVM via libvirt er valgt,
+primært fordi NixOS’ eget værktøjsøkosystem
+(<code>nixos-generators</code>, <code>nixos-rebuild build-vm</code>) er
+bygget direkte til QEMU — at vælge VirtualBox eller VMware ville betyde
+at opgive den ubrudte “flake til kørende server”-arbejdsgang, som modul
+1’s reproducerbarhedsargument bygger på, til fordel for en manuel
+eksport/import-proces. Dertil kommer en fuldt åben værktøjskæde uden
+proprietære komponenter, i modsætning til VirtualBox’ Extension Pack og
+VMwares kommercielle licens (se tabellen ovenfor). Oplevelsesmæssigt er
+forskellen tydelig: uden VirtualBox’ grafiske feedback tager det længere
+at komme i gang, og de første
+<code>virsh</code>/<code>virt-install</code>- kommandoer kræver at man
+selv slår ting op, som en GUI ellers ville have vist direkte. Den
+omkostning betales dog kun én gang, til gengæld fås en ubrudt, scriptbar
+vej fra flake til kørende server, som betaler sig igen og igen gennem
+resten af projektet.</p>
 <h2 id="valg-af-styresystem-nixos-frem-for-debianubuntu">Valg af
 styresystem: NixOS frem for Debian/Ubuntu</h2>
 <p>Opgavebeskrivelsen foreslår Debian eller Ubuntu Server. Jeg har af
@@ -383,15 +399,21 @@ modul</td>
 efterprøvet empirisk her (kun en velkendt, generel observation fra
 økosystemet). Se <code>TODO/04-cve-patch-latency.md</code> for planen om
 at teste det konkret.</p>
-<p><strong>Konklusion:</strong> NixOS er valgt, fordi de arkitektoniske
-fordele (reproducerbarhed, rollback til en tidligere, fuldt bygget
-generation, umuliggørelse af konfigurationsafvigelser) er direkte
-relevante sikkerhedsegenskaber, opnået gennem automatisering af hele
-systemtilstanden frem for den traditionelle tilgangs afhængighed af
-manuelle, gentagne trin. Hvor NixOS’ arbejdsgang adskiller sig
-væsentligt fra Debians, dokumenteres eksplicit hvad forskellen konkret
-er, og hvorfor den deklarative løsning vurderes som ligeværdig eller
-stærkere, side om side i hvert modul.</p>
+<p><strong>Delkonklusion:</strong> NixOS er valgt, fordi de
+arkitektoniske fordele, reproducerbarhed, rollback til en tidligere,
+fuldt bygget generation, og umuliggørelse af konfigurationsafvigelse, er
+direkte relevante sikkerhedsegenskaber, opnået ved at automatisere hele
+systemtilstanden i stedet for at stole på manuelle, gentagne trin. I
+praksis er forskellen dog ikke entydigt en fordel: NixOS kræver et reelt
+paradigmeskifte, fra at tænke i en <em>sekvens af kommandoer</em> til at
+tænke i en <em>deklareret sluttilstand</em>, og en fejl i
+konfigurationen viser sig ofte som en kryptisk Nix-evalueringsfejl, hvor
+den traditionelle tilgangs fejlmeddelelser (fra <code>useradd</code>,
+<code>systemctl</code>, <code>ufw</code>) typisk er mere umiddelbart
+genkendelige. Hvor NixOS’ arbejdsgang adskiller sig væsentligt fra
+Debians, dokumenteres eksplicit hvad forskellen konkret er, og hvorfor
+den deklarative løsning vurderes som ligeværdig eller stærkere, side om
+side i hvert modul.</p>
 <h3
 id="samlet-billede-spredte-konfigurationsfiler-vs.-én-configuration.nix">Samlet
 billede: spredte konfigurationsfiler vs. én
@@ -532,10 +554,10 @@ for kun en teoretisk modstilling.</p>
 Aspekt
 </th>
 <th>
-NixOS (<code>linux101-srv</code>)
+Debian (<code>debian-comparison</code>)
 </th>
 <th>
-Debian (<code>debian-comparison</code>)
+NixOS (<code>linux101-srv</code>)
 </th>
 </tr>
 </thead>
@@ -545,10 +567,10 @@ Debian (<code>debian-comparison</code>)
 Diskimage
 </td>
 <td>
-<code>/var/lib/libvirt/images/linux101-srv.qcow2</code>
+<code>/var/lib/libvirt/images/debian-comparison.qcow2</code>
 </td>
 <td>
-<code>/var/lib/libvirt/images/debian-comparison.qcow2</code>
+<code>/var/lib/libvirt/images/linux101-srv.qcow2</code>
 </td>
 </tr>
 <tr>
@@ -556,10 +578,10 @@ Diskimage
 Diskstørrelse
 </td>
 <td>
-4,83 GiB
+8,00 GiB
 </td>
 <td>
-8,00 GiB
+4,83 GiB
 </td>
 </tr>
 <tr>
@@ -567,10 +589,10 @@ Diskstørrelse
 Statisk IP
 </td>
 <td>
-<code>192.168.122.10</code>
+<code>192.168.122.11</code>
 </td>
 <td>
-<code>192.168.122.11</code>
+<code>192.168.122.10</code>
 </td>
 </tr>
 <tr>
@@ -603,11 +625,11 @@ libvirt-netværk
 Root-adgang (konsol)
 </td>
 <td>
-Ingen adgangskode sat, login umuligt (<code>hashedPassword = “!”</code>)
-</td>
-<td>
 <code>root</code> / <code>comparison-temp-pw</code>, kun via <code>virsh
 console</code>
+</td>
+<td>
+Ingen adgangskode sat, login umuligt (<code>hashedPassword = “!”</code>)
 </td>
 </tr>
 </tbody>
@@ -821,6 +843,24 @@ filer og kræver at huske at genstarte to tjenester manuelt bagefter. Den
 deklarative version er én fil, og <code>nixos-rebuild switch</code>
 sørger selv for at aktivere ændringen korrekt, uanset hvilke tjenester
 der reelt er berørt.</p>
+<h2 id="delkonklusion">Delkonklusion</h2>
+<p>Modul 1 viser den tydeligste strukturelle forskel i hele rapporten:
+NixOS har reelt intet installationstrin. <code>nix build .#qcow</code>
+producerer et færdigt, konfigureret image, og
+<code>virt-install --import</code> importerer det uden en eneste
+interaktiv beslutning, mens Debian kræver en rigtig installationsproces,
+før modul 1’s egentlige opgaver (statisk IP, ny bruger, SSH-hærdning)
+kan starte. Konkret var forskellen stor: at få
+<code>debian-comparison</code> til at boote krævede en længere
+fejlsøgningsrunde med flere afkræftede hypoteser (forkert NIC-model,
+forkert diskbus, og til sidst et host-side <code>ufw</code>-problem, der
+blokerede DHCP, se
+<code>TODO/DONE/08-log-debian-vs-nixos-install.md</code>), mens
+NixOS-siden virkede første gang <code>setup.sh</code> blev kørt. Det er
+ikke et bevis på at NixOS generelt er “nemmere” — kun at dens bootstrap
+har færre bevægelige dele, når den først er sat korrekt op. Til gengæld
+er Debians fejlsøgningsterræn (DHCP, netværksinterfaces) langt mere
+almindeligt kendt end at fejlsøge Nix’ eget evalueringslag.</p>
 <h1 id="modul-2-filsystemet-og-adgangskontrol">Modul 2: Filsystemet og
 adgangskontrol</h1>
 <h2 id="formål-1">Formål</h2>
@@ -967,6 +1007,17 @@ other::---</code></pre>
 </details>
 <p>Gruppen <code>projekt</code> har fortsat ingen nye medlemmer.
 <code>revisor</code> fik adgang udelukkende via ACL’en.</p>
+<h2 id="delkonklusion-1">Delkonklusion</h2>
+<p>For selve mappeoprettelsen er NixOS’ fordel klar: én deklareret linje
+(<code>systemd.tmpfiles.rules</code>) erstatter tre kommandoer, der
+ellers skal huskes og gentages identisk hver gang. For ACL-delen (opgave
+4) er der derimod slet ingen forskel:
+<code>setfacl</code>/<code>getfacl</code> bruges uændret på begge
+platforme, fordi NixOS ikke forsøger at gøre datafil-rettigheder
+deklarative. Det gør modul 2 til det første sted i projektet, hvor NixOS
+ikke automatisk vinder, en påmindelse om at vurdere hver opgave for sig,
+i stedet for at antage at den deklarative tilgang er bedre alle steder
+blot fordi den er bedre nogle steder.</p>
 <h1 id="modul-3-bruger--og-gruppestyring">Modul 3: Bruger- og
 gruppestyring</h1>
 <h2 id="formål-2">Formål</h2>
@@ -1115,6 +1166,25 @@ uid=1001(developer) gid=100(users) groups=100(users),997(projekt)
 $ id guest
 uid=1002(guest) gid=100(users) groups=100(users),999(guest)</code></pre>
 </details>
+<h2 id="delkonklusion-2">Delkonklusion</h2>
+<p>Begge platforme kan opnå præcis samme granulære, kommando-specifikke
+sudo-adgang, blot udtrykt forskelligt (separate
+<code>/etc/sudoers.d/</code>-filer vs. én genereret
+<code>/etc/sudoers</code>). Den erfaring, der er værd at fremhæve, er
+dog at den deklarative tilgang ikke er immun over for reelle fejl: den
+oprindelige <code>security.sudo.extraRules</code>-regel for
+fjern-deployment <em>så</em> korrekt ud (<code>sudo -l</code> viste den
+rigtige adgang), men fejlede alligevel ved et faktisk deploy-forsøg,
+fordi den forsøgte at forudsige <code>nixos-rebuild</code>s interne
+kommandoindpakning i stedet for at pege på selve værktøjet (se
+kommentaren “ARKITEKTUR-REVISION” i
+<code>nixos/modules/users.nix</code>). Der blev også fundet en konkret,
+uventet faldgrube: <code>#</code>-tegnet i en flake-reference
+(<code>--flake sti#attribut</code>) bliver læst som sudoers’ eget
+kommentartegn og afkorter resten af linjen. Pointen er ikke at NixOS er
+skrøbeligt, men at den deklarative tilgang flytter fejlene, den fjerner
+dem ikke, og de kræver stadig at man rent faktisk tester et deploy, ikke
+kun læser konfigurationen.</p>
 <h1 id="modul-4-firewall-og-netværkssikkerhed">Modul 4: Firewall og
 netværkssikkerhed</h1>
 <h2 id="formål-3">Formål</h2>
@@ -1250,6 +1320,21 @@ ssh: connect to host 192.168.122.10 port 2222: Connection timed out
 
 $ ssh -p 2222 admin@192.168.122.10 &#39;hostname&#39;   # fra 192.168.122.1 (tilladt)
 linux101-srv</code></pre>
+<h2 id="delkonklusion-3">Delkonklusion</h2>
+<p>Begge platforme lander på samme sikre slutresultat: default deny, kun
+SSH åbent, og kun fra værtens egen adresse. Modul 4 er dog det sted i
+projektet, hvor NixOS’ egne abstraktioner skabte mest reel fejlsøgning:
+<code>services.openssh.openFirewall</code>s standardværdi lægger sig
+oveni en eksplicit kilde-IP-regel i stedet for at blive overskrevet af
+den (fordi porte-lister merges på tværs af moduler), og en separat,
+streng <code>rpfilter</code>-kæde blokerede DNS-svar helt uden om selve
+input-kæden, længe efter den tilsyneladende rigtige regel var sat. Ingen
+af de to fejl var synlige ved at læse konfigurationen alene, begge
+krævede faktisk at teste adgangen fra en anden kilde-IP og fejlsøge
+live. Oplevelsen modsiger dermed en for simpel fortælling om at
+“deklarativt er gennemsigtigt”: NixOS’ lag af sammenlagte
+standardværdier kan skjule fejl lige så effektivt som Debians spredte
+konfigurationsfiler, blot af en anden art.</p>
 <h1 id="modul-5-system-monitoring-og-logging">Modul 5: System monitoring
 og logging</h1>
 <h2 id="formål-4">Formål</h2>
@@ -1366,6 +1451,19 @@ en anden kilde-IP end <code>192.168.122.1</code> ville slet ikke nå sshd
 (blokeret af firewallen, modul 4). Gentagne forsøg på at logge ind som
 <code>root</code> ville vise, at nogen afprøver kendte standardkonti på
 trods af at root-login er deaktiveret (modul 1).</p>
+<h2 id="delkonklusion-4">Delkonklusion</h2>
+<p>Modul 5 er et af de mest symmetriske i rapporten: cron, logrotation
+og <code>journald</code> fungerer stort set ens på begge platforme, og
+NixOS’ fordel her er organisatorisk (samlet i én fil) snarere end
+arkitektonisk. Den mest lærerige erfaring kom, da en oprindelig
+antagelse om at Debian bruger <code>/var/log/auth.log</code> viste sig
+at være forkert på en frisk, minimal installation uden
+<code>rsyslog</code>, en fejl der først blev fanget ved faktisk at teste
+på den rigtige Debian-VM, ikke ved at antage kendskab til platformen.
+Den reelle, mere subtile forskel ligger derfor ikke i hvilke værktøjer
+der bruges, men i at NixOS strukturelt ikke <em>kan</em> ende med en
+separat <code>auth.log</code> ved et uheld eller en vane, mens Debian
+kan udvides til begge dele afhængigt af hvad der installeres senere.</p>
 <h1 id="modul-6-shell-og-bash-scripting">Modul 6: Shell og Bash
 scripting</h1>
 <h2 id="formål-5">Formål</h2>
@@ -1705,5 +1803,20 @@ ADVARSEL: systemet er drevet væk fra den deklarerede konfiguration.
 $ echo $?
 1</code></pre>
 </details>
+<h2 id="delkonklusion-5">Delkonklusion</h2>
+<p><code>nixos-rebuild switch</code> er i sig selv idempotent for hele
+systemets tilstand, så <code>setup.sh</code> behøver kun automatisere
+selve bootstrap-mekanismen (bygning og import af VM’en), ikke idempotens
+i sig selv. Den traditionelle tilgang har intet tilsvarende:
+<code>TODO/08-debian-provision.sh</code>, skrevet efter selve modul
+1-5-arbejdet på Debian-VM’en, krævede eksplicit, håndbygget idempotens
+for hver enkelt ressource (brugere, pakker, sudoers-regler), og var
+alligevel kun delvist idempotent efter eget udsagn. Det blev bekræftet i
+praksis: en reel fejl (manglende <code>visudo -c</code> efter senere
+sudoers-tilføjelser) blev først fundet ved en systematisk gennemgang og
+derefter genverificeret ved faktisk at køre scriptet en tredje gang mod
+den kørende VM. Erfaringen er, at idempotens på NixOS er en
+arkitektonisk egenskab, man får foræret, mens den på Debian er noget,
+man selv skal bevise, linje for linje, hver gang scriptet ændres.</p>
 </body>
 </html>
