@@ -65,12 +65,6 @@ header#title-block-header p.date {
 
 h1, h2, h3 { color: var(--accent); }
 
-/* Brødtekst holdes på en behagelig læsebredde, selvom body er bred nok til at give
-   sammenligninger, tabeller og kode plads til at ånde. */
-p, li, blockquote {
-  max-width: 75ch;
-}
-
 h1 {
   border-bottom: 2px solid var(--accent);
   padding-bottom: 0.3rem;
