@@ -28,8 +28,7 @@ $ sudo ufw enable
 
 (Bevidst **ingen** separat `ufw allow 2222/tcp`, den ville tillade porten fra *alle* kilder og
 dermed underminere kilde-IP-reglen ovenfor, samme faldgrube som NixOS-sidens `openFirewall`,
-beskrevet i noten nedenfor. Kommandorækkefølgen her er den faktisk testede, se
-`TODO/DONE/08-resultater-modul1-6.md`.)
+beskrevet i noten nedenfor. Kommandorækkefølgen her er den faktisk testede.)
 :::
 ::: {.compare-side}
 #### NixOS: én deklareret blok

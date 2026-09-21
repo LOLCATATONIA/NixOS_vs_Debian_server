@@ -261,6 +261,10 @@ id="toc-delkonklusion-5">Delkonklusion</a></li>
 </nav>
 <h1 id="overordnet-tilgang-og-metodevalg">Overordnet tilgang og
 metodevalg</h1>
+<p>Rapportens empiriske påstande er enten vist direkte i det relevante
+modul (kommandoer, output, kodeuddrag), eller eksplicit markeret som
+endnu ikke efterprøvet. Interne arbejdsnoter fra selve processen indgår
+ikke i rapporten, den skal kunne læses og vurderes selvstændigt.</p>
 <h2
 id="valg-af-virtualiseringsplatform-qemukvm-libvirt-frem-for-virtualboxvmware">Valg
 af virtualiseringsplatform: QEMU/KVM (libvirt) frem for
@@ -379,12 +383,6 @@ versioner af alle pakker</td>
 <td>Skrivebeskyttet, indholdsadresseret <code>/nix/store</code></td>
 </tr>
 <tr>
-<td>Sikkerheds-patch-hastighed</td>
-<td>Dedikeret <code>debian-security</code>-repo, hurtigt patch-flow</td>
-<td>Kræver typisk en fuld rebuild via nixpkgs-kanalen, historisk
-langsommere på akutte CVE’er <em>(se note)</em></td>
-</tr>
-<tr>
 <td>Hærdningsøkosystem (CIS/STIG)</td>
 <td>Officielle CIS Benchmarks og OpenSCAP-profiler findes direkte til
 Debian, klar til brug</td>
@@ -394,11 +392,6 @@ modul</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Note om patch-hastighed:</strong> I modsætning til projektets
-øvrige sammenligninger er dette punkt endnu ikke selvstændigt
-efterprøvet empirisk her (kun en velkendt, generel observation fra
-økosystemet). Se <code>TODO/04-cve-patch-latency.md</code> for planen om
-at teste det konkret.</p>
 <p><strong>Delkonklusion:</strong> NixOS er valgt, fordi de
 arkitektoniske fordele, reproducerbarhed, rollback til en tidligere,
 fuldt bygget generation, og umuliggørelse af konfigurationsafvigelse, er
@@ -641,12 +634,11 @@ konsekvens af <code>nixos-generators</code>’ <code>qcow</code>-format,
 som selv beregner diskstørrelsen ud fra det deklarerede systems closure,
 <code>DISK_SIZE_BYTES</code> i <code>scripts/setup.sh</code> er blot den
 <em>målte</em> byte-størrelse af det allerede byggede image. Debians
-<code>size=8</code> (GiB) i <code>virt-install</code>-kommandoen (se
-<code>TODO/DONE/08-log-debian-vs-nixos-install.md</code>) var derimod et
-<strong>manuelt</strong>, rundt tal valgt på forhånd til en traditionel
-netinst-installation. vCPU og RAM er derimod identiske på begge VM’er,
-netop for at sammenligningerne i modul 1-6 måler platformsforskelle,
-ikke forskelle i tildelte ressourcer.</p>
+<code>size=8</code> (GiB) i <code>virt-install</code>-kommandoen var
+derimod et <strong>manuelt</strong>, rundt tal valgt på forhånd til en
+traditionel netinst-installation. vCPU og RAM er derimod identiske på
+begge VM’er, netop for at sammenligningerne i modul 1-6 måler
+platformsforskelle, ikke forskelle i tildelte ressourcer.</p>
 <h2 id="repo-struktur">Repo-struktur</h2>
 <details><summary>Vis kode (17 linjer)</summary>
 <pre><code>Linux_101/
@@ -850,17 +842,17 @@ producerer et færdigt, konfigureret image, og
 <code>virt-install --import</code> importerer det uden en eneste
 interaktiv beslutning, mens Debian kræver en rigtig installationsproces,
 før modul 1’s egentlige opgaver (statisk IP, ny bruger, SSH-hærdning)
-kan starte. Konkret var forskellen stor: at få
-<code>debian-comparison</code> til at boote krævede en længere
-fejlsøgningsrunde med flere afkræftede hypoteser (forkert NIC-model,
-forkert diskbus, og til sidst et host-side <code>ufw</code>-problem, der
-blokerede DHCP, se
-<code>TODO/DONE/08-log-debian-vs-nixos-install.md</code>), mens
-NixOS-siden virkede første gang <code>setup.sh</code> blev kørt. Det er
-ikke et bevis på at NixOS generelt er “nemmere” — kun at dens bootstrap
-har færre bevægelige dele, når den først er sat korrekt op. Til gengæld
-er Debians fejlsøgningsterræn (DHCP, netværksinterfaces) langt mere
-almindeligt kendt end at fejlsøge Nix’ eget evalueringslag.</p>
+kan starte. Konkret var forskellen stor: Debians installer forsøger som
+udgangspunkt DHCP under netværksopsætningen, medmindre den preseedes til
+statisk IP, og her blokerede en host-side <code>ufw</code>-regel al
+DHCP-trafik, hvilket forsinkede opsætningen reelt, indtil årsagen blev
+fundet og en statisk IP-preseed blev valgt i stedet. NixOS-siden rammer
+aldrig dette: der findes slet ikke en installationsfase, der afhænger af
+noget netværksprotokol overhovedet. Det er ikke et bevis på at NixOS
+generelt er “nemmere” — kun at dens bootstrap har færre bevægelige dele,
+når den først er sat korrekt op. Til gengæld er Debians
+fejlsøgningsterræn (DHCP, netværksinterfaces) langt mere almindeligt
+kendt end at fejlsøge Nix’ eget evalueringslag.</p>
 <h1 id="modul-2-filsystemet-og-adgangskontrol">Modul 2: Filsystemet og
 adgangskontrol</h1>
 <h2 id="formål-1">Formål</h2>
@@ -1211,8 +1203,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb24-1"><a href=
 <code>ufw allow 2222/tcp</code>, den ville tillade porten fra
 <em>alle</em> kilder og dermed underminere kilde-IP-reglen ovenfor,
 samme faldgrube som NixOS-sidens <code>openFirewall</code>, beskrevet i
-noten nedenfor. Kommandorækkefølgen her er den faktisk testede, se
-<code>TODO/DONE/08-resultater-modul1-6.md</code>.)</p>
+noten nedenfor. Kommandorækkefølgen her er den faktisk testede.)</p>
 </section>
 <section id="nixos-én-deklareret-blok" class="compare-side">
 <h4>NixOS: én deklareret blok</h4>
@@ -1807,12 +1798,12 @@ $ echo $?
 <p><code>nixos-rebuild switch</code> er i sig selv idempotent for hele
 systemets tilstand, så <code>setup.sh</code> behøver kun automatisere
 selve bootstrap-mekanismen (bygning og import af VM’en), ikke idempotens
-i sig selv. Den traditionelle tilgang har intet tilsvarende:
-<code>TODO/08-debian-provision.sh</code>, skrevet efter selve modul
-1-5-arbejdet på Debian-VM’en, krævede eksplicit, håndbygget idempotens
-for hver enkelt ressource (brugere, pakker, sudoers-regler), og var
-alligevel kun delvist idempotent efter eget udsagn. Det blev bekræftet i
-praksis: en reel fejl (manglende <code>visudo -c</code> efter senere
+i sig selv. Den traditionelle tilgang har intet tilsvarende: et forsøg
+på retrospektivt at skrive et sammenligneligt Bash-provisioneringsscript
+til Debian-siden krævede at indbygge præcis den slags tjek som vist
+ovenfor for hver enkelt ressource i systemet, ikke kun ét sted, og selv
+da var resultatet kun delvist idempotent. Det blev bekræftet i praksis:
+en reel fejl (manglende <code>visudo -c</code> efter senere
 sudoers-tilføjelser) blev først fundet ved en systematisk gennemgang og
 derefter genverificeret ved faktisk at køre scriptet en tredje gang mod
 den kørende VM. Erfaringen er, at idempotens på NixOS er en

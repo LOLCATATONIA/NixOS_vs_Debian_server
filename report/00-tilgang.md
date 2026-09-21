@@ -7,6 +7,10 @@ date: "17. september 2026"
 
 # Overordnet tilgang og metodevalg
 
+Rapportens empiriske påstande er enten vist direkte i det relevante modul (kommandoer, output,
+kodeuddrag), eller eksplicit markeret som endnu ikke efterprøvet. Interne arbejdsnoter fra selve
+processen indgår ikke i rapporten, den skal kunne læses og vurderes selvstændigt.
+
 ## Valg af virtualiseringsplatform: QEMU/KVM (libvirt) frem for VirtualBox/VMware
 
 Før valget af gæste-styresystem skulle en hypervisor til værten (CachyOS) vælges. VirtualBox og
@@ -43,12 +47,7 @@ tilgang sammenlignet med den traditionelle, imperative arbejdsgang, som opgaven 
 | Opgraderinger | Kan fejle midtvejs og efterlade systemet i en inkonsistent tilstand | Bygget som en samlet, fuldt evalueret generation før aktivering; en fejlkonfiguration kan rulles tilbage til en tidligere generation ved reboot |
 | Reproducerbarhed | Kræver ekstra værktøj (fx Packer/Ansible) for at være pålideligt reproducerbar | Indbygget via `flake.lock`, som fastlåser præcise versioner af alle pakker |
 | Pakke-integritet | Muterbart filsystem for installerede pakker | Skrivebeskyttet, indholdsadresseret `/nix/store` |
-| Sikkerheds-patch-hastighed | Dedikeret `debian-security`-repo, hurtigt patch-flow | Kræver typisk en fuld rebuild via nixpkgs-kanalen, historisk langsommere på akutte CVE'er *(se note)* |
 | Hærdningsøkosystem (CIS/STIG) | Officielle CIS Benchmarks og OpenSCAP-profiler findes direkte til Debian, klar til brug | Ingen officielle CIS/STIG-benchmarks for NixOS; tilsvarende hærdning skal udtrykkes manuelt i `configuration.nix`, modul for modul |
-
-**Note om patch-hastighed:** I modsætning til projektets øvrige sammenligninger er dette punkt endnu
-ikke selvstændigt efterprøvet empirisk her (kun en velkendt, generel observation fra økosystemet).
-Se `TODO/04-cve-patch-latency.md` for planen om at teste det konkret.
 
 **Delkonklusion:** NixOS er valgt, fordi de arkitektoniske fordele, reproducerbarhed, rollback til en
 tidligere, fuldt bygget generation, og umuliggørelse af konfigurationsafvigelse, er direkte relevante
@@ -159,9 +158,9 @@ Diskstørrelsen er den eneste reelle asymmetri, og selve årsagen til forskellen
 på projektets egen pointe: NixOS' størrelse er slet ikke et valg, den er en **automatisk** konsekvens
 af `nixos-generators`' `qcow`-format, som selv beregner diskstørrelsen ud fra det deklarerede
 systems closure, `DISK_SIZE_BYTES` i `scripts/setup.sh` er blot den *målte* byte-størrelse af det
-allerede byggede image. Debians `size=8` (GiB) i `virt-install`-kommandoen (se
-`TODO/DONE/08-log-debian-vs-nixos-install.md`) var derimod et **manuelt**, rundt tal valgt på
-forhånd til en traditionel netinst-installation. vCPU og RAM er derimod identiske på begge VM'er,
+allerede byggede image. Debians `size=8` (GiB) i `virt-install`-kommandoen var derimod et
+**manuelt**, rundt tal valgt på forhånd til en traditionel netinst-installation. vCPU og RAM er
+derimod identiske på begge VM'er,
 netop for at sammenligningerne i modul 1-6 måler platformsforskelle, ikke forskelle i tildelte
 ressourcer.
 

@@ -320,11 +320,12 @@ $ echo $?
 
 `nixos-rebuild switch` er i sig selv idempotent for hele systemets tilstand, så `setup.sh` behøver
 kun automatisere selve bootstrap-mekanismen (bygning og import af VM'en), ikke idempotens i sig
-selv. Den traditionelle tilgang har intet tilsvarende: `TODO/08-debian-provision.sh`, skrevet efter
-selve modul 1-5-arbejdet på Debian-VM'en, krævede eksplicit, håndbygget idempotens for hver enkelt
-ressource (brugere, pakker, sudoers-regler), og var alligevel kun delvist idempotent efter eget
-udsagn. Det blev bekræftet i praksis: en reel fejl (manglende `visudo -c` efter senere
-sudoers-tilføjelser) blev først fundet ved en systematisk gennemgang og derefter genverificeret ved
+selv. Den traditionelle tilgang har intet tilsvarende: et forsøg på retrospektivt at skrive et
+sammenligneligt Bash-provisioneringsscript til Debian-siden krævede at indbygge præcis den slags
+tjek som vist ovenfor for hver enkelt ressource i systemet, ikke kun ét sted, og selv da var
+resultatet kun delvist idempotent. Det blev bekræftet i praksis: en reel fejl (manglende
+`visudo -c` efter senere sudoers-tilføjelser) blev først fundet ved en systematisk gennemgang og
+derefter genverificeret ved
 faktisk at køre scriptet en tredje gang mod den kørende VM. Erfaringen er, at idempotens på NixOS
 er en arkitektonisk egenskab, man får foræret, mens den på Debian er noget, man selv skal bevise,
 linje for linje, hver gang scriptet ændres.
