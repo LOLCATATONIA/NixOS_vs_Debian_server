@@ -112,6 +112,32 @@ admin     ALL=(ALL:ALL)    NOPASSWD: /run/current-system/sw/bin/nixos-rebuild sw
     NOPASSWD: /run/current-system/sw/bin/nft list ruleset
 ```
 
+**Note: en driftsmæssig omkostning ved den snævre kommandomatch.** Sudoers' fulde-kommandolinje-
+match (vist ovenfor) er selve pointen med granulær adgang, men den er bogstavelig, ikke semantisk.
+Overvejer man fx at omdøbe serveren (kræver både et nyt `networking.hostName` og et nyt navn på
+flakens `nixosConfigurations`-attribut), bliver det tydeligt hvor lidt der skal til:
+
+```
+$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config
+error: getting status of "/home/admin/linux101-config": No such file or directory
+[...]
+# (sudo lod kommandoen passere uden adgangskode; fejlen kommer fra nix selv, ikke fra sudo)
+
+$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config#linux101-srv
+sudo: a password is required
+```
+
+Et harmløst, semantisk identisk `#linux101-srv`-tillæg, der blot gør eksplicit hvilken
+konfiguration der bygges, er nok til at blive afvist (ingen tilfældighed, se Delkonklusionen for
+hvorfor selve reglen ikke kan indeholde et `#`-tegn). Konsekvensen er reel: `admin` har ingen
+adgangskode, og `root` har hverken SSH-adgang (`PermitRootLogin = "no"`, modul 1) eller en gyldig
+adgangskode til konsollen, så der findes intet fallback, hvis en kommando afviger bare en smule
+fra den præcise, hvidlistede streng. På en traditionel Debian-server ville samme situation typisk
+kunne reddes via en almindelig
+`sudo`-adgangskode eller root-konsoladgang, som `debian-comparison` faktisk har. Den granulære
+sudo-model er derfor ikke gratis: den fjerner ikke kun uautoriseret adgang, den fjerner også ens
+eget nødspor, hvis noget ikke er forudset præcist.
+
 ## Dokumentation: `/etc/group` og `id`
 
 ```
