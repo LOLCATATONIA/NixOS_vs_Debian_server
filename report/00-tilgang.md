@@ -59,6 +59,7 @@ Debian-server er de seks moduler spredt over mindst otte forskellige filer og ko
 | Modul | Traditionelt spredt over | Samlet i NixOS |
 |---|---|---|
 | 1: Netværk og SSH | `/etc/hostname`, `/etc/network/interfaces`, `/etc/ssh/sshd_config`, `~/.ssh/authorized_keys` | `nixos/modules/network.nix` |
+| 2: Filsystem og adgangskontrol | Ingen konfigurationsfil, kun ad-hoc `mkdir`/`chown`/`chmod`-kommandoer | `nixos/modules/filesystem.nix` |
 | 1 og 3: Brugere | `/etc/passwd`, `/etc/shadow`, `/etc/group` (via `useradd`/`passwd`) | `nixos/modules/users.nix` |
 | 3: Sudo | `/etc/sudoers.d/*` | `nixos/modules/users.nix` |
 | 4: Firewall | `/etc/ufw/*` | `nixos/modules/firewall.nix` |
