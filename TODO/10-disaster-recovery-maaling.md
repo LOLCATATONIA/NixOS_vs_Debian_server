@@ -26,7 +26,7 @@ den traditionelle arbejdsgang, ikke kun som et tal, der tilfældigvis er lavere.
    river den ned og genopbygger den, som allerede demonstreret i modul 6).
 2. Opdel tiden i faser, hvis muligt (byg af diskimage vs. import/opstart i libvirt), for at vise
    hvor tiden reelt går hen, ikke kun et samlet tal.
-3. Sammenlign (kvalitativt, medmindre `08-debian-ab-sammenligning.md` gennemføres) med hvor lang tid
+3. Sammenlign (kvalitativt, medmindre `DONE/08-debian-ab-sammenligning.md` gennemføres) med hvor lang tid
    en tilsvarende manuel Debian-genopsætning ville tage, baseret på erfaringen fra de seks moduler.
 4. Dokumentér som et konkret RTO-tal i syntese-afsnittet (`07`), med den fulde terminal-output som
    bevis, samme stil som resten af projektet.
@@ -34,7 +34,7 @@ den traditionelle arbejdsgang, ikke kun som et tal, der tilfældigvis er lavere.
 ## Rækkefølge ift. andre planer
 
 Meget billig at udføre uafhængigt af de andre planer. Bliver stærkere, hvis den kan sammenlignes
-direkte med et tilsvarende Debian-tal fra `08-debian-ab-sammenligning.md`.
+direkte med et tilsvarende Debian-tal fra `DONE/08-debian-ab-sammenligning.md`.
 
 ## Estimeret indsats
 

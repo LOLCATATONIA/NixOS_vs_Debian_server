@@ -20,9 +20,9 @@ konklusion". Det er det afsnit, en arbejdsgiver rent faktisk vil læse først.
 - Konfigurationsdrift/-uigennemsigtighed som reel sikkerhedsrisiko, dokumenteret ved et ægte,
   levet eksempel (`03-case-study-dns-ufw.md`), hvor fejlen lå i den traditionelle, imperative
   ufw-opsætning, ikke i NixOS.
-- Reproducerbarhed, faktisk efterprøvet med et diff, ikke kun påstået (`09-reproducerbarhedstest.md`).
+- Reproducerbarhed, faktisk efterprøvet med et diff, ikke kun påstået (`DONE/09-reproducerbarhedstest.md`).
 - Hurtig, målt gendannelsestid som konkret RTO-tal (`10-disaster-recovery-maaling.md`).
-- Den direkte A/B-sammenligning mod en faktisk Debian-opsætning (`08-debian-ab-sammenligning.md`),
+- Den direkte A/B-sammenligning mod en faktisk Debian-opsætning (`DONE/08-debian-ab-sammenligning.md`),
   hvor det er relevant, dvs. der hvor NixOS-vejen faktisk viste sig hurtigere/mere robust.
 - De originale seks moduler egne sammenligningstabeller (reproducerbarhed, rollback, atomare
   generationer, `flake.lock`).
@@ -30,7 +30,7 @@ konklusion". Det er det afsnit, en arbejdsgiver rent faktisk vil læse først.
 **Ulemper, ærligt og konkret underbygget:**
 - Patch-hastighed, med et faktisk efterprøvet eksempel (`04-cve-patch-latency.md`), ikke kun en
   antagelse.
-- Steder hvor A/B-sammenligningen (`08-debian-ab-sammenligning.md`) reelt viste Debian-vejen som
+- Steder hvor A/B-sammenligningen (`DONE/08-debian-ab-sammenligning.md`) reelt viste Debian-vejen som
   lige så hurtig eller nemmere, vær ærlig om dem, det styrker troværdigheden af resten.
 - Bemandings-/videns-risiko: færre sysadmins kender NixOS, hvilket er en reel driftsmæssig risiko
   ved overdragelse, oncall og rekruttering, ikke kun en indlæringskurve for én person. (Ingen

@@ -135,11 +135,24 @@ efterprøvet A/B-test i stedet for kun en teoretisk modstilling.
 </thead>
 <tbody>
 <tr><td>Diskimage</td><td><code>/var/lib/libvirt/images/linux101-srv.qcow2</code></td><td><code>/var/lib/libvirt/images/debian-comparison.qcow2</code></td></tr>
+<tr><td>Diskstørrelse</td><td>4,83 GiB</td><td>8,00 GiB</td></tr>
 <tr><td>Statisk IP</td><td><code>192.168.122.10</code></td><td><code>192.168.122.11</code></td></tr>
+<tr><td>vCPU / RAM</td><td colspan="2" style="text-align:center">2 vCPU / 3072 MB (begge, for en fair sammenligning)</td></tr>
 <tr><td>SSH-port</td><td colspan="2" style="text-align:center">2222 (begge)</td></tr>
 <tr><td>libvirt-netværk</td><td colspan="2" style="text-align:center"><code>default</code> (NAT-bro <code>virbr0</code>, gateway <code>192.168.122.1</code>)</td></tr>
+<tr><td>Root-adgang (konsol)</td><td>Ingen adgangskode sat, login umuligt (<code>hashedPassword = "!"</code>)</td><td><code>root</code> / <code>comparison-temp-pw</code>, kun via <code>virsh console</code></td></tr>
 </tbody>
 </table>
+
+Diskstørrelsen er den eneste reelle asymmetri, og selve årsagen til forskellen er et lille eksempel
+på projektets egen pointe: NixOS' størrelse er slet ikke et valg, den er en **automatisk** konsekvens
+af `nixos-generators`' `qcow`-format, som selv beregner diskstørrelsen ud fra det deklarerede
+systems closure, `DISK_SIZE_BYTES` i `scripts/setup.sh` er blot den *målte* byte-størrelse af det
+allerede byggede image. Debians `size=8` (GiB) i `virt-install`-kommandoen (se
+`TODO/DONE/08-log-debian-vs-nixos-install.md`) var derimod et **manuelt**, rundt tal valgt på
+forhånd til en traditionel netinst-installation. vCPU og RAM er derimod identiske på begge VM'er,
+netop for at sammenligningerne i modul 1-6 måler platformsforskelle, ikke forskelle i tildelte
+ressourcer.
 
 ## Repo-struktur
 

@@ -17,7 +17,7 @@ hostname
 - `linux101-srv` → du er på **NixOS-VM'en**.
 - `debian-comparison` → du er på **Debian-VM'en** (hed oprindeligt `debian-tmp`, det midlertidige
   navn fra preseed-installationen, blev aldrig rettet, før det blev opdaget og rettet manuelt,
-  se `TODO/08-log-debian-vs-nixos-install.md`, et lille, ægte eksempel på konfigurationsafvigelse:
+  se `TODO/DONE/08-log-debian-vs-nixos-install.md`, et lille, ægte eksempel på konfigurationsafvigelse:
   den *tiltænkte* tilstand og den *faktiske* tilstand var et stykke tid ikke identiske).
 
 **I tvivl om hvor mange niveauer du er "inde"?** Åbn et nyt terminalvindue. Det starter altid på
@@ -189,7 +189,7 @@ udvidelse af listen først. Se `TODO/07-syntese-nixos-fremtidens-valg.md`.
 
 Der er ikke bygget et enkelt "riv ned og genskab helt fra bunden"-script for Debian-VM'en, fordi
 selve installationsprocessen (preseed + `virt-install --location`) er den skrøbelige, tidskrævende
-del af hele forsøget (se `TODO/08-log-debian-vs-nixos-install.md`). Fuld genopbygning betyder i
+del af hele forsøget (se `TODO/DONE/08-log-debian-vs-nixos-install.md`). Fuld genopbygning betyder i
 praksis at gentage hele installationsforløbet forfra, ikke køre én kommando.
 :::
 ::: {.compare-side}

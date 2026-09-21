@@ -16,7 +16,7 @@ filsystem, uden nogen strukturel markør for hvad der er "genskabeligt" og hvad 
 ## Hvorfor det er værd at undersøge
 
 Matcher projektets egen metode: en påstand, der lyder plausibel, men endnu ikke er testet.
-Hænger naturligt sammen med `09-reproducerbarhedstest.md` og `10-disaster-recovery-maaling.md`,
+Hænger naturligt sammen med `DONE/09-reproducerbarhedstest.md` og `10-disaster-recovery-maaling.md`,
 tre forskellige vinkler på samme underliggende spørgsmål: hvad er den reelle, minimale mængde
 tilstand, der ikke kan genskabes fra kilden alene?
 
@@ -29,7 +29,7 @@ tilstand, der ikke kan genskabes fra kilden alene?
 2. **Test SSH-værtsnøglerne specifikt, muligvis den mest interessante enkeltdel.** Er NixOS-VM'ens
    SSH-værtsnøgle deklareret nogen steder, eller genereres den ved første boot, præcis som
    `mkfs.ext4`s tilfældige filsystem-UUID (allerede dokumenteret som ikke-reproducerbar i
-   `09-reproducerbarhedstest.md`)? Efterprøv direkte: byg `.#qcow` to gange, sammenlign
+   `DONE/09-reproducerbarhedstest.md`)? Efterprøv direkte: byg `.#qcow` to gange, sammenlign
    værtsnøglerne. Hvis de IKKE er identiske, er det et vigtigt, ærligt modstykke til hypotesen,
    selv NixOS' "alt er deklareret"-model har mindst én reel undtagelse.
 3. **Undersøg om der findes et navngivet, etableret NixOS-mønster for netop denne adskillelse.**
@@ -47,7 +47,7 @@ tilstand, der ikke kan genskabes fra kilden alene?
 
 Middel til høj, ren research (trin 1, 3, 4) er overkommelig, men trin 2 (den faktiske
 værtsnøgle-test) kræver en ny `.qcow`-bygning og sammenligning, samme mønster som
-`09-reproducerbarhedstest.md`.
+`DONE/09-reproducerbarhedstest.md`.
 
 ## Åbne spørgsmål
 
