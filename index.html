@@ -508,6 +508,69 @@ firewall/sudo) deployes, testes den lokalt med
 test-VM uden at røre den rigtige server.</li>
 </ol>
 <p>VM’en tildeles 2 vCPU, 3-4 GB RAM og 20 GB disk (qcow2).</p>
+<h3 id="begge-vmer-side-om-side">Begge VM’er, side om side</h3>
+<p>Ud over <code>linux101-srv</code> køres der til denne rapport også en
+<strong>rigtig</strong> Debian-VM (<code>debian-comparison</code>),
+opsat i hånden efter den traditionelle, imperative arbejdsgang, på
+nøjagtig samme QEMU/KVM/libvirt-grundlag. Formålet er at gøre
+sammenligningerne i modul 1-6 til en reel, efterprøvet A/B-test i stedet
+for kun en teoretisk modstilling.</p>
+<table>
+<thead>
+<tr>
+<th>
+Aspekt
+</th>
+<th>
+NixOS (<code>linux101-srv</code>)
+</th>
+<th>
+Debian (<code>debian-comparison</code>)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Diskimage
+</td>
+<td>
+<code>/var/lib/libvirt/images/linux101-srv.qcow2</code>
+</td>
+<td>
+<code>/var/lib/libvirt/images/debian-comparison.qcow2</code>
+</td>
+</tr>
+<tr>
+<td>
+Statisk IP
+</td>
+<td>
+<code>192.168.122.10</code>
+</td>
+<td>
+<code>192.168.122.11</code>
+</td>
+</tr>
+<tr>
+<td>
+SSH-port
+</td>
+<td colspan="2" style="text-align:center">
+2222 (begge)
+</td>
+</tr>
+<tr>
+<td>
+libvirt-netværk
+</td>
+<td colspan="2" style="text-align:center">
+<code>default</code> (NAT-bro <code>virbr0</code>, gateway
+<code>192.168.122.1</code>)
+</td>
+</tr>
+</tbody>
+</table>
 <h2 id="repo-struktur">Repo-struktur</h2>
 <details><summary>Vis kode (17 linjer)</summary>
 <pre><code>Linux_101/

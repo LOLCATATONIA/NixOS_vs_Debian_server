@@ -122,6 +122,25 @@ VM'en køres under QEMU/KVM via libvirt på en CachyOS-vært, og opbygges i tre 
 
 VM'en tildeles 2 vCPU, 3-4 GB RAM og 20 GB disk (qcow2).
 
+### Begge VM'er, side om side
+
+Ud over `linux101-srv` køres der til denne rapport også en **rigtig** Debian-VM
+(`debian-comparison`), opsat i hånden efter den traditionelle, imperative arbejdsgang, på nøjagtig
+samme QEMU/KVM/libvirt-grundlag. Formålet er at gøre sammenligningerne i modul 1-6 til en reel,
+efterprøvet A/B-test i stedet for kun en teoretisk modstilling.
+
+<table>
+<thead>
+<tr><th>Aspekt</th><th>NixOS (<code>linux101-srv</code>)</th><th>Debian (<code>debian-comparison</code>)</th></tr>
+</thead>
+<tbody>
+<tr><td>Diskimage</td><td><code>/var/lib/libvirt/images/linux101-srv.qcow2</code></td><td><code>/var/lib/libvirt/images/debian-comparison.qcow2</code></td></tr>
+<tr><td>Statisk IP</td><td><code>192.168.122.10</code></td><td><code>192.168.122.11</code></td></tr>
+<tr><td>SSH-port</td><td colspan="2" style="text-align:center">2222 (begge)</td></tr>
+<tr><td>libvirt-netværk</td><td colspan="2" style="text-align:center"><code>default</code> (NAT-bro <code>virbr0</code>, gateway <code>192.168.122.1</code>)</td></tr>
+</tbody>
+</table>
+
 ## Repo-struktur
 
 ```
