@@ -7,10 +7,6 @@ date: "17. september 2026"
 
 # Overordnet tilgang og metodevalg
 
-Rapportens empiriske påstande er enten vist direkte i det relevante modul (kommandoer, output,
-kodeuddrag), eller eksplicit markeret som endnu ikke efterprøvet. Interne arbejdsnoter fra selve
-processen indgår ikke i rapporten, den skal kunne læses og vurderes selvstændigt.
-
 ## Valg af virtualiseringsplatform: QEMU/KVM (libvirt) frem for VirtualBox/VMware
 
 Før valget af gæste-styresystem skulle en hypervisor til værten (CachyOS) vælges. VirtualBox og
@@ -115,6 +111,32 @@ flake giver identisk resultat, hvilket er grundlaget for hele projektets reprodu
 Flakes er teknisk set stadig en eksperimentel Nix-funktion, selvom de reelt er de
 facto-standarden i økosystemet. Derfor skal de aktiveres eksplicit med
 `--extra-experimental-features "nix-command flakes"` (synligt i `verify-deploy.sh`, modul 6).
+
+**Reproducerbarheden er efterprøvet, ikke kun antaget.** Nix' `--rebuild`-flag tvinger en ægte
+gentagen bygning og sammenligner selv output-hashen mod den eksisterende:
+
+```
+$ nix eval --raw ".#nixosConfigurations.linux101-srv.config.system.build.toplevel"
+/nix/store/x38lab3zq77b9mxsn8br266df4m23vxd-nixos-system-linux101-srv-...
+$ nix build ".#nixosConfigurations.linux101-srv.config.system.build.toplevel" --rebuild -L
+checking outputs of '/nix/store/s5m1i4ff5six5w482jwli7b6sraj944n-...-nixos-system-...drv'...
+```
+
+Ingen "may not be deterministic"-fejl, samme output-sti begge gange: selve systemkonfigurationen er
+reproducerbar. Det gælder derimod **ikke** det færdige `.qcow`-diskimage som artefakt:
+
+```
+$ nix build .#qcow --rebuild -L
+error: derivation '.../nixos-disk-image.drv' may not be deterministic: output
+".../nixos-disk-image" differs
+```
+
+Årsagen er `mkfs.ext4`, som genererer et nyt, tilfældigt filsystem-UUID for hver bygning af selve
+diskimaget, en iboende egenskab ved diskimage-værktøjet, ikke et tegn på at selve konfigurationen
+afviger. Konklusionen er derfor mere præcis end en ukvalificeret "NixOS er reproducerbart": det
+gælder for den deklarerede systemtilstand, som reelt betyder noget for drift og verifikation
+(`verify-deploy.sh`, modul 6), men ikke for et afledt build-artefakt med en iboende tilfældig
+komponent.
 
 VM'en køres under QEMU/KVM via libvirt på en CachyOS-vært, og opbygges i tre faser:
 

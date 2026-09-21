@@ -87,6 +87,26 @@ root@192.168.122.10: Permission denied (publickey).
 Root afvises fordi `PermitRootLogin = "no"`. Root har derudover ingen gyldig adgangskode
 (`users.users.root.hashedPassword = "!"`), hvilket lukker adgangsvejen helt af.
 
+**Debian-siden: en reel installationsblokering, fundet og rettet.** Under opsætningen af den
+faktiske Debian-sammenligningsserver fejlede DHCP under selve installationen. `sudo nft list
+ruleset` på **værten** viste at `ufw-user-input` kun havde regler for DNS (port 53), ingen regel
+for DHCP-serverporten (UDP 67):
+
+```
+$ sudo ufw allow in on virbr0 to any port 67 proto udp
+```
+
+```
+$ dhcpcd -t 15 -1 ens2
+# før fixet: intet svar, gentagne forsøg fejlede
+# efter fixet: øjeblikkelig lease på 192.168.122.85, 3600 sekunder
+```
+
+Værtens firewall var opbygget ad hoc, over tid, uden nogen samlet oversigt over hvilke porte der
+reelt var åbnet, en direkte konsekvens af den traditionelle, imperative tilgang til
+firewall-konfiguration (se også modul 4). NixOS-siden rammer aldrig denne klasse af problem: der
+er slet ingen installationsfase, der afhænger af DHCP eller andet runtime-netværk.
+
 **Samme fire opgaver, side om side** (statisk IP, hostname, deaktiveret root-login, kun
 nøglebaseret SSH):
 

@@ -323,9 +323,23 @@ kun automatisere selve bootstrap-mekanismen (bygning og import af VM'en), ikke i
 selv. Den traditionelle tilgang har intet tilsvarende: et forsøg på retrospektivt at skrive et
 sammenligneligt Bash-provisioneringsscript til Debian-siden krævede at indbygge præcis den slags
 tjek som vist ovenfor for hver enkelt ressource i systemet, ikke kun ét sted, og selv da var
-resultatet kun delvist idempotent. Det blev bekræftet i praksis: en reel fejl (manglende
-`visudo -c` efter senere sudoers-tilføjelser) blev først fundet ved en systematisk gennemgang og
-derefter genverificeret ved
-faktisk at køre scriptet en tredje gang mod den kørende VM. Erfaringen er, at idempotens på NixOS
-er en arkitektonisk egenskab, man får foræret, mens den på Debian er noget, man selv skal bevise,
-linje for linje, hver gang scriptet ændres.
+resultatet kun delvist idempotent. En reel fejl, fundet ved en systematisk gennemgang og siden
+genverificeret ved faktisk at køre scriptet en tredje gang mod den kørende VM:
+
+```bash
+setup_sudo_documentation_rules() {
+  if ! grep -q "nft list ruleset" /etc/sudoers.d/admin 2>/dev/null; then
+    echo "admin ALL=(ALL) NOPASSWD: /usr/sbin/nft list ruleset" >> /etc/sudoers.d/admin
+  fi
+  # visudo -c blev kun kørt efter den FØRSTE sudoers-skrivning i setup_admin_sudo, ikke
+  # efter disse senere tilføjelser. Uden dette tjek her kunne en tastefejl i en append
+  # ovenfor stille og roligt gøre hele /etc/sudoers.d/admin ugyldig, uden at scriptet
+  # nogensinde ville opdage det.
+  visudo -c
+}
+```
+
+`visudo -c` manglede oprindeligt netop her, efter de *senere* sudoers-tilføjelser, selvom den var
+til stede efter den første skrivning. Erfaringen er, at idempotens på NixOS er en arkitektonisk
+egenskab, man får foræret, mens den på Debian er noget, man selv skal bevise, linje for linje, hver
+gang scriptet ændres.
