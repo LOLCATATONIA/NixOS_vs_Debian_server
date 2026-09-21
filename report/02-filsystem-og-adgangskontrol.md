@@ -61,6 +61,8 @@ den traditionelle, se `Opgave 4` nedenfor.
 
 ## Opgave 2: Delt projektmappe (ikke `chmod 777`)
 
+**Evidens (NixOS):**
+
 ```
 $ ls -ld /srv/projekt
 drwxrws--- 2 admin projekt 4096 Sep 14 09:05 /srv/projekt
@@ -72,7 +74,7 @@ adgang og dermed modarbejder need-to-know-princippet.
 
 ## Opgave 3: Identifikation og rettelse af forkert konfigurerede rettigheder
 
-**Før:**
+**Før (NixOS):**
 
 ```
 $ ls -l /srv/projekt/
@@ -84,7 +86,7 @@ $ ls -l /srv/projekt/
 Sidstnævnte er et klassisk privilege escalation-mønster: enhver kan overskrive et script, som senere
 køres med højere rettigheder.
 
-**Rettelse og efter:**
+**Rettelse og efter (NixOS):**
 
 ```
 $ chmod 640 /srv/projekt/app.conf
@@ -96,14 +98,14 @@ $ ls -l /srv/projekt/
 
 ## Opgave 4: ACL til midlertidig, afgrænset adgang
 
-**Før: ingen adgang**
+**Før: ingen adgang (NixOS)**
 
 ```
 $ sudo -u revisor ls /srv/projekt
 ls: cannot open directory '/srv/projekt': Permission denied
 ```
 
-**Tildeling og efter:**
+**Tildeling og efter (NixOS):**
 
 ```
 $ sudo setfacl -m u:revisor:rx /srv/projekt

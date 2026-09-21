@@ -779,33 +779,18 @@ sudo virt-install --name linux101-srv --memory 3072 --vcpus 2 \
     --graphics none --console pty,target_type=serial \
     --import --os-variant generic --noautoconsole</code></pre>
 </details>
-<p><strong>Vellykket SSH-login med nøgle:</strong></p>
+<p><strong>Vellykket SSH-login med nøgle (NixOS):</strong></p>
 <pre><code>$ ssh -i ~/.ssh/linux101_ed25519 admin@192.168.122.10 &#39;hostname &amp;&amp; whoami&#39;
 linux101-srv
 admin</code></pre>
-<figure>
-<img src="report/screenshots/01-ssh-login-noegle.png"
-alt="Vellykket SSH-login med nøgle" />
-<figcaption aria-hidden="true">Vellykket SSH-login med
-nøgle</figcaption>
-</figure>
-<p><strong>Afvist password-login:</strong></p>
+<p><strong>Afvist password-login (NixOS):</strong></p>
 <pre><code>$ ssh -v -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@192.168.122.10 &#39;echo test&#39;
 debug1: Authentications that can continue: publickey
 admin@192.168.122.10: Permission denied (publickey).</code></pre>
-<figure>
-<img src="report/screenshots/01-ssh-password-afvist.png"
-alt="Afvist SSH-login med password" />
-<figcaption aria-hidden="true">Afvist SSH-login med
-password</figcaption>
-</figure>
-<p><strong>Afvist root-login (selv med gyldig nøgle):</strong></p>
+<p><strong>Afvist root-login (selv med gyldig nøgle,
+NixOS):</strong></p>
 <pre><code>$ ssh -i ~/.ssh/linux101_ed25519 root@192.168.122.10 &#39;echo test&#39;
 root@192.168.122.10: Permission denied (publickey).</code></pre>
-<figure>
-<img src="report/screenshots/01-ssh-root-afvist.png" alt="Afvist root-login" />
-<figcaption aria-hidden="true">Afvist root-login</figcaption>
-</figure>
 <p>Root afvises fordi <code>PermitRootLogin = "no"</code>. Root har
 derudover ingen gyldig adgangskode
 (<code>users.users.root.hashedPassword = "!"</code>), hvilket lukker
@@ -986,6 +971,7 @@ overtager ikke ACL’er på datafiler deklarativt, så metoden forbliver
 identisk med den traditionelle, se <code>Opgave 4</code> nedenfor.</p>
 <h2 id="opgave-2-delt-projektmappe-ikke-chmod-777">Opgave 2: Delt
 projektmappe (ikke <code>chmod 777</code>)</h2>
+<p><strong>Evidens (NixOS):</strong></p>
 <pre><code>$ ls -ld /srv/projekt
 drwxrws--- 2 admin projekt 4096 Sep 14 09:05 /srv/projekt</code></pre>
 <p><code>2770</code>: ejer og gruppe (<code>projekt</code>) har fuld
@@ -996,7 +982,7 @@ need-to-know-princippet.</p>
 <h2
 id="opgave-3-identifikation-og-rettelse-af-forkert-konfigurerede-rettigheder">Opgave
 3: Identifikation og rettelse af forkert konfigurerede rettigheder</h2>
-<p><strong>Før:</strong></p>
+<p><strong>Før (NixOS):</strong></p>
 <pre><code>$ ls -l /srv/projekt/
 -rw-rw-rw- 1 admin projekt 37 Sep 14 09:07 app.conf
 -rwxrwxrwx 1 admin projekt 28 Sep 14 09:07 deploy.sh</code></pre>
@@ -1004,7 +990,7 @@ id="opgave-3-identifikation-og-rettelse-af-forkert-konfigurerede-rettigheder">Op
 <code>deploy.sh</code> (777) er både world-writable og eksekverbart.
 Sidstnævnte er et klassisk privilege escalation-mønster: enhver kan
 overskrive et script, som senere køres med højere rettigheder.</p>
-<p><strong>Rettelse og efter:</strong></p>
+<p><strong>Rettelse og efter (NixOS):</strong></p>
 <pre><code>$ chmod 640 /srv/projekt/app.conf
 $ chmod 750 /srv/projekt/deploy.sh
 $ ls -l /srv/projekt/
@@ -1012,10 +998,10 @@ $ ls -l /srv/projekt/
 -rwxr-x--- 1 admin projekt 28 Sep 14 09:07 deploy.sh</code></pre>
 <h2 id="opgave-4-acl-til-midlertidig-afgrænset-adgang">Opgave 4: ACL til
 midlertidig, afgrænset adgang</h2>
-<p><strong>Før: ingen adgang</strong></p>
+<p><strong>Før: ingen adgang (NixOS)</strong></p>
 <pre><code>$ sudo -u revisor ls /srv/projekt
 ls: cannot open directory &#39;/srv/projekt&#39;: Permission denied</code></pre>
-<p><strong>Tildeling og efter:</strong></p>
+<p><strong>Tildeling og efter (NixOS):</strong></p>
 <details><summary>Vis kode (13 linjer)</summary>
 <pre><code>$ sudo setfacl -m u:revisor:rx /srv/projekt
 $ sudo setfacl -R -m u:revisor:r /srv/projekt/app.conf /srv/projekt/deploy.sh

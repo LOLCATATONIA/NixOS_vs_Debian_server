@@ -4,7 +4,7 @@
 # firewall (modul 4), og overvågning/logrotation (modul 5).
 #
 # Dette script er skrevet EFTER at have udført og målt hvert trin manuelt (se
-# TODO/08-resultater-modul1-6.md for de faktiske tider og fejl undervejs). Det fanger den
+# TODO/DONE/08-resultater-modul1-6.md for de faktiske tider og fejl undervejs). Det fanger den
 # rækkefølge, der reelt virkede, inklusiv rettelserne for de uventede fund undervejs
 # (manglende `sudo`/`acl`/`ufw`/`cron`-pakker, `useradd -G`/`-g`-kollisionen, manglende
 # `rsyslog` (se modul 5-rapporten)).

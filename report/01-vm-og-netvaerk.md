@@ -55,7 +55,7 @@ sudo virt-install --name linux101-srv --memory 3072 --vcpus 2 \
     --import --os-variant generic --noautoconsole
 ```
 
-**Vellykket SSH-login med nøgle:**
+**Vellykket SSH-login med nøgle (NixOS):**
 
 ```
 $ ssh -i ~/.ssh/linux101_ed25519 admin@192.168.122.10 'hostname && whoami'
@@ -63,9 +63,7 @@ linux101-srv
 admin
 ```
 
-![Vellykket SSH-login med nøgle](screenshots/01-ssh-login-noegle.png)
-
-**Afvist password-login:**
+**Afvist password-login (NixOS):**
 
 ```
 $ ssh -v -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@192.168.122.10 'echo test'
@@ -73,16 +71,12 @@ debug1: Authentications that can continue: publickey
 admin@192.168.122.10: Permission denied (publickey).
 ```
 
-![Afvist SSH-login med password](screenshots/01-ssh-password-afvist.png)
-
-**Afvist root-login (selv med gyldig nøgle):**
+**Afvist root-login (selv med gyldig nøgle, NixOS):**
 
 ```
 $ ssh -i ~/.ssh/linux101_ed25519 root@192.168.122.10 'echo test'
 root@192.168.122.10: Permission denied (publickey).
 ```
-
-![Afvist root-login](screenshots/01-ssh-root-afvist.png)
 
 Root afvises fordi `PermitRootLogin = "no"`. Root har derudover ingen gyldig adgangskode
 (`users.users.root.hashedPassword = "!"`), hvilket lukker adgangsvejen helt af.

@@ -17,9 +17,8 @@ konklusion". Det er det afsnit, en arbejdsgiver rent faktisk vil læse først.
 **Fordele, med konkret evidens (ikke kun påstande):**
 - Deklarativ verifikation som kode (`01-nixos-tests.md`), sikkerhedsegenskaber udtrykt i samme
   sprog som konfigurationen.
-- Konfigurationsdrift/-uigennemsigtighed som reel sikkerhedsrisiko, dokumenteret ved et ægte,
-  levet eksempel (`03-case-study-dns-ufw.md`), hvor fejlen lå i den traditionelle, imperative
-  ufw-opsætning, ikke i NixOS.
+- Konfigurationsdrift/-uigennemsigtighed som reel sikkerhedsrisiko, allerede dokumenteret i
+  `00-tilgang.md`s "Samlet billede"-afsnit og i modul 4's fund (`openFirewall`-merge, `rpfilter`).
 - Reproducerbarhed, faktisk efterprøvet med et diff, ikke kun påstået (`DONE/09-reproducerbarhedstest.md`).
 - Hurtig, målt gendannelsestid som konkret RTO-tal (`10-disaster-recovery-maaling.md`).
 - Den direkte A/B-sammenligning mod en faktisk Debian-opsætning (`DONE/08-debian-ab-sammenligning.md`),
@@ -47,8 +46,9 @@ indsamlede evidens.
 
 ## Rækkefølge
 
-Skrives SIDST, efter planerne `01`, `03`, `04`, `08`, `09` og `10` er gennemført eller i det mindste
-undersøgt, siden dette afsnit er syntesen af dem, ikke en uafhængig opgave.
+Skrives SIDST, efter planerne `01`, `04`, `10`, `12` og `13` er gennemført eller i det mindste
+undersøgt (`DONE/08` og `DONE/09` er allerede afsluttet), siden dette afsnit er syntesen af dem,
+ikke en uafhængig opgave.
 
 ## Estimeret indsats
 

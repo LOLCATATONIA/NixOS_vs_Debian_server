@@ -150,12 +150,12 @@ traditionel server har ingen deklareret, evaluerbar facitliste at holde op imod.
 ```bash
 # [vært], kopiér opdateret script over
 scp -i ~/.ssh/debian_comparison_admin_ed25519 -P 2222 \
-  TODO/08-debian-provision.sh scripts/monitor.sh \
+  debian-comparison/provision.sh scripts/monitor.sh \
   admin@192.168.122.11:/tmp/
 ```
 ```bash
 # [debian-vm], via konsol som root, IKKE via SSH som admin
-bash /tmp/08-debian-provision.sh
+bash /tmp/provision.sh
 ```
 :::
 ::: {.compare-side}

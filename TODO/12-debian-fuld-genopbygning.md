@@ -18,7 +18,7 @@ Vi har nu, efter `ufw`-fundet, faktisk alle byggestenene liggende adskilt:
 
 1. En **fungerende** preseed-baseret installation (`~/debian-comparison/preseed.cfg`, med statisk
    IP, ikke DHCP, se `DONE/08-log-debian-vs-nixos-install.md`).
-2. Et **testet, delvist idempotent** provisioneringsscript (`08-debian-provision.sh`), der dækker
+2. Et **testet, delvist idempotent** provisioneringsscript (`debian-comparison/provision.sh`), der dækker
    modul 1-5.
 
 Spørgsmålet er, om disse to kan kædes sammen til ÉT script, der reelt efterligner `setup.sh`s
@@ -33,9 +33,9 @@ arbejdsgang: riv VM'en ned, genskab basen fra preseed, kør provisioneringen, ve
      værten som forudsætning, ikke noget scriptet selv kan løse, se punkt "Åbne spørgsmål").
    - Venter på at installationen er færdig og VM'en er tilgængelig via SSH (poll-loop, ikke en fast
      `sleep`).
-   - Kopierer og kører `08-debian-provision.sh` (+ `monitor.sh`) via SSH/konsol.
+   - Kopierer og kører `debian-comparison/provision.sh` (+ `monitor.sh`) via SSH/konsol.
 2. **Test det reelt, mindst to gange i træk**, samme metode som `DONE/09-reproducerbarhedstest.md` og
-   `08-debian-provision.sh`s egen idempotens-verifikation. Mål tiden, samme stil som
+   `debian-comparison/provision.sh`s egen idempotens-verifikation. Mål tiden, samme stil som
    `10-disaster-recovery-maaling.md`, så de to platformes RTO kan sættes direkte op mod hinanden.
 3. **Dokumentér ærligt hvor det stadig halter**, uanset om det lykkes. Sandsynlige kandidater:
    - Selve installations-fasen er markant langsommere end NixOS' `nix build .#qcow` (pakker hentes
