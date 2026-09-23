@@ -108,7 +108,9 @@ ls: cannot open directory '/srv/projekt': Permission denied
 **Tildeling og efter (NixOS):**
 
 ```
+# giv revisor læse- og gennemsøgningsret til selve mappen
 $ sudo setfacl -m u:revisor:rx /srv/projekt
+# og kun læseret til de eksisterende filer (-R: samme regel rekursivt)
 $ sudo setfacl -R -m u:revisor:r /srv/projekt/app.conf /srv/projekt/deploy.sh
 
 $ sudo -u revisor ls -l /srv/projekt

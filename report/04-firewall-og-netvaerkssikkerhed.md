@@ -20,7 +20,9 @@ Samme tre opgaver (default-deny, kun nødvendige porte åbne, kilde-IP-begrænsn
 #### Traditionel: fire `ufw`-kommandoer
 
 ```bash
+# tillad kun SSH fra værtens egen adresse
 $ sudo ufw allow from 192.168.122.1 to any port 2222 proto tcp
+# blokér alt andet indgående som udgangspunkt
 $ sudo ufw default deny incoming
 $ sudo ufw default allow outgoing
 $ sudo ufw enable
@@ -106,6 +108,7 @@ og SSH fra præcis `192.168.122.1` accepteres eksplicit.
 **Verifikation** (forsøgt fra en ikke-godkendt kilde-IP på samme undernet):
 
 ```
+# -b: bind forbindelsen til en anden lokal adresse, for at simulere en uautoriseret kilde
 $ ssh -p 2222 -b 192.168.122.99 admin@192.168.122.10 'hostname'
 ssh: connect to host 192.168.122.10 port 2222: Connection timed out
 

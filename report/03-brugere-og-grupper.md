@@ -88,6 +88,7 @@ uden versionsstyring.
 ## Bevis: granulær sudo virker
 
 ```
+# -n: fejl med det samme, i stedet for at vente på en adgangskode der aldrig kommer
 $ sudo -n whoami
 sudo: a password is required
 

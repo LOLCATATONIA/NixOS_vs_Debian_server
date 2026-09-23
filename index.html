@@ -579,15 +579,18 @@ i <code>verify-deploy.sh</code>, modul 6).</p>
 <p><strong>Reproducerbarheden er efterprøvet, ikke kun antaget.</strong>
 Nix’ <code>--rebuild</code>-flag tvinger en ægte gentagen bygning og
 sammenligner selv output-hashen mod den eksisterende:</p>
-<pre><code>$ nix eval --raw &quot;.#nixosConfigurations.linux101-srv.config.system.build.toplevel&quot;
+<pre><code># evaluerer den deklarerede sti, uden at bygge noget
+$ nix eval --raw &quot;.#nixosConfigurations.linux101-srv.config.system.build.toplevel&quot;
 /nix/store/x38lab3zq77b9mxsn8br266df4m23vxd-nixos-system-linux101-srv-...
+# tvinger en ægte ny bygning, sammenligner selv hash mod ovenstående
 $ nix build &quot;.#nixosConfigurations.linux101-srv.config.system.build.toplevel&quot; --rebuild -L
 checking outputs of &#39;/nix/store/s5m1i4ff5six5w482jwli7b6sraj944n-...-nixos-system-...drv&#39;...</code></pre>
-<p>Ingen “may not be deterministic”-fejl, samme output-sti begge gange:
-selve systemkonfigurationen er reproducerbar. Det gælder derimod
-<strong>ikke</strong> det færdige <code>.qcow</code>-diskimage som
-artefakt:</p>
-<pre><code>$ nix build .#qcow --rebuild -L
+<p>Ingen “may not be deterministic”-fejl ved en tvunget, ægte
+genbygning: selve systemkonfigurationen er reproducerbar. Det gælder
+derimod <strong>ikke</strong> det færdige <code>.qcow</code>-diskimage
+som artefakt:</p>
+<pre><code># samme test, nu på selve diskimaget i stedet for konfigurationen
+$ nix build .#qcow --rebuild -L
 error: derivation &#39;.../nixos-disk-image.drv&#39; may not be deterministic: output
 &quot;.../nixos-disk-image&quot; differs</code></pre>
 <p>Årsagen er <code>mkfs.ext4</code>, som genererer et nyt, tilfældigt
@@ -838,13 +841,17 @@ genbruges; en privat nøgle findes kun ét sted og kan ikke gættes.</li>
 <h2 id="bevis-bootstrap-og-ssh-adgang">Bevis: bootstrap og
 SSH-adgang</h2>
 <p><strong>Bootstrap-kommandosekvens:</strong></p>
-<details><summary>Vis kode (11 linjer)</summary>
-<pre><code>nix build .#qcow -L
+<details><summary>Vis kode (15 linjer)</summary>
+<pre><code># byg det færdige, konfigurerede diskimage fra flake.nix
+nix build .#qcow -L
+# opret og start libvirts lager til VM-diskimages
 sudo virsh pool-define-as default dir --target /var/lib/libvirt/images
 sudo virsh pool-autostart default
 sudo virsh pool-start default
+# opret en tom volume, og upload det byggede image ind i den
 sudo virsh vol-create-as default linux101-srv.qcow2 5196742656 --format qcow2
 sudo virsh vol-upload --pool default linux101-srv.qcow2 result/nixos.qcow2
+# opret selve VM&#39;en fra det uploadede image, ingen installation
 sudo virt-install --name linux101-srv --memory 3072 --vcpus 2 \
     --disk vol=default/linux101-srv.qcow2,bus=virtio \
     --network network=default,model=virtio \
@@ -856,7 +863,8 @@ sudo virt-install --name linux101-srv --memory 3072 --vcpus 2 \
 linux101-srv
 admin</code></pre>
 <p><strong>Afvist password-login (NixOS):</strong></p>
-<pre><code>$ ssh -v -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@192.168.122.10 &#39;echo test&#39;
+<pre><code># tving et password-forsøg, selvom en gyldig nøgle findes
+$ ssh -v -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@192.168.122.10 &#39;echo test&#39;
 debug1: Authentications that can continue: publickey
 admin@192.168.122.10: Permission denied (publickey).</code></pre>
 <p><strong>Afvist root-login (selv med gyldig nøgle,
@@ -1074,8 +1082,10 @@ midlertidig, afgrænset adgang</h2>
 <pre><code>$ sudo -u revisor ls /srv/projekt
 ls: cannot open directory &#39;/srv/projekt&#39;: Permission denied</code></pre>
 <p><strong>Tildeling og efter (NixOS):</strong></p>
-<details><summary>Vis kode (13 linjer)</summary>
-<pre><code>$ sudo setfacl -m u:revisor:rx /srv/projekt
+<details><summary>Vis kode (15 linjer)</summary>
+<pre><code># giv revisor læse- og gennemsøgningsret til selve mappen
+$ sudo setfacl -m u:revisor:rx /srv/projekt
+# og kun læseret til de eksisterende filer (-R: samme regel rekursivt)
 $ sudo setfacl -R -m u:revisor:r /srv/projekt/app.conf /srv/projekt/deploy.sh
 
 $ sudo -u revisor ls -l /srv/projekt
@@ -1218,7 +1228,8 @@ ls: cannot access &#39;/etc/sudoers.d/&#39;: No such file or directory</code></p
 rebuild, ikke separate drop-in-filer, der kan glemmes eller efterlades
 uden versionsstyring.</p>
 <h2 id="bevis-granulær-sudo-virker">Bevis: granulær sudo virker</h2>
-<pre><code>$ sudo -n whoami
+<pre><code># -n: fejl med det samme, i stedet for at vente på en adgangskode der aldrig kommer
+$ sudo -n whoami
 sudo: a password is required
 
 $ sudo systemctl restart sshd.service
@@ -1316,10 +1327,12 @@ kilde-IP-begrænsning), side om side:</p>
 <section id="traditionel-fire-ufw-kommandoer" class="compare-side">
 <h4>Traditionel: fire <code>ufw</code>-kommandoer</h4>
 <div class="sourceCode" id="cb31"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw allow from 192.168.122.1 to any port 2222 proto tcp</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default deny incoming</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default allow outgoing</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw enable</span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tillad kun SSH fra værtens egen adresse</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw allow from 192.168.122.1 to any port 2222 proto tcp</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="co"># blokér alt andet indgående som udgangspunkt</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default deny incoming</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default allow outgoing</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw enable</span></code></pre></div>
 <p>(Bevidst <strong>ingen</strong> separat
 <code>ufw allow 2222/tcp</code>, den ville tillade porten fra
 <em>alle</em> kilder og dermed underminere kilde-IP-reglen ovenfor,
@@ -1427,7 +1440,8 @@ etablerede/relaterede forbindelser, ICMP, DHCP, og SSH fra præcis
 <code>192.168.122.1</code> accepteres eksplicit.</p>
 <p><strong>Verifikation</strong> (forsøgt fra en ikke-godkendt kilde-IP
 på samme undernet):</p>
-<pre><code>$ ssh -p 2222 -b 192.168.122.99 admin@192.168.122.10 &#39;hostname&#39;
+<pre><code># -b: bind forbindelsen til en anden lokal adresse, for at simulere en uautoriseret kilde
+$ ssh -p 2222 -b 192.168.122.99 admin@192.168.122.10 &#39;hostname&#39;
 ssh: connect to host 192.168.122.10 port 2222: Connection timed out
 
 $ ssh -p 2222 admin@192.168.122.10 &#39;hostname&#39;   # fra 192.168.122.1 (tilladt)
@@ -1901,7 +1915,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb44-1"><a href=
 <span id="cb44-33"><a href="#cb44-33" aria-hidden="true" tabindex="-1"></a><span class="ex">main</span> <span class="st">&quot;</span><span class="va">$@</span><span class="st">&quot;</span></span></code></pre></div>
 </details>
 <p><strong>Bevis, begge grene testet:</strong></p>
-<details><summary>Vis kode (14 linjer)</summary>
+<details><summary>Vis kode (15 linjer)</summary>
 <pre><code>$ ./verify-deploy.sh
 Kørende system:    /nix/store/r0vf...-nixos-system-linux101-srv-...
 Deklareret system: /nix/store/r0vf...-nixos-system-linux101-srv-...
@@ -1909,6 +1923,7 @@ OK: systemet stemmer overens med den deklarerede konfiguration.
 $ echo $?
 0
 
+# simulér en udefra kommende konfigurationsafvigelse, uden en rigtig nixos-rebuild
 $ sed -i &#39;s/allowedTCPPorts = \[ \];/allowedTCPPorts = [ 9999 ];/&#39; nixos/modules/firewall.nix
 $ ./verify-deploy.sh
 Kørende system:    /nix/store/r0vf...-nixos-system-linux101-srv-...

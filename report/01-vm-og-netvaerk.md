@@ -42,12 +42,16 @@ af andre.
 **Bootstrap-kommandosekvens:**
 
 ```
+# byg det færdige, konfigurerede diskimage fra flake.nix
 nix build .#qcow -L
+# opret og start libvirts lager til VM-diskimages
 sudo virsh pool-define-as default dir --target /var/lib/libvirt/images
 sudo virsh pool-autostart default
 sudo virsh pool-start default
+# opret en tom volume, og upload det byggede image ind i den
 sudo virsh vol-create-as default linux101-srv.qcow2 5196742656 --format qcow2
 sudo virsh vol-upload --pool default linux101-srv.qcow2 result/nixos.qcow2
+# opret selve VM'en fra det uploadede image, ingen installation
 sudo virt-install --name linux101-srv --memory 3072 --vcpus 2 \
     --disk vol=default/linux101-srv.qcow2,bus=virtio \
     --network network=default,model=virtio \
@@ -66,6 +70,7 @@ admin
 **Afvist password-login (NixOS):**
 
 ```
+# tving et password-forsøg, selvom en gyldig nøgle findes
 $ ssh -v -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@192.168.122.10 'echo test'
 debug1: Authentications that can continue: publickey
 admin@192.168.122.10: Permission denied (publickey).

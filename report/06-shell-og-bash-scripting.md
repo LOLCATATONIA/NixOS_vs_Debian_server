@@ -307,6 +307,7 @@ OK: systemet stemmer overens med den deklarerede konfiguration.
 $ echo $?
 0
 
+# simulér en udefra kommende konfigurationsafvigelse, uden en rigtig nixos-rebuild
 $ sed -i 's/allowedTCPPorts = \[ \];/allowedTCPPorts = [ 9999 ];/' nixos/modules/firewall.nix
 $ ./verify-deploy.sh
 Kørende system:    /nix/store/r0vf...-nixos-system-linux101-srv-...

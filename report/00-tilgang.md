@@ -175,16 +175,19 @@ facto-standarden i økosystemet. Derfor skal de aktiveres eksplicit med
 gentagen bygning og sammenligner selv output-hashen mod den eksisterende:
 
 ```
+# evaluerer den deklarerede sti, uden at bygge noget
 $ nix eval --raw ".#nixosConfigurations.linux101-srv.config.system.build.toplevel"
 /nix/store/x38lab3zq77b9mxsn8br266df4m23vxd-nixos-system-linux101-srv-...
+# tvinger en ægte ny bygning, sammenligner selv hash mod ovenstående
 $ nix build ".#nixosConfigurations.linux101-srv.config.system.build.toplevel" --rebuild -L
 checking outputs of '/nix/store/s5m1i4ff5six5w482jwli7b6sraj944n-...-nixos-system-...drv'...
 ```
 
-Ingen "may not be deterministic"-fejl, samme output-sti begge gange: selve systemkonfigurationen er
-reproducerbar. Det gælder derimod **ikke** det færdige `.qcow`-diskimage som artefakt:
+Ingen "may not be deterministic"-fejl ved en tvunget, ægte genbygning: selve systemkonfigurationen
+er reproducerbar. Det gælder derimod **ikke** det færdige `.qcow`-diskimage som artefakt:
 
 ```
+# samme test, nu på selve diskimaget i stedet for konfigurationen
 $ nix build .#qcow --rebuild -L
 error: derivation '.../nixos-disk-image.drv' may not be deterministic: output
 ".../nixos-disk-image" differs
