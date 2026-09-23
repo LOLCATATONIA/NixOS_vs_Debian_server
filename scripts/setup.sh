@@ -16,10 +16,7 @@
 set -euo pipefail
 
 readonly VM_NAME="nixos-comparison"
-# Diskvolumen beholder sit oprindelige navn fra dengang VM'en hed "linux101-srv" —
-# at omdøbe selve filen ville kræve at redigere domænets disk-XML-definition for en
-# rent kosmetisk gevinst, ingen læser nogensinde ser filnavnet. Se 00-tilgang.md.
-readonly DISK_VOLUME="linux101-srv.qcow2"
+readonly DISK_VOLUME="${VM_NAME}.qcow2"
 readonly POOL_NAME="default"
 readonly POOL_PATH="/var/lib/libvirt/images"
 readonly DISK_SIZE_BYTES=5196742656  # ~4.84 GiB, matcher diskstørrelsen fra modul 1

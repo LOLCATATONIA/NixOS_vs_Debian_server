@@ -48,10 +48,7 @@ Automatiserer bygning og (gen)oprettelse af VM'en fra `flake.nix`. Køres på **
 set -euo pipefail
 
 readonly VM_NAME="nixos-comparison"
-# Diskvolumen beholder sit oprindelige navn fra dengang VM'en hed "linux101-srv" —
-# at omdøbe selve filen ville kræve at redigere domænets disk-XML-definition for en
-# rent kosmetisk gevinst, ingen læser nogensinde ser filnavnet. Se 00-tilgang.md.
-readonly DISK_VOLUME="linux101-srv.qcow2"
+readonly DISK_VOLUME="${VM_NAME}.qcow2"
 readonly POOL_NAME="default"
 readonly POOL_PATH="/var/lib/libvirt/images"
 readonly DISK_SIZE_BYTES=5196742656  # ~4.84 GiB, matcher diskstørrelsen fra modul 1
@@ -154,16 +151,16 @@ $ ./scripts/setup.sh
 [setup.sh] Bygger diskimage fra flake.nix (kan tage nogle minutter)...
 [...]
 [setup.sh] Opretter volume og importerer image i libvirt...
-Vol linux101-srv.qcow2 created
+Vol nixos-comparison.qcow2 created
 [setup.sh] Færdig. 'nixos-comparison' kører nu med den konfiguration, der er deklareret i flake.nix.
 
 $ ./scripts/setup.sh
 [setup.sh] Fjerner eksisterende VM 'nixos-comparison' (for idempotent genopbygning)...
-Vol linux101-srv.qcow2 deleted
+Vol nixos-comparison.qcow2 deleted
 [setup.sh] Bygger diskimage fra flake.nix (kan tage nogle minutter)...
 [...]
 [setup.sh] Opretter volume og importerer image i libvirt...
-Vol linux101-srv.qcow2 created
+Vol nixos-comparison.qcow2 created
 [setup.sh] Færdig. 'nixos-comparison' kører nu med den konfiguration, der er deklareret i flake.nix.
 $ echo $?
 0

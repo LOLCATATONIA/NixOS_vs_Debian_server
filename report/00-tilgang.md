@@ -98,7 +98,7 @@ $ virt-install --location debian-13.7.0-amd64-netinst.iso \
 ```bash
 $ nix build .#qcow -L
 $ virt-install --name nixos-comparison --memory 3072 --vcpus 2 \
-    --disk vol=default/linux101-srv.qcow2,bus=virtio \
+    --disk vol=default/nixos-comparison.qcow2,bus=virtio \
     --network network=default,model=virtio \
     --graphics none --console pty,target_type=serial \
     --import --os-variant generic --noautoconsole
@@ -228,7 +228,7 @@ efterprøvet A/B-test i stedet for kun en teoretisk modstilling.
 <tr><th>Aspekt</th><th>Debian (<code>debian-comparison</code>)</th><th>NixOS (<code>nixos-comparison</code>)</th></tr>
 </thead>
 <tbody>
-<tr><td>Diskimage</td><td><code>/var/lib/libvirt/images/debian-comparison.qcow2</code></td><td><code>/var/lib/libvirt/images/linux101-srv.qcow2</code> <em>(historisk filnavn, se note nedenfor)</em></td></tr>
+<tr><td>Diskimage</td><td><code>/var/lib/libvirt/images/debian-comparison.qcow2</code></td><td><code>/var/lib/libvirt/images/nixos-comparison.qcow2</code></td></tr>
 <tr><td>Diskstørrelse</td><td>8,00 GiB</td><td>4,83 GiB</td></tr>
 <tr><td>Statisk IP</td><td><code>192.168.122.11</code></td><td><code>192.168.122.10</code></td></tr>
 <tr><td>vCPU / RAM</td><td colspan="2" style="text-align:center">2 vCPU / 3072 MB (begge, for en fair sammenligning)</td></tr>
@@ -251,11 +251,14 @@ ressourcer.
 
 **Note om diskimagets filnavn:** VM'en hed oprindeligt `linux101-srv`, efter opgavens egen titel, og
 blev senere omdøbt til `nixos-comparison` for at matche projektets etablerede navnekonvention.
-Selve diskimage-filen beholder bevidst sit oprindelige navn, `virsh domrename` ændrer kun det
-registrerede domænenavn i libvirt, ikke dets disk-sti, og at ændre filnavnet ville kræve at redigere
-domænets disk-XML-definition for en rent kosmetisk gevinst, ingen læser nogensinde ser filnavnet.
-Samme princip som Debian-sidens `preseed.cfg`, der stadig internt refererer det gamle `debian-tmp`
-(se `guide.md`).
+Selve diskimage-filen fik oprindeligt lov at beholde det gamle navn, `virsh domrename` ændrer kun
+det registrerede domænenavn i libvirt, ikke dets disk-sti, og en filomdøbning krævede derfor en
+separat, ekstra handling: en `virsh vol-clone` til det nye navn, en redefinering af domænets
+disk-XML til at pege på den nye fil (mens VM'en var slukket), en verificeret opstart på den nye
+fil, og til sidst sletning af den gamle volume. Det blev alligevel gjort, for at eliminere den
+sidste rest af det gamle navn helt. Debian-sidens `preseed.cfg`, der stadig internt refererer det
+gamle `debian-tmp` (se `guide.md`), er bevidst ikke rettet på samme måde: den fil er selve den
+historiske installationsopskrift, ikke en driftsmæssig sti nogen kommando slår op i i dag.
 
 ## Repo-struktur
 

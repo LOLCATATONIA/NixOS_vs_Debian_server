@@ -48,13 +48,12 @@ nix build .#qcow -L
 sudo virsh pool-define-as default dir --target /var/lib/libvirt/images
 sudo virsh pool-autostart default
 sudo virsh pool-start default
-# opret en tom volume (beholder sit historiske filnavn, se 00-tilgang.md), og upload
-# det byggede image ind i den
-sudo virsh vol-create-as default linux101-srv.qcow2 5196742656 --format qcow2
-sudo virsh vol-upload --pool default linux101-srv.qcow2 result/nixos.qcow2
+# opret en tom volume, og upload det byggede image ind i den
+sudo virsh vol-create-as default nixos-comparison.qcow2 5196742656 --format qcow2
+sudo virsh vol-upload --pool default nixos-comparison.qcow2 result/nixos.qcow2
 # opret selve VM'en fra det uploadede image, ingen installation
 sudo virt-install --name nixos-comparison --memory 3072 --vcpus 2 \
-    --disk vol=default/linux101-srv.qcow2,bus=virtio \
+    --disk vol=default/nixos-comparison.qcow2,bus=virtio \
     --network network=default,model=virtio \
     --graphics none --console pty,target_type=serial \
     --import --os-variant generic --noautoconsole
