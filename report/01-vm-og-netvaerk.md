@@ -37,7 +37,7 @@ af andre.
 - **Kun nøglebaseret SSH:** Adgangskoder kan gættes eller genbruges; en privat nøgle findes kun ét
   sted og kan ikke gættes.
 
-## Dokumentation/output
+## Bevis: bootstrap og SSH-adgang
 
 **Bootstrap-kommandosekvens:**
 

@@ -125,8 +125,9 @@ vs. imperativ, kort forklaret</a></li>
 <li><a href="#valg-af-styresystem-nixos-frem-for-debianubuntu"
 id="toc-valg-af-styresystem-nixos-frem-for-debianubuntu">Valg af
 styresystem: NixOS frem for Debian/Ubuntu</a></li>
-<li><a href="#teknisk-arkitektur" id="toc-teknisk-arkitektur">Teknisk
-arkitektur</a></li>
+<li><a href="#flake-arkitektur-og-reproducerbarhed"
+id="toc-flake-arkitektur-og-reproducerbarhed">Flake-arkitektur og
+reproducerbarhed</a></li>
 <li><a href="#repo-struktur"
 id="toc-repo-struktur">Repo-struktur</a></li>
 </ul></li>
@@ -143,8 +144,9 @@ traditionel tilgang vs. NixOS</a></li>
 <li><a href="#sikkerhedsbegrundelse-for-hvert-valg"
 id="toc-sikkerhedsbegrundelse-for-hvert-valg">Sikkerhedsbegrundelse for
 hvert valg</a></li>
-<li><a href="#dokumentationoutput"
-id="toc-dokumentationoutput">Dokumentation/output</a></li>
+<li><a href="#bevis-bootstrap-og-ssh-adgang"
+id="toc-bevis-bootstrap-og-ssh-adgang">Bevis: bootstrap og
+SSH-adgang</a></li>
 <li><a href="#delkonklusion"
 id="toc-delkonklusion">Delkonklusion</a></li>
 </ul></li>
@@ -560,7 +562,8 @@ tilbage som en samlet enhed. På en traditionel server findes intet
 tilsvarende: hver fil redigeres og genindlæses for sig, uden noget
 objekt der repræsenterer hele systemets konfiguration som én genskabelig
 enhed.</p>
-<h2 id="teknisk-arkitektur">Teknisk arkitektur</h2>
+<h2 id="flake-arkitektur-og-reproducerbarhed">Flake-arkitektur og
+reproducerbarhed</h2>
 <p>En <strong>flake</strong> er Nix’ standardiserede projektformat: en
 <code>flake.nix</code>-fil, der deklarerer et projekts <em>inputs</em>
 (afhængigheder, fx en bestemt version af nixpkgs) og <em>outputs</em>
@@ -832,7 +835,8 @@ først tilføjer et ekstra lag.</li>
 <li><strong>Kun nøglebaseret SSH:</strong> Adgangskoder kan gættes eller
 genbruges; en privat nøgle findes kun ét sted og kan ikke gættes.</li>
 </ul>
-<h2 id="dokumentationoutput">Dokumentation/output</h2>
+<h2 id="bevis-bootstrap-og-ssh-adgang">Bevis: bootstrap og
+SSH-adgang</h2>
 <p><strong>Bootstrap-kommandosekvens:</strong></p>
 <details><summary>Vis kode (11 linjer)</summary>
 <pre><code>nix build .#qcow -L

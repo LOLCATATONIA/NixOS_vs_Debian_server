@@ -160,7 +160,7 @@ resultatet er en generation, der kan rulles tilbage som en samlet enhed. På en 
 findes intet tilsvarende: hver fil redigeres og genindlæses for sig, uden noget objekt der
 repræsenterer hele systemets konfiguration som én genskabelig enhed.
 
-## Teknisk arkitektur
+## Flake-arkitektur og reproducerbarhed
 
 En **flake** er Nix' standardiserede projektformat: en `flake.nix`-fil, der deklarerer et projekts
 *inputs* (afhængigheder, fx en bestemt version af nixpkgs) og *outputs* (hvad der bygges, fx en
