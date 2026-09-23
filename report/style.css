@@ -153,7 +153,8 @@ pre {
   color: var(--code-fg);
   border: 1px solid var(--code-border);
   border-radius: 6px;
-  padding: 0.9rem 1rem;
+  padding: 1.1rem 1.25rem;
+  margin: 1.5rem 0;
   overflow-x: auto;
   box-shadow: 0 0 12px rgba(255, 47, 176, 0.08), 0 0 12px rgba(0, 229, 255, 0.06);
 }

@@ -31,6 +31,17 @@ kommandoer kræver at man selv slår ting op, som en GUI ellers ville have vist 
 omkostning betales dog kun én gang, til gengæld fås en ubrudt, scriptbar vej fra flake til kørende
 server, som betaler sig igen og igen gennem resten af projektet.
 
+## Deklarativ vs. imperativ, kort forklaret
+
+En imperativ tilgang (af latin *imperare*, "at befale") beskriver de *handlinger*, systemet skal
+udføre for at nå et resultat, fx `apt install vim git acl tealdeer`. En deklarativ tilgang (af
+latin *declarare*, "at erklære") beskriver i stedet den *ønskede tilstand*, fx
+`environment.systemPackages = with pkgs; [ vim git acl tealdeer ];`, den præcise linje fra dette
+projekts egen `configuration.nix` (se "Samlet billede" nedenfor), og overlader det til systemet
+selv at afgøre, hvilke handlinger der fører dertil. Forskellen er ikke antallet af trin, men hvad
+der beskrives, handlingen eller tilstanden, og det er netop den forskel, der gennemgås modul for
+modul i resten af rapporten.
+
 ## Valg af styresystem: NixOS frem for Debian/Ubuntu
 
 Opgavebeskrivelsen foreslår Debian eller Ubuntu Server. Jeg har af læringsmæssige grunde valgt at
@@ -55,6 +66,48 @@ den traditionelle tilgangs fejlmeddelelser (fra `useradd`, `systemctl`, `ufw`) t
 umiddelbart genkendelige. Hvor NixOS' arbejdsgang adskiller sig væsentligt fra Debians, dokumenteres
 eksplicit hvad forskellen konkret er, og hvorfor den deklarative løsning vurderes som ligeværdig
 eller stærkere, side om side i hvert modul.
+
+### Konkret: selve installationsprocessen side om side
+
+Før den strukturelle pointe nedenfor, et konkret eksempel på hvad forskellen betyder i praksis, den
+faktiske kommando, der starter installationen på hver platform:
+
+::: {.compare}
+::: {.compare-side}
+#### Traditionel: en interaktiv installer, forhåndsudfyldt
+
+```bash
+$ virt-install --location debian-13.7.0-amd64-netinst.iso \
+    --initrd-inject=preseed.cfg \
+    --extra-args "auto=true priority=critical console=ttyS0" \
+    --disk size=8,format=qcow2,bus=virtio \
+    --network network=default,model=virtio \
+    --graphics none --console pty,target_type=serial \
+    --os-variant generic
+```
+:::
+::: {.compare-side}
+#### NixOS: intet installationstrin
+
+```bash
+$ nix build .#qcow -L
+$ virt-install --name linux101-srv --memory 3072 --vcpus 2 \
+    --disk vol=default/linux101-srv.qcow2,bus=virtio \
+    --network network=default,model=virtio \
+    --graphics none --console pty,target_type=serial \
+    --import --os-variant generic --noautoconsole
+```
+:::
+:::
+
+`--location` peger stadig på en rigtig installer, blot forhåndsudfyldt med `preseed.cfg`, en
+netinst-wizard kører stadig, blot uden at stoppe for input undervejs. `--import` har intet sådant
+trin overhovedet: imaget er allerede et komplet, konfigureret system. Denne forskel er ikke kun
+kosmetisk, Debians installer forsøger som udgangspunkt DHCP under netværksopsætningen, medmindre
+den preseedes til statisk IP, en afhængighed der reelt forsinkede opsætningen af
+`debian-comparison` (se modul 1's Delkonklusion for den fulde fejlfindingshistorie). NixOS' `--import`
+kan aldrig ramme den klasse af problem, fordi der ikke findes en installationsfase, der afhænger af
+noget netværksprotokol overhovedet.
 
 ### Samlet billede: spredte konfigurationsfiler vs. én `configuration.nix`
 
