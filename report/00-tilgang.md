@@ -249,17 +249,6 @@ derimod identiske på begge VM'er,
 netop for at sammenligningerne i modul 1-6 måler platformsforskelle, ikke forskelle i tildelte
 ressourcer.
 
-**Note om diskimagets filnavn:** VM'en hed oprindeligt `linux101-srv`, efter opgavens egen titel, og
-blev senere omdøbt til `nixos-comparison` for at matche projektets etablerede navnekonvention.
-Selve diskimage-filen fik oprindeligt lov at beholde det gamle navn, `virsh domrename` ændrer kun
-det registrerede domænenavn i libvirt, ikke dets disk-sti, og en filomdøbning krævede derfor en
-separat, ekstra handling: en `virsh vol-clone` til det nye navn, en redefinering af domænets
-disk-XML til at pege på den nye fil (mens VM'en var slukket), en verificeret opstart på den nye
-fil, og til sidst sletning af den gamle volume. Det blev alligevel gjort, for at eliminere den
-sidste rest af det gamle navn helt. Debian-sidens `preseed.cfg`, der stadig internt refererer det
-gamle `debian-tmp` (se `guide.md`), er bevidst ikke rettet på samme måde: den fil er selve den
-historiske installationsopskrift, ikke en driftsmæssig sti nogen kommando slår op i i dag.
-
 ## Repo-struktur
 
 ```

@@ -113,18 +113,14 @@ admin     ALL=(ALL:ALL)    NOPASSWD: /run/current-system/sw/bin/nixos-rebuild sw
     NOPASSWD: /run/current-system/sw/bin/nft list ruleset
 ```
 
-**Note: en driftsmæssig omkostning ved den snævre kommandomatch, bekræftet ved en faktisk
-omdøbning.** Sudoers' fulde-kommandolinje-match (vist ovenfor) er selve pointen med granulær
-adgang, men den er bogstavelig, ikke semantisk. Serveren blev senere rent faktisk omdøbt (fra
-`linux101-srv` til `nixos-comparison`, se `00-tilgang.md`), hvilket krævede både et nyt
-`networking.hostName` og et nyt navn på flakens `nixosConfigurations`-attribut, og satte derfor
-reglen på en reel prøve, ikke kun en tænkt situation:
+**Note: en driftsmæssig omkostning ved den snævre kommandomatch.** Sudoers' fulde-kommandolinje-match
+(vist ovenfor) er selve pointen med granulær adgang, men den er bogstavelig, ikke semantisk:
 
 ```
-$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config
-Done. The new configuration is /nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
+$ sudo -n nixos-rebuild switch --flake /home/admin/nixos-comparison-config
+Done. The new configuration is /nix/store/zra2zp26hyakmd8h5vywp08n78l8hdgp-nixos-system-nixos-comparison-...
 
-$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config#nixos-comparison
+$ sudo -n nixos-rebuild switch --flake /home/admin/nixos-comparison-config#nixos-comparison
 sudo: a password is required
 ```
 
@@ -133,41 +129,22 @@ konfiguration der bygges, er nok til at blive afvist (ingen tilfældighed, se De
 hvorfor selve reglen ikke kan indeholde et `#`-tegn). Konsekvensen er reel: `admin` har ingen
 adgangskode, og `root` har hverken SSH-adgang (`PermitRootLogin = "no"`, modul 1) eller en gyldig
 adgangskode til konsollen, så der findes intet fallback, hvis en kommando afviger bare en smule fra
-den præcise, hvidlistede streng. Selve omdøbningen lykkedes uden problemer, netop fordi
-rækkefølgen (hostname ændret først, flake-attributten omdøbt bagefter, aldrig samtidig) undgik
-nogensinde at skulle bruge andet end den ene, hvidlistede streng. På en traditionel Debian-server
-ville et tilsvarende fallback typisk kunne reddes via en almindelig `sudo`-adgangskode eller
-root-konsoladgang, som `debian-comparison` faktisk har. Den granulære
-sudo-model er derfor ikke gratis: den fjerner ikke kun uautoriseret adgang, den fjerner også ens
-eget nødspor, hvis noget ikke er forudset præcist.
+den præcise, hvidlistede streng. På en traditionel Debian-server ville et tilsvarende fallback
+typisk kunne reddes via en almindelig `sudo`-adgangskode eller root-konsoladgang, som
+`debian-comparison` faktisk har. Den granulære sudo-model er derfor ikke gratis: den fjerner ikke
+kun uautoriseret adgang, den fjerner også ens eget nødspor, hvis noget ikke er forudset præcist.
 
-**En anden, endnu strengere prøve: selve stien i den hvidlistede kommando blev ændret.**
-Flakens mappenavn på serveren blev senere også omdøbt (fra `~/linux101-config` til
-`~/nixos-comparison-config`), denne gang en ændring af selve den streng, sudo-reglen matcher
-bogstaveligt, et hønen/ægget-problem der i teorien er værre end hostname/attribut-omdøbningen
-ovenfor: ændres reglen, før mappen er flyttet, matcher ingen eksisterende sti reglen endnu; flyttes
-mappen først, matcher den utflyttede regel ikke længere noget. Løsningen udnytter at
-`security.sudo.extraRules` blot er deklarativ data, en **ekstra** regel for den nye sti blev
-tilføjet ved siden af den gamle (ren addition, appliceret via den kommando der allerede virkede),
-mappen blev derefter flyttet som en almindelig, ikke-privilegeret brugerhandling, og først da den
-nye sti var bekræftet at virke, blev den gamle regel fjernet:
-
-```
-$ sudo -n nixos-rebuild switch --flake /home/admin/nixos-comparison-config
-Done. The new configuration is /nix/store/zra2zp26hyakmd8h5vywp08n78l8hdgp-nixos-system-nixos-comparison-...
-
-$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config
-error: getting status of "/home/admin/linux101-config": No such file or directory
-```
-
-Ingen af de to kommandoer nogensinde manglede en gyldig, hvidlistet sti at ramme, der var intet
-øjeblik, hvor `admin` reelt risikerede at blive låst ude. Det er selve svaret på om NixOS'
-fleksibilitetspåstand holder her: ikke fordi den stive, bogstavelige sudo-matchning bliver mindre
-stiv, den gør den ikke, men fordi konfigurationen er data, man kan udvide additivt og derefter
-indskrænke igen, i stedet for en fil, man redigerer destruktivt på stedet. Den tilsvarende operation
-på Debian, en direkte `visudo`-redigering af `/etc/sudoers.d/admin`, har ingen sådan mellemtilstand,
-en fejlskrevet sti er øjeblikkeligt aktiv, uden en tidligere, stadig gyldig generation at falde
-tilbage på.
+Skulle selve stien i den hvidlistede kommando nogensinde skulle ændres (fx hvis config-mappen
+omdøbes), findes der dog en sikker vej uden om denne stivhed: fordi `security.sudo.extraRules` blot
+er en deklareret liste, kan en ny sti tilføjes som en **ekstra** regel, ved siden af den gamle,
+appliceret via den kommando der allerede virker. Først når den nye sti er bekræftet at virke,
+fjernes den gamle regel, via den nu-virkende, nye kommando. På intet tidspunkt i den overgang
+mangler `admin` en gyldig, hvidlistet kommando at falde tilbage på. Den tilsvarende operation på
+Debian, en direkte `visudo`-redigering af `/etc/sudoers.d/admin`, har ingen sådan mellemtilstand: en
+fejlskrevet sti er øjeblikkeligt aktiv, uden en tidligere, stadig gyldig generation at falde tilbage
+på. Den stive, bogstavelige matchning bliver ikke mindre stiv af det, men fordi konfigurationen er
+data, man kan udvide additivt og derefter indskrænke igen i stedet for en fil man redigerer
+destruktivt på stedet, koster selve stivheden ikke det samme som den ville på en traditionel server.
 
 ## Dokumentation: `/etc/group` og `id`
 

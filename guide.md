@@ -14,9 +14,7 @@ hostname
 ```
 
 - `cachyos-x8664` → du er på **værten**.
-- `nixos-comparison` → du er på **NixOS-VM'en** (hed oprindeligt `linux101-srv`, efter opgavens
-  egen titel, omdøbt for at matche den etablerede `debian-comparison`-navnekonvention, se
-  `00-tilgang.md`).
+- `nixos-comparison` → du er på **NixOS-VM'en**.
 - `debian-comparison` → du er på **Debian-VM'en** (hed oprindeligt `debian-tmp`, det midlertidige
   navn fra preseed-installationen, blev aldrig rettet, før det blev opdaget og rettet manuelt,
   se `TODO/DONE/08-log-debian-vs-nixos-install.md`, et lille, ægte eksempel på konfigurationsafvigelse:
