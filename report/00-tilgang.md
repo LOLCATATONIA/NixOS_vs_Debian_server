@@ -15,7 +15,7 @@ integration med Linux-værten og NixOS' eget værktøjsøkosystem.
 
 | Aspekt | VirtualBox/VMware | QEMU/KVM (libvirt) |
 |---|---|---|
-| Arkitektur og ydeevne | Kører som et separat program oven på værtens OS og emulerer hardware i brugerrum, hvilket typisk giver mere overhead | KVM er indbygget i Linux-kernen og udnytter CPU'ens VT-x/AMD-V-udvidelser direkte, tættere på native ydeevne |
+| Arkitektur og ydeevne | Kører som et separat program oven på værtens OS og emulerer hardware i brugerrum, hvilket typisk giver mere overhead | KVM er indbygget i Linux-kernen og udnytter CPU'ens VT-x/AMD-V-udvidelser (Intel/AMDs hardware-understøttelse for virtualisering) direkte, tættere på native ydeevne |
 | Scriptbarhed | CLI findes (`VBoxManage`), men værktøjet er primært bygget til den grafiske brugerflade | `virt-install`/`virsh` er fuldt scriptbare kommandolinjeværktøjer, uden en grafisk brugerflade som primær arbejdsgang |
 | Licens/åbenhed | VirtualBox's kerne er GPL, men Extension Pack (USB 2/3, RDP) er proprietær. VMware Workstation er kommerciel | QEMU, KVM og libvirt er fuldt open source i alle dele, ingen separate proprietære tilføjelser |
 | Brugervenlighed | Modent, grafisk værktøj med lav indlæringskurve, især med forudgående VirtualBox-erfaring | Kræver CLI-fortrolighed. `virt-manager` findes som GUI, men projektets daglige arbejdsgang er CLI-baseret |
@@ -56,10 +56,16 @@ tilgang sammenlignet med den traditionelle, imperative arbejdsgang, som opgaven 
 | Pakke-integritet | Muterbart filsystem for installerede pakker | Skrivebeskyttet, indholdsadresseret `/nix/store` |
 | Hærdningsøkosystem (CIS/STIG) | Officielle CIS Benchmarks og OpenSCAP-profiler findes direkte til Debian, klar til brug | Ingen officielle CIS/STIG-benchmarks for NixOS; tilsvarende hærdning skal udtrykkes manuelt i `configuration.nix`, modul for modul |
 
+**CIS Benchmarks** er branchestandard-tjeklister for sikker konfiguration af et givet system;
+**OpenSCAP** er et værktøj, der automatisk kan afprøve en maskine mod sådanne tjeklister; **STIG**
+(Security Technical Implementation Guide) er den amerikanske forsvarsstandards udgave af det samme.
+
 **Delkonklusion:** NixOS er valgt, fordi de arkitektoniske fordele, reproducerbarhed, rollback til en
 tidligere, fuldt bygget generation, og umuliggørelse af konfigurationsafvigelse, er direkte relevante
 sikkerhedsegenskaber, opnået ved at automatisere hele systemtilstanden i stedet for at stole på
-manuelle, gentagne trin. I praksis er forskellen dog ikke entydigt en fordel: NixOS kræver et
+manuelle, gentagne trin. En **generation** er her et komplet, navngivet øjebliksbillede af systemets
+tilstand, valgbart som en boot-menu-post, ikke blot en logisk betegnelse. I praksis er forskellen
+dog ikke entydigt en fordel: NixOS kræver et
 reelt paradigmeskifte, fra at tænke i en *sekvens af kommandoer* til at tænke i en *deklareret
 sluttilstand*, og en fejl i konfigurationen viser sig ofte som en kryptisk Nix-evalueringsfejl, hvor
 den traditionelle tilgangs fejlmeddelelser (fra `useradd`, `systemctl`, `ufw`) typisk er mere
@@ -232,8 +238,9 @@ efterprøvet A/B-test i stedet for kun en teoretisk modstilling.
 Diskstørrelsen er den eneste reelle asymmetri, og selve årsagen til forskellen er et lille eksempel
 på projektets egen pointe: NixOS' størrelse er slet ikke et valg, den er en **automatisk** konsekvens
 af `nixos-generators`' `qcow`-format, som selv beregner diskstørrelsen ud fra det deklarerede
-systems closure, `DISK_SIZE_BYTES` i `scripts/setup.sh` er blot den *målte* byte-størrelse af det
-allerede byggede image. Debians `size=8` (GiB) i `virt-install`-kommandoen var derimod et
+systems **closure** (hele det udregnede træ af pakker og filer, systemet reelt kræver for at køre).
+`DISK_SIZE_BYTES` i `scripts/setup.sh` er blot den *målte* byte-størrelse af det allerede byggede
+image. Debians `size=8` (GiB) i `virt-install`-kommandoen var derimod et
 **manuelt**, rundt tal valgt på forhånd til en traditionel netinst-installation. vCPU og RAM er
 derimod identiske på begge VM'er,
 netop for at sammenligningerne i modul 1-6 måler platformsforskelle, ikke forskelle i tildelte

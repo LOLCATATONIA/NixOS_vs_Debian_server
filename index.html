@@ -291,7 +291,8 @@ med Linux-værten og NixOS’ eget værktøjsøkosystem.</p>
 <td>Kører som et separat program oven på værtens OS og emulerer hardware
 i brugerrum, hvilket typisk giver mere overhead</td>
 <td>KVM er indbygget i Linux-kernen og udnytter CPU’ens
-VT-x/AMD-V-udvidelser direkte, tættere på native ydeevne</td>
+VT-x/AMD-V-udvidelser (Intel/AMDs hardware-understøttelse for
+virtualisering) direkte, tættere på native ydeevne</td>
 </tr>
 <tr>
 <td>Scriptbarhed</td>
@@ -405,21 +406,28 @@ modul</td>
 </tr>
 </tbody>
 </table>
+<p><strong>CIS Benchmarks</strong> er branchestandard-tjeklister for
+sikker konfiguration af et givet system; <strong>OpenSCAP</strong> er et
+værktøj, der automatisk kan afprøve en maskine mod sådanne tjeklister;
+<strong>STIG</strong> (Security Technical Implementation Guide) er den
+amerikanske forsvarsstandards udgave af det samme.</p>
 <p><strong>Delkonklusion:</strong> NixOS er valgt, fordi de
 arkitektoniske fordele, reproducerbarhed, rollback til en tidligere,
 fuldt bygget generation, og umuliggørelse af konfigurationsafvigelse, er
 direkte relevante sikkerhedsegenskaber, opnået ved at automatisere hele
-systemtilstanden i stedet for at stole på manuelle, gentagne trin. I
-praksis er forskellen dog ikke entydigt en fordel: NixOS kræver et reelt
-paradigmeskifte, fra at tænke i en <em>sekvens af kommandoer</em> til at
-tænke i en <em>deklareret sluttilstand</em>, og en fejl i
-konfigurationen viser sig ofte som en kryptisk Nix-evalueringsfejl, hvor
-den traditionelle tilgangs fejlmeddelelser (fra <code>useradd</code>,
-<code>systemctl</code>, <code>ufw</code>) typisk er mere umiddelbart
-genkendelige. Hvor NixOS’ arbejdsgang adskiller sig væsentligt fra
-Debians, dokumenteres eksplicit hvad forskellen konkret er, og hvorfor
-den deklarative løsning vurderes som ligeværdig eller stærkere, side om
-side i hvert modul.</p>
+systemtilstanden i stedet for at stole på manuelle, gentagne trin. En
+<strong>generation</strong> er her et komplet, navngivet øjebliksbillede
+af systemets tilstand, valgbart som en boot-menu-post, ikke blot en
+logisk betegnelse. I praksis er forskellen dog ikke entydigt en fordel:
+NixOS kræver et reelt paradigmeskifte, fra at tænke i en <em>sekvens af
+kommandoer</em> til at tænke i en <em>deklareret sluttilstand</em>, og
+en fejl i konfigurationen viser sig ofte som en kryptisk
+Nix-evalueringsfejl, hvor den traditionelle tilgangs fejlmeddelelser
+(fra <code>useradd</code>, <code>systemctl</code>, <code>ufw</code>)
+typisk er mere umiddelbart genkendelige. Hvor NixOS’ arbejdsgang
+adskiller sig væsentligt fra Debians, dokumenteres eksplicit hvad
+forskellen konkret er, og hvorfor den deklarative løsning vurderes som
+ligeværdig eller stærkere, side om side i hvert modul.</p>
 <h3 id="konkret-selve-installationsprocessen-side-om-side">Konkret:
 selve installationsprocessen side om side</h3>
 <p>Før den strukturelle pointe nedenfor, et konkret eksempel på hvad
@@ -707,14 +715,16 @@ Ingen adgangskode sat, login umuligt (<code>hashedPassword = “!”</code>)
 forskellen er et lille eksempel på projektets egen pointe: NixOS’
 størrelse er slet ikke et valg, den er en <strong>automatisk</strong>
 konsekvens af <code>nixos-generators</code>’ <code>qcow</code>-format,
-som selv beregner diskstørrelsen ud fra det deklarerede systems closure,
-<code>DISK_SIZE_BYTES</code> i <code>scripts/setup.sh</code> er blot den
-<em>målte</em> byte-størrelse af det allerede byggede image. Debians
-<code>size=8</code> (GiB) i <code>virt-install</code>-kommandoen var
-derimod et <strong>manuelt</strong>, rundt tal valgt på forhånd til en
-traditionel netinst-installation. vCPU og RAM er derimod identiske på
-begge VM’er, netop for at sammenligningerne i modul 1-6 måler
-platformsforskelle, ikke forskelle i tildelte ressourcer.</p>
+som selv beregner diskstørrelsen ud fra det deklarerede systems
+<strong>closure</strong> (hele det udregnede træ af pakker og filer,
+systemet reelt kræver for at køre). <code>DISK_SIZE_BYTES</code> i
+<code>scripts/setup.sh</code> er blot den <em>målte</em> byte-størrelse
+af det allerede byggede image. Debians <code>size=8</code> (GiB) i
+<code>virt-install</code>-kommandoen var derimod et
+<strong>manuelt</strong>, rundt tal valgt på forhånd til en traditionel
+netinst-installation. vCPU og RAM er derimod identiske på begge VM’er,
+netop for at sammenligningerne i modul 1-6 måler platformsforskelle,
+ikke forskelle i tildelte ressourcer.</p>
 <h2 id="repo-struktur">Repo-struktur</h2>
 <details><summary>Vis kode (17 linjer)</summary>
 <pre><code>Linux_101/
@@ -938,9 +948,9 @@ korrekt, så data og programmer kun er tilgængelige for dem, der reelt
 har brug for adgang.</p>
 <h2 id="sikkerhedsmæssig-relevans-1">Sikkerhedsmæssig relevans</h2>
 <p>Forkerte fil- og mapperettigheder er en af de hyppigste årsager til
-privilege escalation-angreb. ACL’er gør det muligt at implementere
-finkornet adgangsstyring, når standard bruger/gruppe/andre-modellen ikke
-er tilstrækkelig præcis.</p>
+privilege escalation-angreb. ACL’er (Access Control Lists) gør det
+muligt at implementere finkornet adgangsstyring, når standard
+bruger/gruppe/andre-modellen ikke er tilstrækkelig præcis.</p>
 <h2
 id="opgave-1-formålet-med-de-vigtigste-mapper-i-filesystem-hierarchy-standard-fhs">Opgave
 1: Formålet med de vigtigste mapper i Filesystem Hierarchy Standard
@@ -1095,10 +1105,11 @@ gruppestyring</h1>
 organisationens reelle behov, og som understøtter sporbarhed og
 ansvarlighed.</p>
 <h2 id="sikkerhedsmæssig-relevans-2">Sikkerhedsmæssig relevans</h2>
-<p>Segregation of duties forhindrer, at én kompromitteret konto giver
-adgang til alt. Individuelle brugerkonti er en forudsætning for
-troværdig logning. Korrekt brug af sudo med begrænsede rettigheder
-reducerer skadesomfanget, hvis en konto kompromitteres.</p>
+<p>Segregation of duties (adskillelse af ansvarsområder) forhindrer, at
+én kompromitteret konto giver adgang til alt. Individuelle brugerkonti
+er en forudsætning for troværdig logning. Korrekt brug af sudo med
+begrænsede rettigheder reducerer skadesomfanget, hvis en konto
+kompromitteres.</p>
 <h2 id="rollestruktur">Rollestruktur</h2>
 <table>
 <colgroup>
@@ -1424,14 +1435,16 @@ projektet, hvor NixOS’ egne abstraktioner skabte mest reel fejlsøgning:
 <code>services.openssh.openFirewall</code>s standardværdi lægger sig
 oveni en eksplicit kilde-IP-regel i stedet for at blive overskrevet af
 den (fordi porte-lister merges på tværs af moduler), og en separat,
-streng <code>rpfilter</code>-kæde blokerede DNS-svar helt uden om selve
-input-kæden, længe efter den tilsyneladende rigtige regel var sat. Ingen
-af de to fejl var synlige ved at læse konfigurationen alene, begge
-krævede faktisk at teste adgangen fra en anden kilde-IP og fejlsøge
-live. Oplevelsen modsiger dermed en for simpel fortælling om at
-“deklarativt er gennemsigtigt”: NixOS’ lag af sammenlagte
-standardværdier kan skjule fejl lige så effektivt som Debians spredte
-konfigurationsfiler, blot af en anden art.</p>
+streng <code>rpfilter</code>-kæde (reverse-path-filtrering, en
+anti-spoofing-kontrol der afviser trafik, hvis svarruten ikke matcher
+den forventede) blokerede DNS-svar helt uden om selve input-kæden, længe
+efter den tilsyneladende rigtige regel var sat. Ingen af de to fejl var
+synlige ved at læse konfigurationen alene, begge krævede faktisk at
+teste adgangen fra en anden kilde-IP og fejlsøge live. Oplevelsen
+modsiger dermed en for simpel fortælling om at “deklarativt er
+gennemsigtigt”: NixOS’ lag af sammenlagte standardværdier kan skjule
+fejl lige så effektivt som Debians spredte konfigurationsfiler, blot af
+en anden art.</p>
 <h1 id="modul-5-system-monitoring-og-logging">Modul 5: System monitoring
 og logging</h1>
 <h2 id="formål-4">Formål</h2>

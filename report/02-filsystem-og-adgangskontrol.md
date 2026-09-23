@@ -8,7 +8,7 @@ er tilgængelige for dem, der reelt har brug for adgang.
 ## Sikkerhedsmæssig relevans
 
 Forkerte fil- og mapperettigheder er en af de hyppigste årsager til privilege escalation-angreb.
-ACL'er gør det muligt at implementere finkornet adgangsstyring, når standard
+ACL'er (Access Control Lists) gør det muligt at implementere finkornet adgangsstyring, når standard
 bruger/gruppe/andre-modellen ikke er tilstrækkelig præcis.
 
 ## Opgave 1: Formålet med de vigtigste mapper i Filesystem Hierarchy Standard (FHS)

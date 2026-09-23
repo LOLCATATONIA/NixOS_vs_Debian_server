@@ -7,9 +7,9 @@ understøtter sporbarhed og ansvarlighed.
 
 ## Sikkerhedsmæssig relevans
 
-Segregation of duties forhindrer, at én kompromitteret konto giver adgang til alt. Individuelle
-brugerkonti er en forudsætning for troværdig logning. Korrekt brug af sudo med begrænsede
-rettigheder reducerer skadesomfanget, hvis en konto kompromitteres.
+Segregation of duties (adskillelse af ansvarsområder) forhindrer, at én kompromitteret konto giver
+adgang til alt. Individuelle brugerkonti er en forudsætning for troværdig logning. Korrekt brug af
+sudo med begrænsede rettigheder reducerer skadesomfanget, hvis en konto kompromitteres.
 
 ## Rollestruktur
 
