@@ -60,7 +60,7 @@ Mon 2026-09-14 12:00:00 UTC 23min logrotate.timer logrotate.service
 **Fremkaldt eksempel** (forsøgt login med forkert nøgle):
 
 ```
-$ ssh -i ~/.ssh/linux101_developer_ed25519 admin@192.168.122.10
+$ ssh -i ~/.ssh/linux101_developer_ed25519 -p 2222 admin@192.168.122.10
 admin@192.168.122.10: Permission denied (publickey).
 ```
 
@@ -68,7 +68,7 @@ admin@192.168.122.10: Permission denied (publickey).
 
 ```
 $ journalctl -u sshd
-Sep 14 11:26:16 linux101-srv sshd-session[809]: Connection closed by authenticating user admin 192.168.122.1 port 44368 [preauth]
+Sep 23 11:28:03 nixos-comparison sshd-session[1440]: Connection closed by authenticating user admin 192.168.122.1 port 38252 [preauth]
 ```
 
 **Hvordan et unormalt mønster ville se ud:** Mange gentagne `[preauth]`-afvisninger på kort tid for

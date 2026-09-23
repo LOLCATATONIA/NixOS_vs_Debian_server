@@ -113,29 +113,31 @@ admin     ALL=(ALL:ALL)    NOPASSWD: /run/current-system/sw/bin/nixos-rebuild sw
     NOPASSWD: /run/current-system/sw/bin/nft list ruleset
 ```
 
-**Note: en driftsmæssig omkostning ved den snævre kommandomatch.** Sudoers' fulde-kommandolinje-
-match (vist ovenfor) er selve pointen med granulær adgang, men den er bogstavelig, ikke semantisk.
-Overvejer man fx at omdøbe serveren (kræver både et nyt `networking.hostName` og et nyt navn på
-flakens `nixosConfigurations`-attribut), bliver det tydeligt hvor lidt der skal til:
+**Note: en driftsmæssig omkostning ved den snævre kommandomatch, bekræftet ved en faktisk
+omdøbning.** Sudoers' fulde-kommandolinje-match (vist ovenfor) er selve pointen med granulær
+adgang, men den er bogstavelig, ikke semantisk. Serveren blev senere rent faktisk omdøbt (fra
+`linux101-srv` til `nixos-comparison`, se `00-tilgang.md`), hvilket krævede både et nyt
+`networking.hostName` og et nyt navn på flakens `nixosConfigurations`-attribut, og satte derfor
+reglen på en reel prøve, ikke kun en tænkt situation:
 
 ```
 $ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config
-error: getting status of "/home/admin/linux101-config": No such file or directory
-[...]
-# (sudo lod kommandoen passere uden adgangskode; fejlen kommer fra nix selv, ikke fra sudo)
+Done. The new configuration is /nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
 
-$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config#linux101-srv
+$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config#nixos-comparison
 sudo: a password is required
 ```
 
-Et harmløst, semantisk identisk `#linux101-srv`-tillæg, der blot gør eksplicit hvilken
+Et harmløst, semantisk identisk `#nixos-comparison`-tillæg, der blot gør eksplicit hvilken
 konfiguration der bygges, er nok til at blive afvist (ingen tilfældighed, se Delkonklusionen for
 hvorfor selve reglen ikke kan indeholde et `#`-tegn). Konsekvensen er reel: `admin` har ingen
 adgangskode, og `root` har hverken SSH-adgang (`PermitRootLogin = "no"`, modul 1) eller en gyldig
-adgangskode til konsollen, så der findes intet fallback, hvis en kommando afviger bare en smule
-fra den præcise, hvidlistede streng. På en traditionel Debian-server ville samme situation typisk
-kunne reddes via en almindelig
-`sudo`-adgangskode eller root-konsoladgang, som `debian-comparison` faktisk har. Den granulære
+adgangskode til konsollen, så der findes intet fallback, hvis en kommando afviger bare en smule fra
+den præcise, hvidlistede streng. Selve omdøbningen lykkedes uden problemer, netop fordi
+rækkefølgen (hostname ændret først, flake-attributten omdøbt bagefter, aldrig samtidig) undgik
+nogensinde at skulle bruge andet end den ene, hvidlistede streng. På en traditionel Debian-server
+ville et tilsvarende fallback typisk kunne reddes via en almindelig `sudo`-adgangskode eller
+root-konsoladgang, som `debian-comparison` faktisk har. Den granulære
 sudo-model er derfor ikke gratis: den fjerner ikke kun uautoriseret adgang, den fjerner også ens
 eget nødspor, hvis noget ikke er forudset præcist.
 

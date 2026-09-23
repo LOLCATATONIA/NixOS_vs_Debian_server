@@ -113,7 +113,7 @@ $ ssh -p 2222 -b 192.168.122.99 admin@192.168.122.10 'hostname'
 ssh: connect to host 192.168.122.10 port 2222: Connection timed out
 
 $ ssh -p 2222 admin@192.168.122.10 'hostname'   # fra 192.168.122.1 (tilladt)
-linux101-srv
+nixos-comparison
 ```
 
 ## Delkonklusion

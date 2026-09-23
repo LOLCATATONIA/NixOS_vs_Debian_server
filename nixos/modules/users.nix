@@ -26,7 +26,7 @@
     # kommer fra de eksplicitte NOPASSWD-regler i security.sudo.extraRules nedenfor.
     extraGroups = [ "wheel" ];
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHupSaXzaaZhiibHIOcnZSQFpdKunrKH02flhEA42bMc admin@linux101-srv"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHupSaXzaaZhiibHIOcnZSQFpdKunrKH02flhEA42bMc admin@nixos-comparison"
     ];
   };
 
@@ -34,7 +34,7 @@
     isNormalUser = true;
     extraGroups = [ "projekt" ];
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDTL0tYEtwJO7F+5EqFGff+scV5BlrpYuANIeKIOiMF9 developer@linux101-srv"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDTL0tYEtwJO7F+5EqFGff+scV5BlrpYuANIeKIOiMF9 developer@nixos-comparison"
     ];
   };
 
@@ -42,7 +42,7 @@
     isNormalUser = true;
     extraGroups = [ "guest" ];
     openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIISipJZzxE6vbgn+yy/Rhdpv4TINo56LGNLNGVDUVpxO guest@linux101-srv"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIISipJZzxE6vbgn+yy/Rhdpv4TINo56LGNLNGVDUVpxO guest@nixos-comparison"
     ];
   };
 
@@ -86,7 +86,7 @@
   # denne liste. Opdaget ved at tjekke `sudo -l` grundigt efter deployment, ikke kun
   # ved at antage reglen var korrekt. Løsningen er at udelade `#attribut` helt:
   # nixos-rebuild vælger automatisk den nixosConfiguration, hvis navn matcher
-  # maskinens hostname (her: "linux101-srv") — verificeret direkte før denne regel
+  # maskinens hostname (her: "nixos-comparison") — verificeret direkte før denne regel
   # blev sat.
   security.sudo.extraRules = [
     {

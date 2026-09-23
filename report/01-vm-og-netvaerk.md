@@ -28,7 +28,7 @@ af andre.
   en server, der udelukkende driftes via SSH, aldrig har brug for.
 - **Statisk IP:** En DHCP-tildelt adresse kan ændre sig, hvilket ville bryde firewallens
   kilde-IP-begrænsning (modul 4) og gøre det sværere entydigt at identificere serveren i logs.
-- **Sigende hostname** (`linux101-srv`): Gør det muligt entydigt at identificere serveren i logs og
+- **Sigende hostname** (`nixos-comparison`): Gør det muligt entydigt at identificere serveren i logs og
   alarmer, vigtigt i incident response.
 - **Ikke-root administratorbruger:** Forudsætning for sporbarhed (handlinger spores til én konto)
   og for granulær sudo (modul 3) i stedet for permanent root-adgang.
@@ -48,11 +48,12 @@ nix build .#qcow -L
 sudo virsh pool-define-as default dir --target /var/lib/libvirt/images
 sudo virsh pool-autostart default
 sudo virsh pool-start default
-# opret en tom volume, og upload det byggede image ind i den
+# opret en tom volume (beholder sit historiske filnavn, se 00-tilgang.md), og upload
+# det byggede image ind i den
 sudo virsh vol-create-as default linux101-srv.qcow2 5196742656 --format qcow2
 sudo virsh vol-upload --pool default linux101-srv.qcow2 result/nixos.qcow2
 # opret selve VM'en fra det uploadede image, ingen installation
-sudo virt-install --name linux101-srv --memory 3072 --vcpus 2 \
+sudo virt-install --name nixos-comparison --memory 3072 --vcpus 2 \
     --disk vol=default/linux101-srv.qcow2,bus=virtio \
     --network network=default,model=virtio \
     --graphics none --console pty,target_type=serial \
@@ -62,8 +63,8 @@ sudo virt-install --name linux101-srv --memory 3072 --vcpus 2 \
 **Vellykket SSH-login med nøgle (NixOS):**
 
 ```
-$ ssh -i ~/.ssh/linux101_ed25519 admin@192.168.122.10 'hostname && whoami'
-linux101-srv
+$ ssh -i ~/.ssh/linux101_ed25519 -p 2222 admin@192.168.122.10 'hostname && whoami'
+nixos-comparison
 admin
 ```
 
@@ -71,7 +72,7 @@ admin
 
 ```
 # tving et password-forsøg, selvom en gyldig nøgle findes
-$ ssh -v -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@192.168.122.10 'echo test'
+$ ssh -v -p 2222 -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@192.168.122.10 'echo test'
 debug1: Authentications that can continue: publickey
 admin@192.168.122.10: Permission denied (publickey).
 ```
@@ -79,7 +80,7 @@ admin@192.168.122.10: Permission denied (publickey).
 **Afvist root-login (selv med gyldig nøgle, NixOS):**
 
 ```
-$ ssh -i ~/.ssh/linux101_ed25519 root@192.168.122.10 'echo test'
+$ ssh -i ~/.ssh/linux101_ed25519 -p 2222 root@192.168.122.10 'echo test'
 root@192.168.122.10: Permission denied (publickey).
 ```
 
@@ -115,7 +116,7 @@ nøglebaseret SSH):
 
 ```bash
 # /etc/hostname
-linux101-srv
+nixos-comparison
 
 # /etc/network/interfaces
 auto eth0
@@ -136,7 +137,7 @@ $ systemctl restart sshd
 
 ```nix
 # nixos/modules/network.nix
-networking.hostName = "linux101-srv";
+networking.hostName = "nixos-comparison";
 networking.interfaces.eth0.ipv4.addresses = [
   { address = "192.168.122.10"; prefixLength = 24; }
 ];

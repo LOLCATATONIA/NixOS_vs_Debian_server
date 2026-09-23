@@ -1,10 +1,10 @@
 ---
 title: "Driftsguide"
-subtitle: "linux101-srv (NixOS) og debian-comparison (Debian), side om side"
+subtitle: "nixos-comparison (NixOS) og debian-comparison (Debian), side om side"
 ---
 
 **Vigtigst at forstå:** Der er nu **tre** steder, en kommando kan køres: værten, NixOS-VM'en
-(`linux101-srv`), eller Debian-VM'en (`debian-comparison`). Hver kommando nedenfor er mærket
+(`nixos-comparison`), eller Debian-VM'en (`debian-comparison`). Hver kommando nedenfor er mærket
 `[vært]`, `[nixos-vm]` eller `[debian-vm]`, aldrig blandet.
 
 **Sådan tjekker du hvor du er:**
@@ -14,7 +14,9 @@ hostname
 ```
 
 - `cachyos-x8664` → du er på **værten**.
-- `linux101-srv` → du er på **NixOS-VM'en**.
+- `nixos-comparison` → du er på **NixOS-VM'en** (hed oprindeligt `linux101-srv`, efter opgavens
+  egen titel, omdøbt for at matche den etablerede `debian-comparison`-navnekonvention, se
+  `00-tilgang.md`).
 - `debian-comparison` → du er på **Debian-VM'en** (hed oprindeligt `debian-tmp`, det midlertidige
   navn fra preseed-installationen, blev aldrig rettet, før det blev opdaget og rettet manuelt,
   se `TODO/DONE/08-log-debian-vs-nixos-install.md`, et lille, ægte eksempel på konfigurationsafvigelse:
@@ -40,7 +42,7 @@ ssh -i ~/.ssh/debian_comparison_guest_ed25519 -p 2222 guest@192.168.122.11
 ```
 :::
 ::: {.compare-side}
-#### NixOS: `linux101-srv` (192.168.122.10)
+#### NixOS: `nixos-comparison` (192.168.122.10)
 
 ```bash
 ssh -i ~/.ssh/linux101_ed25519 -p 2222 admin@192.168.122.10
@@ -63,15 +65,15 @@ hash), kun nøglebaseret login, kun fra `192.168.122.1` (værten selv), kun på 
 
 ```bash
 sudo virsh list --all
-sudo virsh start linux101-srv        # eller: debian-comparison
-sudo virsh shutdown linux101-srv     # ordentlig nedlukning
+sudo virsh start nixos-comparison        # eller: debian-comparison
+sudo virsh shutdown nixos-comparison     # ordentlig nedlukning
 ```
 
 **Direkte konsol-adgang** (eneste vej ind som `root`, siden `root` ikke kan SSH'e på nogen af
 VM'erne):
 
 ```bash
-sudo virsh console linux101-srv      # eller: debian-comparison
+sudo virsh console nixos-comparison      # eller: debian-comparison
 ```
 Kommandoen ovenfor beder om login. På **Debian**-VM'en: brugernavn `root`, adgangskode
 `comparison-temp-pw` (sat under selve installationen). På **NixOS**-VM'en findes der slet ingen
@@ -87,7 +89,7 @@ konsollen, kun `admin`/`developer`/`guest` kan tilgås, og kun via SSH-nøgle.
 ```bash
 # [vært]
 sudo virsh list --all
-sudo virsh start linux101-srv        # eller: debian-comparison
+sudo virsh start nixos-comparison        # eller: debian-comparison
 ```
 
 **SSH hænger, eller kan slet ikke forbinde, men VM'en kører:** Forældet `known_hosts`-indgang

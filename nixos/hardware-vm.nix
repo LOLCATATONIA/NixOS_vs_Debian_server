@@ -7,7 +7,7 @@
 # kørende VM. Uden denne fil ved evalueringen ikke, at systemet har en rodfil-system
 # eller en bootloader, og fejler. Værdierne herunder er kopieret fra nixos-generators'
 # eget formats/qcow.nix for at beskrive den faktiske disk, som allerede kører — filen
-# importeres derfor kun i nixosConfigurations.linux101-srv (se flake.nix), ikke i den
+# importeres derfor kun i nixosConfigurations.nixos-comparison (se flake.nix), ikke i den
 # delte nixos/configuration.nix, for at undgå dobbelt-definition ift. selve
 # image-bygningen.
 { lib, modulesPath, ... }:

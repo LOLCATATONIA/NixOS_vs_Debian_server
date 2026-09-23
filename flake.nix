@@ -10,7 +10,7 @@
   };
 
   outputs = { self, nixpkgs, nixos-generators, ... }: {
-    nixosConfigurations.linux101-srv = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.nixos-comparison = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [ ./nixos/configuration.nix ./nixos/hardware-vm.nix ];
     };

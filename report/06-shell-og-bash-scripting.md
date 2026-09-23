@@ -47,7 +47,11 @@ Automatiserer bygning og (gen)oprettelse af VM'en fra `flake.nix`. Køres på **
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly VM_NAME="linux101-srv"
+readonly VM_NAME="nixos-comparison"
+# Diskvolumen beholder sit oprindelige navn fra dengang VM'en hed "linux101-srv" —
+# at omdøbe selve filen ville kræve at redigere domænets disk-XML-definition for en
+# rent kosmetisk gevinst, ingen læser nogensinde ser filnavnet. Se 00-tilgang.md.
+readonly DISK_VOLUME="linux101-srv.qcow2"
 readonly POOL_NAME="default"
 readonly POOL_PATH="/var/lib/libvirt/images"
 readonly DISK_SIZE_BYTES=5196742656  # ~4.84 GiB, matcher diskstørrelsen fra modul 1
@@ -66,7 +70,7 @@ ensure_nix_in_path() {
     source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh 2>/dev/null || true
   fi
   if ! command -v nix &>/dev/null; then
-    echo "FEJL: 'nix' blev ikke fundet i PATH." >&2
+    echo "FEJL: 'nix' blev ikke fundet i PATH. Se docs/01-vm-og-netvaerk.md." >&2
     exit 1
   fi
 }
@@ -92,8 +96,8 @@ remove_existing_vm() {
     sudo virsh destroy "$VM_NAME" &>/dev/null || true
     sudo virsh undefine "$VM_NAME" &>/dev/null || true
   fi
-  if sudo virsh vol-info --pool "$POOL_NAME" "${VM_NAME}.qcow2" &>/dev/null; then
-    sudo virsh vol-delete --pool "$POOL_NAME" "${VM_NAME}.qcow2"
+  if sudo virsh vol-info --pool "$POOL_NAME" "$DISK_VOLUME" &>/dev/null; then
+    sudo virsh vol-delete --pool "$POOL_NAME" "$DISK_VOLUME"
   fi
 }
 
@@ -104,15 +108,15 @@ build_image() {
 
 import_vm() {
   log "Opretter volume og importerer image i libvirt..."
-  sudo virsh vol-create-as "$POOL_NAME" "${VM_NAME}.qcow2" "$DISK_SIZE_BYTES" --format qcow2
-  sudo virsh vol-upload --pool "$POOL_NAME" "${VM_NAME}.qcow2" "${REPO_DIR}/result/nixos.qcow2"
+  sudo virsh vol-create-as "$POOL_NAME" "$DISK_VOLUME" "$DISK_SIZE_BYTES" --format qcow2
+  sudo virsh vol-upload --pool "$POOL_NAME" "$DISK_VOLUME" "${REPO_DIR}/result/nixos.qcow2"
 
   # --import: springer OS-installation over, da diskimagen allerede har NixOS installeret
   sudo virt-install \
     --name "$VM_NAME" \
     --memory "$MEMORY_MB" \
     --vcpus "$VCPUS" \
-    --disk "vol=${POOL_NAME}/${VM_NAME}.qcow2,bus=virtio" \
+    --disk "vol=${POOL_NAME}/${DISK_VOLUME},bus=virtio" \
     --network network=default,model=virtio \
     --graphics none \
     --console pty,target_type=serial \
@@ -140,8 +144,8 @@ volume, hvis de rent faktisk findes. `build_image` og `import_vm` bygger og opre
 VM'en på ny, men fordi en eventuel gammel version lige er ryddet væk, opstår der aldrig en fejl om
 en ressource, der allerede findes. Mønstret er "riv ned, hvis det findes, byg derefter altid op
 igen fra bunden": uanset om scriptet køres første eller femtende gang, konvergerer slutresultatet
-til det samme, nemlig præcis én VM ved navn `linux101-srv`, bygget fra den `flake.nix`, der ligger
-på tidspunktet for kørslen.
+til det samme, nemlig præcis én VM ved navn `nixos-comparison`, bygget fra den `flake.nix`, der
+ligger på tidspunktet for kørslen.
 
 **Idempotens, bevist ved to kørsler i træk:**
 
@@ -151,16 +155,16 @@ $ ./scripts/setup.sh
 [...]
 [setup.sh] Opretter volume og importerer image i libvirt...
 Vol linux101-srv.qcow2 created
-[setup.sh] Færdig. 'linux101-srv' kører nu med den konfiguration, der er deklareret i flake.nix.
+[setup.sh] Færdig. 'nixos-comparison' kører nu med den konfiguration, der er deklareret i flake.nix.
 
 $ ./scripts/setup.sh
-[setup.sh] Fjerner eksisterende VM 'linux101-srv' (for idempotent genopbygning)...
+[setup.sh] Fjerner eksisterende VM 'nixos-comparison' (for idempotent genopbygning)...
 Vol linux101-srv.qcow2 deleted
 [setup.sh] Bygger diskimage fra flake.nix (kan tage nogle minutter)...
 [...]
 [setup.sh] Opretter volume og importerer image i libvirt...
 Vol linux101-srv.qcow2 created
-[setup.sh] Færdig. 'linux101-srv' kører nu med den konfiguration, der er deklareret i flake.nix.
+[setup.sh] Færdig. 'nixos-comparison' kører nu med den konfiguration, der er deklareret i flake.nix.
 $ echo $?
 0
 ```
@@ -236,8 +240,8 @@ main "$@"
 **Eksempeloutput fra det færdige system:**
 
 ```
-[admin@linux101-srv:~]$ ~/linux101-config/scripts/healthcheck.sh
-Healthcheck for linux101-srv -- 2026-09-14 12:34:43
+[admin@nixos-comparison:~]$ ~/linux101-config/scripts/healthcheck.sh
+Healthcheck for nixos-comparison -- 2026-09-23 11:29:24
 
 == Firewall-status ==
   type filter hook prerouting priority mangle + 10; policy drop;
@@ -250,7 +254,7 @@ Filesystem      Size  Used Avail Use% Mounted on
 /dev/vda3       4.5G  2.6G  1.7G  61% /
 
 == Aktive/loggede ind brugere ==
-admin    pts/0        2026-09-14 12:11 (192.168.122.1)
+admin    pts/0        2026-09-23 11:29 (192.168.122.1)
 
 == Brugere med UID 0 (ud over root) ==
 Ingen -- kun root har UID 0.
@@ -266,7 +270,7 @@ Verificerer at den kørende konfiguration stemmer overens med den deklarerede (`
 set -euo pipefail
 
 readonly FLAKE_DIR="${HOME}/linux101-config"
-readonly FLAKE_ATTR="nixosConfigurations.linux101-srv.config.system.build.toplevel"
+readonly FLAKE_ATTR="nixosConfigurations.nixos-comparison.config.system.build.toplevel"
 
 main() {
   if [[ ! -d "$FLAKE_DIR" ]]; then
@@ -301,8 +305,8 @@ main "$@"
 
 ```
 $ ./verify-deploy.sh
-Kørende system:    /nix/store/r0vf...-nixos-system-linux101-srv-...
-Deklareret system: /nix/store/r0vf...-nixos-system-linux101-srv-...
+Kørende system:    /nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
+Deklareret system: /nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
 OK: systemet stemmer overens med den deklarerede konfiguration.
 $ echo $?
 0
@@ -310,8 +314,8 @@ $ echo $?
 # simulér en udefra kommende konfigurationsafvigelse, uden en rigtig nixos-rebuild
 $ sed -i 's/allowedTCPPorts = \[ \];/allowedTCPPorts = [ 9999 ];/' nixos/modules/firewall.nix
 $ ./verify-deploy.sh
-Kørende system:    /nix/store/r0vf...-nixos-system-linux101-srv-...
-Deklareret system: /nix/store/agv1...-nixos-system-linux101-srv-...
+Kørende system:    /nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
+Deklareret system: /nix/store/d7f3iys5ka2c2sywh70ib0zxz8vyv9wy-nixos-system-nixos-comparison-...
 ADVARSEL: systemet er drevet væk fra den deklarerede konfiguration.
 $ echo $?
 1

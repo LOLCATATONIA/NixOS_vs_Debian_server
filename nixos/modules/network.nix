@@ -4,7 +4,7 @@
 # root-login deaktiveret. Se docs/01-vm-og-netvaerk.md for sikkerhedsbegrundelse.
 { ... }:
 {
-  networking.hostName = "linux101-srv";
+  networking.hostName = "nixos-comparison";
 
   # Deterministisk interfacenavn (eth0) i stedet for PCI-baseret predictable naming
   # (fx enp1s0/ens3) — VM'en har kun ét NIC, så der er ingen tvetydighed at undgå,

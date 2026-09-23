@@ -4,7 +4,7 @@
 research), hvis centrale påstande er verificeret via uafhængige kilder (se nedenfor), men som endnu
 ikke er testet **empirisk mod vores egne to VM'er**. Rapportens nuværende "Hærdningsøkosystem
 (CIS/STIG)"-række er en generel, sekundær påstand, ikke et resultat af at have kørt noget som helst
-mod `linux101-srv`/`debian-comparison`.
+mod `nixos-comparison`/`debian-comparison`.
 
 ## Baggrund, allerede verificeret (sekundær research, ikke egen test)
 

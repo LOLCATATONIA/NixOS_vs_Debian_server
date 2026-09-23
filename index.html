@@ -452,7 +452,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="
 <h4>NixOS: intet installationstrin</h4>
 <div class="sourceCode" id="cb2"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> nix build .#qcow <span class="at">-L</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> virt-install <span class="at">--name</span> linux101-srv <span class="at">--memory</span> 3072 <span class="at">--vcpus</span> 2 <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> virt-install <span class="at">--name</span> nixos-comparison <span class="at">--memory</span> 3072 <span class="at">--vcpus</span> 2 <span class="dt">\</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--disk</span> vol=default/linux101-srv.qcow2,bus=virtio <span class="dt">\</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network</span> network=default,model=virtio <span class="dt">\</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--graphics</span> none <span class="at">--console</span> pty,target_type=serial <span class="dt">\</span></span>
@@ -580,11 +580,11 @@ i <code>verify-deploy.sh</code>, modul 6).</p>
 Nix’ <code>--rebuild</code>-flag tvinger en ægte gentagen bygning og
 sammenligner selv output-hashen mod den eksisterende:</p>
 <pre><code># evaluerer den deklarerede sti, uden at bygge noget
-$ nix eval --raw &quot;.#nixosConfigurations.linux101-srv.config.system.build.toplevel&quot;
-/nix/store/x38lab3zq77b9mxsn8br266df4m23vxd-nixos-system-linux101-srv-...
+$ nix eval --raw &quot;.#nixosConfigurations.nixos-comparison.config.system.build.toplevel&quot;
+/nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
 # tvinger en ægte ny bygning, sammenligner selv hash mod ovenstående
-$ nix build &quot;.#nixosConfigurations.linux101-srv.config.system.build.toplevel&quot; --rebuild -L
-checking outputs of &#39;/nix/store/s5m1i4ff5six5w482jwli7b6sraj944n-...-nixos-system-...drv&#39;...</code></pre>
+$ nix build &quot;.#nixosConfigurations.nixos-comparison.config.system.build.toplevel&quot; --rebuild -L
+checking outputs of &#39;/nix/store/kq5cfysipkzm3isli5353axyw50gd100-...-nixos-system-...drv&#39;...</code></pre>
 <p>Ingen “may not be deterministic”-fejl ved en tvunget, ægte
 genbygning: selve systemkonfigurationen er reproducerbar. Det gælder
 derimod <strong>ikke</strong> det færdige <code>.qcow</code>-diskimage
@@ -624,12 +624,13 @@ test-VM uden at røre den rigtige server.</li>
 automatisk af <code>nixos-generators</code>’ qcow- format (se tabel og
 forklaring nedenfor).</p>
 <h3 id="begge-vmer-side-om-side">Begge VM’er, side om side</h3>
-<p>Ud over <code>linux101-srv</code> køres der til denne rapport også en
-<strong>rigtig</strong> Debian-VM (<code>debian-comparison</code>),
-opsat i hånden efter den traditionelle, imperative arbejdsgang, på
-nøjagtig samme QEMU/KVM/libvirt-grundlag. Formålet er at gøre
-sammenligningerne i modul 1-6 til en reel, efterprøvet A/B-test i stedet
-for kun en teoretisk modstilling.</p>
+<p>Ud over <code>nixos-comparison</code> køres der til denne rapport
+også en <strong>rigtig</strong> Debian-VM
+(<code>debian-comparison</code>), opsat i hånden efter den
+traditionelle, imperative arbejdsgang, på nøjagtig samme
+QEMU/KVM/libvirt-grundlag. Formålet er at gøre sammenligningerne i modul
+1-6 til en reel, efterprøvet A/B-test i stedet for kun en teoretisk
+modstilling.</p>
 <table>
 <thead>
 <tr>
@@ -640,7 +641,7 @@ Aspekt
 Debian (<code>debian-comparison</code>)
 </th>
 <th>
-NixOS (<code>linux101-srv</code>)
+NixOS (<code>nixos-comparison</code>)
 </th>
 </tr>
 </thead>
@@ -653,7 +654,8 @@ Diskimage
 <code>/var/lib/libvirt/images/debian-comparison.qcow2</code>
 </td>
 <td>
-<code>/var/lib/libvirt/images/linux101-srv.qcow2</code>
+<code>/var/lib/libvirt/images/linux101-srv.qcow2</code> <em>(historisk
+filnavn, se note nedenfor)</em>
 </td>
 </tr>
 <tr>
@@ -731,6 +733,17 @@ af det allerede byggede image. Debians <code>size=8</code> (GiB) i
 netinst-installation. vCPU og RAM er derimod identiske på begge VM’er,
 netop for at sammenligningerne i modul 1-6 måler platformsforskelle,
 ikke forskelle i tildelte ressourcer.</p>
+<p><strong>Note om diskimagets filnavn:</strong> VM’en hed oprindeligt
+<code>linux101-srv</code>, efter opgavens egen titel, og blev senere
+omdøbt til <code>nixos-comparison</code> for at matche projektets
+etablerede navnekonvention. Selve diskimage-filen beholder bevidst sit
+oprindelige navn, <code>virsh domrename</code> ændrer kun det
+registrerede domænenavn i libvirt, ikke dets disk-sti, og at ændre
+filnavnet ville kræve at redigere domænets disk-XML-definition for en
+rent kosmetisk gevinst, ingen læser nogensinde ser filnavnet. Samme
+princip som Debian-sidens <code>preseed.cfg</code>, der stadig internt
+refererer det gamle <code>debian-tmp</code> (se
+<code>guide.md</code>).</p>
 <h2 id="repo-struktur">Repo-struktur</h2>
 <details><summary>Vis kode (17 linjer)</summary>
 <pre><code>Linux_101/
@@ -826,9 +839,9 @@ udelukkende driftes via SSH, aldrig har brug for.</li>
 <li><strong>Statisk IP:</strong> En DHCP-tildelt adresse kan ændre sig,
 hvilket ville bryde firewallens kilde-IP-begrænsning (modul 4) og gøre
 det sværere entydigt at identificere serveren i logs.</li>
-<li><strong>Sigende hostname</strong> (<code>linux101-srv</code>): Gør
-det muligt entydigt at identificere serveren i logs og alarmer, vigtigt
-i incident response.</li>
+<li><strong>Sigende hostname</strong> (<code>nixos-comparison</code>):
+Gør det muligt entydigt at identificere serveren i logs og alarmer,
+vigtigt i incident response.</li>
 <li><strong>Ikke-root administratorbruger:</strong> Forudsætning for
 sporbarhed (handlinger spores til én konto) og for granulær sudo (modul
 3) i stedet for permanent root-adgang.</li>
@@ -841,35 +854,36 @@ genbruges; en privat nøgle findes kun ét sted og kan ikke gættes.</li>
 <h2 id="bevis-bootstrap-og-ssh-adgang">Bevis: bootstrap og
 SSH-adgang</h2>
 <p><strong>Bootstrap-kommandosekvens:</strong></p>
-<details><summary>Vis kode (15 linjer)</summary>
+<details><summary>Vis kode (16 linjer)</summary>
 <pre><code># byg det færdige, konfigurerede diskimage fra flake.nix
 nix build .#qcow -L
 # opret og start libvirts lager til VM-diskimages
 sudo virsh pool-define-as default dir --target /var/lib/libvirt/images
 sudo virsh pool-autostart default
 sudo virsh pool-start default
-# opret en tom volume, og upload det byggede image ind i den
+# opret en tom volume (beholder sit historiske filnavn, se 00-tilgang.md), og upload
+# det byggede image ind i den
 sudo virsh vol-create-as default linux101-srv.qcow2 5196742656 --format qcow2
 sudo virsh vol-upload --pool default linux101-srv.qcow2 result/nixos.qcow2
 # opret selve VM&#39;en fra det uploadede image, ingen installation
-sudo virt-install --name linux101-srv --memory 3072 --vcpus 2 \
+sudo virt-install --name nixos-comparison --memory 3072 --vcpus 2 \
     --disk vol=default/linux101-srv.qcow2,bus=virtio \
     --network network=default,model=virtio \
     --graphics none --console pty,target_type=serial \
     --import --os-variant generic --noautoconsole</code></pre>
 </details>
 <p><strong>Vellykket SSH-login med nøgle (NixOS):</strong></p>
-<pre><code>$ ssh -i ~/.ssh/linux101_ed25519 admin@192.168.122.10 &#39;hostname &amp;&amp; whoami&#39;
-linux101-srv
+<pre><code>$ ssh -i ~/.ssh/linux101_ed25519 -p 2222 admin@192.168.122.10 &#39;hostname &amp;&amp; whoami&#39;
+nixos-comparison
 admin</code></pre>
 <p><strong>Afvist password-login (NixOS):</strong></p>
 <pre><code># tving et password-forsøg, selvom en gyldig nøgle findes
-$ ssh -v -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@192.168.122.10 &#39;echo test&#39;
+$ ssh -v -p 2222 -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@192.168.122.10 &#39;echo test&#39;
 debug1: Authentications that can continue: publickey
 admin@192.168.122.10: Permission denied (publickey).</code></pre>
 <p><strong>Afvist root-login (selv med gyldig nøgle,
 NixOS):</strong></p>
-<pre><code>$ ssh -i ~/.ssh/linux101_ed25519 root@192.168.122.10 &#39;echo test&#39;
+<pre><code>$ ssh -i ~/.ssh/linux101_ed25519 -p 2222 root@192.168.122.10 &#39;echo test&#39;
 root@192.168.122.10: Permission denied (publickey).</code></pre>
 <p>Root afvises fordi <code>PermitRootLogin = "no"</code>. Root har
 derudover ingen gyldig adgangskode
@@ -898,7 +912,7 @@ hostname, deaktiveret root-login, kun nøglebaseret SSH):</p>
 <h4>Traditionel: tre filer, to kommandoer</h4>
 <div class="sourceCode" id="cb13"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/hostname</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">linux101-srv</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nixos-comparison</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/network/interfaces</span></span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="ex">auto</span> eth0</span>
@@ -916,7 +930,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href=
 <h4>NixOS: én fil, ingen manuel genstart</h4>
 <div class="sourceCode" id="cb15"><pre
 class="sourceCode nix"><code class="sourceCode nix"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># nixos/modules/network.nix</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>networking<span class="op">.</span>hostName = <span class="st">&quot;linux101-srv&quot;</span>;</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>networking<span class="op">.</span>hostName = <span class="st">&quot;nixos-comparison&quot;</span>;</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>networking<span class="op">.</span>interfaces<span class="op">.</span>eth0<span class="op">.</span>ipv4<span class="op">.</span>addresses = <span class="op">[</span></span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">{</span> <span class="va">address</span> <span class="op">=</span> <span class="st">&quot;192.168.122.10&quot;</span><span class="op">;</span> <span class="va">prefixLength</span> <span class="op">=</span> <span class="dv">24</span><span class="op">;</span> <span class="op">}</span></span>
 <span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="op">]</span>;</span>
@@ -1248,33 +1262,37 @@ admin     ALL=(ALL:ALL)    NOPASSWD: /run/current-system/sw/bin/nixos-rebuild sw
     NOPASSWD: /run/current-system/sw/bin/chmod g+s /srv/projekt,
     NOPASSWD: /run/current-system/sw/bin/nft list ruleset</code></pre>
 <p><strong>Note: en driftsmæssig omkostning ved den snævre
-kommandomatch.</strong> Sudoers’ fulde-kommandolinje- match (vist
-ovenfor) er selve pointen med granulær adgang, men den er bogstavelig,
-ikke semantisk. Overvejer man fx at omdøbe serveren (kræver både et nyt
-<code>networking.hostName</code> og et nyt navn på flakens
-<code>nixosConfigurations</code>-attribut), bliver det tydeligt hvor
-lidt der skal til:</p>
+kommandomatch, bekræftet ved en faktisk omdøbning.</strong> Sudoers’
+fulde-kommandolinje-match (vist ovenfor) er selve pointen med granulær
+adgang, men den er bogstavelig, ikke semantisk. Serveren blev senere
+rent faktisk omdøbt (fra <code>linux101-srv</code> til
+<code>nixos-comparison</code>, se <code>00-tilgang.md</code>), hvilket
+krævede både et nyt <code>networking.hostName</code> og et nyt navn på
+flakens <code>nixosConfigurations</code>-attribut, og satte derfor
+reglen på en reel prøve, ikke kun en tænkt situation:</p>
 <pre><code>$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config
-error: getting status of &quot;/home/admin/linux101-config&quot;: No such file or directory
-[...]
-# (sudo lod kommandoen passere uden adgangskode; fejlen kommer fra nix selv, ikke fra sudo)
+Done. The new configuration is /nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
 
-$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config#linux101-srv
+$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config#nixos-comparison
 sudo: a password is required</code></pre>
-<p>Et harmløst, semantisk identisk <code>#linux101-srv</code>-tillæg,
-der blot gør eksplicit hvilken konfiguration der bygges, er nok til at
-blive afvist (ingen tilfældighed, se Delkonklusionen for hvorfor selve
-reglen ikke kan indeholde et <code>#</code>-tegn). Konsekvensen er reel:
+<p>Et harmløst, semantisk identisk
+<code>#nixos-comparison</code>-tillæg, der blot gør eksplicit hvilken
+konfiguration der bygges, er nok til at blive afvist (ingen
+tilfældighed, se Delkonklusionen for hvorfor selve reglen ikke kan
+indeholde et <code>#</code>-tegn). Konsekvensen er reel:
 <code>admin</code> har ingen adgangskode, og <code>root</code> har
 hverken SSH-adgang (<code>PermitRootLogin = "no"</code>, modul 1) eller
 en gyldig adgangskode til konsollen, så der findes intet fallback, hvis
 en kommando afviger bare en smule fra den præcise, hvidlistede streng.
-På en traditionel Debian-server ville samme situation typisk kunne
-reddes via en almindelig <code>sudo</code>-adgangskode eller
-root-konsoladgang, som <code>debian-comparison</code> faktisk har. Den
-granulære sudo-model er derfor ikke gratis: den fjerner ikke kun
-uautoriseret adgang, den fjerner også ens eget nødspor, hvis noget ikke
-er forudset præcist.</p>
+Selve omdøbningen lykkedes uden problemer, netop fordi rækkefølgen
+(hostname ændret først, flake-attributten omdøbt bagefter, aldrig
+samtidig) undgik nogensinde at skulle bruge andet end den ene,
+hvidlistede streng. På en traditionel Debian-server ville et tilsvarende
+fallback typisk kunne reddes via en almindelig
+<code>sudo</code>-adgangskode eller root-konsoladgang, som
+<code>debian-comparison</code> faktisk har. Den granulære sudo-model er
+derfor ikke gratis: den fjerner ikke kun uautoriseret adgang, den
+fjerner også ens eget nødspor, hvis noget ikke er forudset præcist.</p>
 <h2 id="dokumentation-etcgroup-og-id">Dokumentation:
 <code>/etc/group</code> og <code>id</code></h2>
 <details><summary>Vis kode (11 linjer)</summary>
@@ -1445,7 +1463,7 @@ $ ssh -p 2222 -b 192.168.122.99 admin@192.168.122.10 &#39;hostname&#39;
 ssh: connect to host 192.168.122.10 port 2222: Connection timed out
 
 $ ssh -p 2222 admin@192.168.122.10 &#39;hostname&#39;   # fra 192.168.122.1 (tilladt)
-linux101-srv</code></pre>
+nixos-comparison</code></pre>
 <h2 id="delkonklusion-3">Delkonklusion</h2>
 <p>Begge platforme lander på samme sikre slutresultat: default deny, kun
 SSH åbent, og kun fra værtens egen adresse. Modul 4 er dog det sted i
@@ -1567,11 +1585,11 @@ Mon 2026-09-14 12:00:00 UTC 23min logrotate.timer logrotate.service</code></pre>
 mislykkede loginforsøg</h2>
 <p><strong>Fremkaldt eksempel</strong> (forsøgt login med forkert
 nøgle):</p>
-<pre><code>$ ssh -i ~/.ssh/linux101_developer_ed25519 admin@192.168.122.10
+<pre><code>$ ssh -i ~/.ssh/linux101_developer_ed25519 -p 2222 admin@192.168.122.10
 admin@192.168.122.10: Permission denied (publickey).</code></pre>
 <p><strong>Tilsvarende log-linje:</strong></p>
 <pre><code>$ journalctl -u sshd
-Sep 14 11:26:16 linux101-srv sshd-session[809]: Connection closed by authenticating user admin 192.168.122.1 port 44368 [preauth]</code></pre>
+Sep 23 11:28:03 nixos-comparison sshd-session[1440]: Connection closed by authenticating user admin 192.168.122.1 port 38252 [preauth]</code></pre>
 <p><strong>Hvordan et unormalt mønster ville se ud:</strong> Mange
 gentagne <code>[preauth]</code>-afvisninger på kort tid for samme eller
 forskellige brugernavne tyder på automatiseret brute-forcing. Forsøg fra
@@ -1659,95 +1677,99 @@ vinkel. Det er et almindeligt, portabelt statusscript.</p>
 <p>Automatiserer bygning og (gen)oprettelse af VM’en fra
 <code>flake.nix</code>. Køres på <strong>værten</strong>:
 <code>./scripts/setup.sh</code>.</p>
-<details><summary>Vis kode (87 linjer)</summary>
+<details><summary>Vis kode (91 linjer)</summary>
 <div class="sourceCode" id="cb40"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
 <span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">VM_NAME</span><span class="op">=</span><span class="st">&quot;linux101-srv&quot;</span></span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">POOL_NAME</span><span class="op">=</span><span class="st">&quot;default&quot;</span></span>
-<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">POOL_PATH</span><span class="op">=</span><span class="st">&quot;/var/lib/libvirt/images&quot;</span></span>
-<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">DISK_SIZE_BYTES</span><span class="op">=</span>5196742656  <span class="co"># ~4.84 GiB, matcher diskstørrelsen fra modul 1</span></span>
-<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">VCPUS</span><span class="op">=</span>2</span>
-<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">MEMORY_MB</span><span class="op">=</span>3072</span>
-<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">REPO_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">dirname</span> <span class="st">&quot;</span><span class="va">${BASH_SOURCE</span><span class="op">[</span><span class="dv">0</span><span class="op">]</span><span class="va">}</span><span class="st">&quot;</span><span class="va">)</span><span class="st">/..&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">pwd</span><span class="va">)</span><span class="st">&quot;</span></span>
-<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a><span class="fu">log()</span> <span class="kw">{</span></span>
-<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;[setup.sh] </span><span class="va">$*</span><span class="st">&quot;</span></span>
-<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">VM_NAME</span><span class="op">=</span><span class="st">&quot;nixos-comparison&quot;</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Diskvolumen beholder sit oprindelige navn fra dengang VM&#39;en hed &quot;linux101-srv&quot; —</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="co"># at omdøbe selve filen ville kræve at redigere domænets disk-XML-definition for en</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="co"># rent kosmetisk gevinst, ingen læser nogensinde ser filnavnet. Se 00-tilgang.md.</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">DISK_VOLUME</span><span class="op">=</span><span class="st">&quot;linux101-srv.qcow2&quot;</span></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">POOL_NAME</span><span class="op">=</span><span class="st">&quot;default&quot;</span></span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">POOL_PATH</span><span class="op">=</span><span class="st">&quot;/var/lib/libvirt/images&quot;</span></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">DISK_SIZE_BYTES</span><span class="op">=</span>5196742656  <span class="co"># ~4.84 GiB, matcher diskstørrelsen fra modul 1</span></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">VCPUS</span><span class="op">=</span>2</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">MEMORY_MB</span><span class="op">=</span>3072</span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">REPO_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">dirname</span> <span class="st">&quot;</span><span class="va">${BASH_SOURCE</span><span class="op">[</span><span class="dv">0</span><span class="op">]</span><span class="va">}</span><span class="st">&quot;</span><span class="va">)</span><span class="st">/..&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">pwd</span><span class="va">)</span><span class="st">&quot;</span></span>
 <span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="fu">ensure_nix_in_path()</span> <span class="kw">{</span></span>
-<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># nix er ikke nødvendigvis i PATH i en non-interaktiv shell (fx cron eller en frisk login-shell)</span></span>
-<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="bu">command</span> <span class="at">-v</span> nix <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># shellcheck disable=SC1091</span></span>
-<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a>    <span class="bu">source</span> /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
-<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a><span class="fu">log()</span> <span class="kw">{</span></span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;[setup.sh] </span><span class="va">$*</span><span class="st">&quot;</span></span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a><span class="fu">ensure_nix_in_path()</span> <span class="kw">{</span></span>
+<span id="cb40-21"><a href="#cb40-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># nix er ikke nødvendigvis i PATH i en non-interaktiv shell (fx cron eller en frisk login-shell)</span></span>
 <span id="cb40-22"><a href="#cb40-22" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="bu">command</span> <span class="at">-v</span> nix <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;FEJL: &#39;nix&#39; blev ikke fundet i PATH.&quot;</span> <span class="op">&gt;&amp;</span><span class="dv">2</span></span>
-<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
+<span id="cb40-23"><a href="#cb40-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># shellcheck disable=SC1091</span></span>
+<span id="cb40-24"><a href="#cb40-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">source</span> /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
 <span id="cb40-25"><a href="#cb40-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a><span class="fu">ensure_storage_pool()</span> <span class="kw">{</span></span>
-<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">sudo</span> virsh pool-info <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Opretter storage pool &#39;</span><span class="va">${POOL_NAME}</span><span class="st">&#39;...&quot;</span></span>
-<span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-define-as <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> dir <span class="at">--target</span> <span class="st">&quot;</span><span class="va">$POOL_PATH</span><span class="st">&quot;</span></span>
-<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-autostart <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span></span>
-<span id="cb40-33"><a href="#cb40-33" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb40-34"><a href="#cb40-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">sudo</span> virsh pool-info <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;State: *running&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb40-35"><a href="#cb40-35" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Starter storage pool &#39;</span><span class="va">${POOL_NAME}</span><span class="st">&#39;...&quot;</span></span>
-<span id="cb40-36"><a href="#cb40-36" aria-hidden="true" tabindex="-1"></a>    <span class="co"># &quot;|| true&quot;: pool&#39;en kan være blevet startet af andet end scriptet (fx libvirtds egen</span></span>
-<span id="cb40-37"><a href="#cb40-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># autostart) i tidsrummet mellem tjekket og dette kald. Målet er en kørende pool, ikke</span></span>
-<span id="cb40-38"><a href="#cb40-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># at scriptet selv skal have startet den, så &quot;allerede aktiv&quot; er ikke en reel fejl her.</span></span>
-<span id="cb40-39"><a href="#cb40-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-start <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="fu">true</span></span>
-<span id="cb40-40"><a href="#cb40-40" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb40-41"><a href="#cb40-41" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb40-42"><a href="#cb40-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-43"><a href="#cb40-43" aria-hidden="true" tabindex="-1"></a><span class="fu">remove_existing_vm()</span> <span class="kw">{</span></span>
-<span id="cb40-44"><a href="#cb40-44" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="fu">sudo</span> virsh dominfo <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb40-45"><a href="#cb40-45" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Fjerner eksisterende VM &#39;</span><span class="va">${VM_NAME}</span><span class="st">&#39; (for idempotent genopbygning)...&quot;</span></span>
-<span id="cb40-46"><a href="#cb40-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh destroy <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
-<span id="cb40-47"><a href="#cb40-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh undefine <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
-<span id="cb40-48"><a href="#cb40-48" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb40-49"><a href="#cb40-49" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="fu">sudo</span> virsh vol-info <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">${VM_NAME}</span><span class="st">.qcow2&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb40-50"><a href="#cb40-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh vol-delete <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">${VM_NAME}</span><span class="st">.qcow2&quot;</span></span>
-<span id="cb40-51"><a href="#cb40-51" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb40-52"><a href="#cb40-52" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb40-53"><a href="#cb40-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-54"><a href="#cb40-54" aria-hidden="true" tabindex="-1"></a><span class="fu">build_image()</span> <span class="kw">{</span></span>
-<span id="cb40-55"><a href="#cb40-55" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Bygger diskimage fra flake.nix (kan tage nogle minutter)...&quot;</span></span>
-<span id="cb40-56"><a href="#cb40-56" aria-hidden="true" tabindex="-1"></a>  <span class="kw">(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$REPO_DIR</span><span class="st">&quot;</span> <span class="kw">&amp;&amp;</span> <span class="ex">nix</span> build .#qcow <span class="at">-L</span><span class="kw">)</span></span>
-<span id="cb40-57"><a href="#cb40-57" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb40-58"><a href="#cb40-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-59"><a href="#cb40-59" aria-hidden="true" tabindex="-1"></a><span class="fu">import_vm()</span> <span class="kw">{</span></span>
-<span id="cb40-60"><a href="#cb40-60" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Opretter volume og importerer image i libvirt...&quot;</span></span>
-<span id="cb40-61"><a href="#cb40-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virsh vol-create-as <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">${VM_NAME}</span><span class="st">.qcow2&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_SIZE_BYTES</span><span class="st">&quot;</span> <span class="at">--format</span> qcow2</span>
-<span id="cb40-62"><a href="#cb40-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virsh vol-upload <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">${VM_NAME}</span><span class="st">.qcow2&quot;</span> <span class="st">&quot;</span><span class="va">${REPO_DIR}</span><span class="st">/result/nixos.qcow2&quot;</span></span>
-<span id="cb40-63"><a href="#cb40-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-64"><a href="#cb40-64" aria-hidden="true" tabindex="-1"></a>  <span class="co"># --import: springer OS-installation over, da diskimagen allerede har NixOS installeret</span></span>
-<span id="cb40-65"><a href="#cb40-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virt-install <span class="dt">\</span></span>
-<span id="cb40-66"><a href="#cb40-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">--name</span> <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="dt">\</span></span>
-<span id="cb40-67"><a href="#cb40-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">--memory</span> <span class="st">&quot;</span><span class="va">$MEMORY_MB</span><span class="st">&quot;</span> <span class="dt">\</span></span>
-<span id="cb40-68"><a href="#cb40-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">--vcpus</span> <span class="st">&quot;</span><span class="va">$VCPUS</span><span class="st">&quot;</span> <span class="dt">\</span></span>
-<span id="cb40-69"><a href="#cb40-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">--disk</span> <span class="st">&quot;vol=</span><span class="va">${POOL_NAME}</span><span class="st">/</span><span class="va">${VM_NAME}</span><span class="st">.qcow2,bus=virtio&quot;</span> <span class="dt">\</span></span>
-<span id="cb40-70"><a href="#cb40-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network</span> network=default,model=virtio <span class="dt">\</span></span>
-<span id="cb40-71"><a href="#cb40-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">--graphics</span> none <span class="dt">\</span></span>
-<span id="cb40-72"><a href="#cb40-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">--console</span> pty,target_type=serial <span class="dt">\</span></span>
-<span id="cb40-73"><a href="#cb40-73" aria-hidden="true" tabindex="-1"></a>    <span class="at">--import</span> <span class="dt">\</span></span>
-<span id="cb40-74"><a href="#cb40-74" aria-hidden="true" tabindex="-1"></a>    <span class="at">--os-variant</span> generic <span class="dt">\</span></span>
-<span id="cb40-75"><a href="#cb40-75" aria-hidden="true" tabindex="-1"></a>    <span class="at">--noautoconsole</span></span>
-<span id="cb40-76"><a href="#cb40-76" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb40-77"><a href="#cb40-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-78"><a href="#cb40-78" aria-hidden="true" tabindex="-1"></a><span class="fu">main()</span> <span class="kw">{</span></span>
-<span id="cb40-79"><a href="#cb40-79" aria-hidden="true" tabindex="-1"></a>  <span class="ex">ensure_nix_in_path</span></span>
-<span id="cb40-80"><a href="#cb40-80" aria-hidden="true" tabindex="-1"></a>  <span class="ex">ensure_storage_pool</span></span>
-<span id="cb40-81"><a href="#cb40-81" aria-hidden="true" tabindex="-1"></a>  <span class="ex">remove_existing_vm</span></span>
-<span id="cb40-82"><a href="#cb40-82" aria-hidden="true" tabindex="-1"></a>  <span class="ex">build_image</span></span>
-<span id="cb40-83"><a href="#cb40-83" aria-hidden="true" tabindex="-1"></a>  <span class="ex">import_vm</span></span>
-<span id="cb40-84"><a href="#cb40-84" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Færdig. &#39;</span><span class="va">${VM_NAME}</span><span class="st">&#39; kører nu med den konfiguration, der er deklareret i flake.nix.&quot;</span></span>
-<span id="cb40-85"><a href="#cb40-85" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb40-86"><a href="#cb40-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-87"><a href="#cb40-87" aria-hidden="true" tabindex="-1"></a><span class="ex">main</span> <span class="st">&quot;</span><span class="va">$@</span><span class="st">&quot;</span></span></code></pre></div>
+<span id="cb40-26"><a href="#cb40-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="bu">command</span> <span class="at">-v</span> nix <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb40-27"><a href="#cb40-27" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;FEJL: &#39;nix&#39; blev ikke fundet i PATH. Se docs/01-vm-og-netvaerk.md.&quot;</span> <span class="op">&gt;&amp;</span><span class="dv">2</span></span>
+<span id="cb40-28"><a href="#cb40-28" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
+<span id="cb40-29"><a href="#cb40-29" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb40-30"><a href="#cb40-30" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb40-31"><a href="#cb40-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-32"><a href="#cb40-32" aria-hidden="true" tabindex="-1"></a><span class="fu">ensure_storage_pool()</span> <span class="kw">{</span></span>
+<span id="cb40-33"><a href="#cb40-33" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">sudo</span> virsh pool-info <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb40-34"><a href="#cb40-34" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Opretter storage pool &#39;</span><span class="va">${POOL_NAME}</span><span class="st">&#39;...&quot;</span></span>
+<span id="cb40-35"><a href="#cb40-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-define-as <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> dir <span class="at">--target</span> <span class="st">&quot;</span><span class="va">$POOL_PATH</span><span class="st">&quot;</span></span>
+<span id="cb40-36"><a href="#cb40-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-autostart <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span></span>
+<span id="cb40-37"><a href="#cb40-37" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb40-38"><a href="#cb40-38" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">sudo</span> virsh pool-info <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;State: *running&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb40-39"><a href="#cb40-39" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Starter storage pool &#39;</span><span class="va">${POOL_NAME}</span><span class="st">&#39;...&quot;</span></span>
+<span id="cb40-40"><a href="#cb40-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># &quot;|| true&quot;: pool&#39;en kan være blevet startet af andet end scriptet (fx libvirtds egen</span></span>
+<span id="cb40-41"><a href="#cb40-41" aria-hidden="true" tabindex="-1"></a>    <span class="co"># autostart) i tidsrummet mellem tjekket og dette kald. Målet er en kørende pool, ikke</span></span>
+<span id="cb40-42"><a href="#cb40-42" aria-hidden="true" tabindex="-1"></a>    <span class="co"># at scriptet selv skal have startet den, så &quot;allerede aktiv&quot; er ikke en reel fejl her.</span></span>
+<span id="cb40-43"><a href="#cb40-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-start <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="fu">true</span></span>
+<span id="cb40-44"><a href="#cb40-44" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb40-45"><a href="#cb40-45" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb40-46"><a href="#cb40-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-47"><a href="#cb40-47" aria-hidden="true" tabindex="-1"></a><span class="fu">remove_existing_vm()</span> <span class="kw">{</span></span>
+<span id="cb40-48"><a href="#cb40-48" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="fu">sudo</span> virsh dominfo <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb40-49"><a href="#cb40-49" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Fjerner eksisterende VM &#39;</span><span class="va">${VM_NAME}</span><span class="st">&#39; (for idempotent genopbygning)...&quot;</span></span>
+<span id="cb40-50"><a href="#cb40-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh destroy <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
+<span id="cb40-51"><a href="#cb40-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh undefine <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
+<span id="cb40-52"><a href="#cb40-52" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb40-53"><a href="#cb40-53" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="fu">sudo</span> virsh vol-info <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb40-54"><a href="#cb40-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh vol-delete <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span></span>
+<span id="cb40-55"><a href="#cb40-55" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb40-56"><a href="#cb40-56" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb40-57"><a href="#cb40-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-58"><a href="#cb40-58" aria-hidden="true" tabindex="-1"></a><span class="fu">build_image()</span> <span class="kw">{</span></span>
+<span id="cb40-59"><a href="#cb40-59" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Bygger diskimage fra flake.nix (kan tage nogle minutter)...&quot;</span></span>
+<span id="cb40-60"><a href="#cb40-60" aria-hidden="true" tabindex="-1"></a>  <span class="kw">(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$REPO_DIR</span><span class="st">&quot;</span> <span class="kw">&amp;&amp;</span> <span class="ex">nix</span> build .#qcow <span class="at">-L</span><span class="kw">)</span></span>
+<span id="cb40-61"><a href="#cb40-61" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb40-62"><a href="#cb40-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-63"><a href="#cb40-63" aria-hidden="true" tabindex="-1"></a><span class="fu">import_vm()</span> <span class="kw">{</span></span>
+<span id="cb40-64"><a href="#cb40-64" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Opretter volume og importerer image i libvirt...&quot;</span></span>
+<span id="cb40-65"><a href="#cb40-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virsh vol-create-as <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_SIZE_BYTES</span><span class="st">&quot;</span> <span class="at">--format</span> qcow2</span>
+<span id="cb40-66"><a href="#cb40-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virsh vol-upload <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">${REPO_DIR}</span><span class="st">/result/nixos.qcow2&quot;</span></span>
+<span id="cb40-67"><a href="#cb40-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-68"><a href="#cb40-68" aria-hidden="true" tabindex="-1"></a>  <span class="co"># --import: springer OS-installation over, da diskimagen allerede har NixOS installeret</span></span>
+<span id="cb40-69"><a href="#cb40-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virt-install <span class="dt">\</span></span>
+<span id="cb40-70"><a href="#cb40-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">--name</span> <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb40-71"><a href="#cb40-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">--memory</span> <span class="st">&quot;</span><span class="va">$MEMORY_MB</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb40-72"><a href="#cb40-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">--vcpus</span> <span class="st">&quot;</span><span class="va">$VCPUS</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb40-73"><a href="#cb40-73" aria-hidden="true" tabindex="-1"></a>    <span class="at">--disk</span> <span class="st">&quot;vol=</span><span class="va">${POOL_NAME}</span><span class="st">/</span><span class="va">${DISK_VOLUME}</span><span class="st">,bus=virtio&quot;</span> <span class="dt">\</span></span>
+<span id="cb40-74"><a href="#cb40-74" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network</span> network=default,model=virtio <span class="dt">\</span></span>
+<span id="cb40-75"><a href="#cb40-75" aria-hidden="true" tabindex="-1"></a>    <span class="at">--graphics</span> none <span class="dt">\</span></span>
+<span id="cb40-76"><a href="#cb40-76" aria-hidden="true" tabindex="-1"></a>    <span class="at">--console</span> pty,target_type=serial <span class="dt">\</span></span>
+<span id="cb40-77"><a href="#cb40-77" aria-hidden="true" tabindex="-1"></a>    <span class="at">--import</span> <span class="dt">\</span></span>
+<span id="cb40-78"><a href="#cb40-78" aria-hidden="true" tabindex="-1"></a>    <span class="at">--os-variant</span> generic <span class="dt">\</span></span>
+<span id="cb40-79"><a href="#cb40-79" aria-hidden="true" tabindex="-1"></a>    <span class="at">--noautoconsole</span></span>
+<span id="cb40-80"><a href="#cb40-80" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb40-81"><a href="#cb40-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-82"><a href="#cb40-82" aria-hidden="true" tabindex="-1"></a><span class="fu">main()</span> <span class="kw">{</span></span>
+<span id="cb40-83"><a href="#cb40-83" aria-hidden="true" tabindex="-1"></a>  <span class="ex">ensure_nix_in_path</span></span>
+<span id="cb40-84"><a href="#cb40-84" aria-hidden="true" tabindex="-1"></a>  <span class="ex">ensure_storage_pool</span></span>
+<span id="cb40-85"><a href="#cb40-85" aria-hidden="true" tabindex="-1"></a>  <span class="ex">remove_existing_vm</span></span>
+<span id="cb40-86"><a href="#cb40-86" aria-hidden="true" tabindex="-1"></a>  <span class="ex">build_image</span></span>
+<span id="cb40-87"><a href="#cb40-87" aria-hidden="true" tabindex="-1"></a>  <span class="ex">import_vm</span></span>
+<span id="cb40-88"><a href="#cb40-88" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Færdig. &#39;</span><span class="va">${VM_NAME}</span><span class="st">&#39; kører nu med den konfiguration, der er deklareret i flake.nix.&quot;</span></span>
+<span id="cb40-89"><a href="#cb40-89" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb40-90"><a href="#cb40-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-91"><a href="#cb40-91" aria-hidden="true" tabindex="-1"></a><span class="ex">main</span> <span class="st">&quot;</span><span class="va">$@</span><span class="st">&quot;</span></span></code></pre></div>
 </details>
 <p><strong>Hvorfor er scriptet idempotent?</strong> Hver funktion
 tjekker den nuværende tilstand, før den handler, i stedet for at antage
@@ -1760,9 +1782,9 @@ men fordi en eventuel gammel version lige er ryddet væk, opstår der
 aldrig en fejl om en ressource, der allerede findes. Mønstret er “riv
 ned, hvis det findes, byg derefter altid op igen fra bunden”: uanset om
 scriptet køres første eller femtende gang, konvergerer slutresultatet
-til det samme, nemlig præcis én VM ved navn <code>linux101-srv</code>,
-bygget fra den <code>flake.nix</code>, der ligger på tidspunktet for
-kørslen.</p>
+til det samme, nemlig præcis én VM ved navn
+<code>nixos-comparison</code>, bygget fra den <code>flake.nix</code>,
+der ligger på tidspunktet for kørslen.</p>
 <p><strong>Idempotens, bevist ved to kørsler i træk:</strong></p>
 <details><summary>Vis kode (17 linjer)</summary>
 <pre><code>$ ./scripts/setup.sh
@@ -1770,16 +1792,16 @@ kørslen.</p>
 [...]
 [setup.sh] Opretter volume og importerer image i libvirt...
 Vol linux101-srv.qcow2 created
-[setup.sh] Færdig. &#39;linux101-srv&#39; kører nu med den konfiguration, der er deklareret i flake.nix.
+[setup.sh] Færdig. &#39;nixos-comparison&#39; kører nu med den konfiguration, der er deklareret i flake.nix.
 
 $ ./scripts/setup.sh
-[setup.sh] Fjerner eksisterende VM &#39;linux101-srv&#39; (for idempotent genopbygning)...
+[setup.sh] Fjerner eksisterende VM &#39;nixos-comparison&#39; (for idempotent genopbygning)...
 Vol linux101-srv.qcow2 deleted
 [setup.sh] Bygger diskimage fra flake.nix (kan tage nogle minutter)...
 [...]
 [setup.sh] Opretter volume og importerer image i libvirt...
 Vol linux101-srv.qcow2 created
-[setup.sh] Færdig. &#39;linux101-srv&#39; kører nu med den konfiguration, der er deklareret i flake.nix.
+[setup.sh] Færdig. &#39;nixos-comparison&#39; kører nu med den konfiguration, der er deklareret i flake.nix.
 $ echo $?
 0</code></pre>
 </details>
@@ -1854,8 +1876,8 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb42-1"><a href=
 </details>
 <p><strong>Eksempeloutput fra det færdige system:</strong></p>
 <details><summary>Vis kode (18 linjer)</summary>
-<pre><code>[admin@linux101-srv:~]$ ~/linux101-config/scripts/healthcheck.sh
-Healthcheck for linux101-srv -- 2026-09-14 12:34:43
+<pre><code>[admin@nixos-comparison:~]$ ~/linux101-config/scripts/healthcheck.sh
+Healthcheck for nixos-comparison -- 2026-09-23 11:29:24
 
 == Firewall-status ==
   type filter hook prerouting priority mangle + 10; policy drop;
@@ -1868,7 +1890,7 @@ Filesystem      Size  Used Avail Use% Mounted on
 /dev/vda3       4.5G  2.6G  1.7G  61% /
 
 == Aktive/loggede ind brugere ==
-admin    pts/0        2026-09-14 12:11 (192.168.122.1)
+admin    pts/0        2026-09-23 11:29 (192.168.122.1)
 
 == Brugere med UID 0 (ud over root) ==
 Ingen -- kun root har UID 0.</code></pre>
@@ -1884,7 +1906,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb44-1"><a href=
 <span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">FLAKE_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${HOME}</span><span class="st">/linux101-config&quot;</span></span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">FLAKE_ATTR</span><span class="op">=</span><span class="st">&quot;nixosConfigurations.linux101-srv.config.system.build.toplevel&quot;</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">FLAKE_ATTR</span><span class="op">=</span><span class="st">&quot;nixosConfigurations.nixos-comparison.config.system.build.toplevel&quot;</span></span>
 <span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="fu">main()</span> <span class="kw">{</span></span>
 <span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="ot">!</span> <span class="ot">-d</span> <span class="st">&quot;</span><span class="va">$FLAKE_DIR</span><span class="st">&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
@@ -1917,8 +1939,8 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb44-1"><a href=
 <p><strong>Bevis, begge grene testet:</strong></p>
 <details><summary>Vis kode (15 linjer)</summary>
 <pre><code>$ ./verify-deploy.sh
-Kørende system:    /nix/store/r0vf...-nixos-system-linux101-srv-...
-Deklareret system: /nix/store/r0vf...-nixos-system-linux101-srv-...
+Kørende system:    /nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
+Deklareret system: /nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
 OK: systemet stemmer overens med den deklarerede konfiguration.
 $ echo $?
 0
@@ -1926,8 +1948,8 @@ $ echo $?
 # simulér en udefra kommende konfigurationsafvigelse, uden en rigtig nixos-rebuild
 $ sed -i &#39;s/allowedTCPPorts = \[ \];/allowedTCPPorts = [ 9999 ];/&#39; nixos/modules/firewall.nix
 $ ./verify-deploy.sh
-Kørende system:    /nix/store/r0vf...-nixos-system-linux101-srv-...
-Deklareret system: /nix/store/agv1...-nixos-system-linux101-srv-...
+Kørende system:    /nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
+Deklareret system: /nix/store/d7f3iys5ka2c2sywh70ib0zxz8vyv9wy-nixos-system-nixos-comparison-...
 ADVARSEL: systemet er drevet væk fra den deklarerede konfiguration.
 $ echo $?
 1</code></pre>

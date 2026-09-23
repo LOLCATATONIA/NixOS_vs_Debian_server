@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Modul 6: setup.sh - idempotent bootstrap/genopbygning af linux101-srv-VM'en.
+# Modul 6: setup.sh - idempotent bootstrap/genopbygning af nixos-comparison-VM'en.
 #
 # Køres på VÆRTEN (ikke på VM'en). Automatiserer modul 1's VM-oprettelse — og dermed
 # indirekte modul 1-5's fulde konfiguration, som allerede er bagt ind i det byggede
@@ -15,7 +15,11 @@
 #                              beskriver)
 set -euo pipefail
 
-readonly VM_NAME="linux101-srv"
+readonly VM_NAME="nixos-comparison"
+# Diskvolumen beholder sit oprindelige navn fra dengang VM'en hed "linux101-srv" —
+# at omdøbe selve filen ville kræve at redigere domænets disk-XML-definition for en
+# rent kosmetisk gevinst, ingen læser nogensinde ser filnavnet. Se 00-tilgang.md.
+readonly DISK_VOLUME="linux101-srv.qcow2"
 readonly POOL_NAME="default"
 readonly POOL_PATH="/var/lib/libvirt/images"
 readonly DISK_SIZE_BYTES=5196742656  # ~4.84 GiB, matcher diskstørrelsen fra modul 1
@@ -60,8 +64,8 @@ remove_existing_vm() {
     sudo virsh destroy "$VM_NAME" &>/dev/null || true
     sudo virsh undefine "$VM_NAME" &>/dev/null || true
   fi
-  if sudo virsh vol-info --pool "$POOL_NAME" "${VM_NAME}.qcow2" &>/dev/null; then
-    sudo virsh vol-delete --pool "$POOL_NAME" "${VM_NAME}.qcow2"
+  if sudo virsh vol-info --pool "$POOL_NAME" "$DISK_VOLUME" &>/dev/null; then
+    sudo virsh vol-delete --pool "$POOL_NAME" "$DISK_VOLUME"
   fi
 }
 
@@ -72,15 +76,15 @@ build_image() {
 
 import_vm() {
   log "Opretter volume og importerer image i libvirt..."
-  sudo virsh vol-create-as "$POOL_NAME" "${VM_NAME}.qcow2" "$DISK_SIZE_BYTES" --format qcow2
-  sudo virsh vol-upload --pool "$POOL_NAME" "${VM_NAME}.qcow2" "${REPO_DIR}/result/nixos.qcow2"
+  sudo virsh vol-create-as "$POOL_NAME" "$DISK_VOLUME" "$DISK_SIZE_BYTES" --format qcow2
+  sudo virsh vol-upload --pool "$POOL_NAME" "$DISK_VOLUME" "${REPO_DIR}/result/nixos.qcow2"
 
   # --import: springer OS-installation over, da diskimagen allerede har NixOS installeret
   sudo virt-install \
     --name "$VM_NAME" \
     --memory "$MEMORY_MB" \
     --vcpus "$VCPUS" \
-    --disk "vol=${POOL_NAME}/${VM_NAME}.qcow2,bus=virtio" \
+    --disk "vol=${POOL_NAME}/${DISK_VOLUME},bus=virtio" \
     --network network=default,model=virtio \
     --graphics none \
     --console pty,target_type=serial \

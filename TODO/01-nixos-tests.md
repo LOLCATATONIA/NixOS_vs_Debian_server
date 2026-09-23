@@ -24,7 +24,7 @@ og "er indbygget i selve platformen".
 ## Vigtig arkitektonisk pointe (skal med i dokumentationen)
 
 `pkgs.nixosTest` bygger sin egen midlertidige VM direkte fra `configuration.nix`, via QEMU i Nix'
-build-sandbox. Det er IKKE den samme håndbyggede libvirt-VM (`linux101-srv`), vi har arbejdet med
+build-sandbox. Det er IKKE den samme håndbyggede libvirt-VM (`nixos-comparison`), vi har arbejdet med
 resten af projektet. Det er en pointe, ikke en svaghed: testene beviser at *selve deklarationen* er
 korrekt og reproducerbar, uafhængig af den specifikke maskine. De erstatter derfor ikke de manuelle
 beviser i rapporten, de supplerer dem, medmindre vi bevidst beslutter at omskrive rapportens

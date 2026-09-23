@@ -2,7 +2,7 @@
 
 ## Mål
 
-Tag reelt tid på en fuld genopbygning af `linux101-srv` fra bunden (`./scripts/setup.sh`), og
+Tag reelt tid på en fuld genopbygning af `nixos-comparison` fra bunden (`./scripts/setup.sh`), og
 rapportér det som en konkret RTO-metrik (Recovery Time Objective), i stedet for kun at påstå
 "hurtig gendannelse" som en fordel.
 

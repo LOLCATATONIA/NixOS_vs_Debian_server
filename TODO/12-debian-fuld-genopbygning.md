@@ -28,7 +28,7 @@ arbejdsgang: riv VM'en ned, genskab basen fra preseed, kør provisioneringen, ve
 
 1. **Skriv en samlende `rebuild-debian.sh`** (på værten), der:
    - Destroyer/undefiner den eksisterende `debian-comparison`-VM (som `setup.sh` gør for
-     `linux101-srv`).
+     `nixos-comparison`).
    - Genkører `virt-install --location` med `preseed.cfg` (nu med den rettede `ufw`-regel på
      værten som forudsætning, ikke noget scriptet selv kan løse, se punkt "Åbne spørgsmål").
    - Venter på at installationen er færdig og VM'en er tilgængelig via SSH (poll-loop, ikke en fast

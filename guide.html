@@ -101,8 +101,8 @@
 <body>
 <header id="title-block-header">
 <h1 class="title">Driftsguide</h1>
-<p class="subtitle">linux101-srv (NixOS) og debian-comparison (Debian),
-side om side</p>
+<p class="subtitle">nixos-comparison (NixOS) og debian-comparison
+(Debian), side om side</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -122,7 +122,7 @@ grueligt galt: fuld genopbygning</a></li>
 </nav>
 <p><strong>Vigtigst at forstå:</strong> Der er nu <strong>tre</strong>
 steder, en kommando kan køres: værten, NixOS-VM’en
-(<code>linux101-srv</code>), eller Debian-VM’en
+(<code>nixos-comparison</code>), eller Debian-VM’en
 (<code>debian-comparison</code>). Hver kommando nedenfor er mærket
 <code>[vært]</code>, <code>[nixos-vm]</code> eller
 <code>[debian-vm]</code>, aldrig blandet.</p>
@@ -131,8 +131,11 @@ steder, en kommando kan køres: værten, NixOS-VM’en
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hostname</span></span></code></pre></div>
 <ul>
 <li><code>cachyos-x8664</code> → du er på <strong>værten</strong>.</li>
-<li><code>linux101-srv</code> → du er på
-<strong>NixOS-VM’en</strong>.</li>
+<li><code>nixos-comparison</code> → du er på
+<strong>NixOS-VM’en</strong> (hed oprindeligt <code>linux101-srv</code>,
+efter opgavens egen titel, omdøbt for at matche den etablerede
+<code>debian-comparison</code>-navnekonvention, se
+<code>00-tilgang.md</code>).</li>
 <li><code>debian-comparison</code> → du er på
 <strong>Debian-VM’en</strong> (hed oprindeligt <code>debian-tmp</code>,
 det midlertidige navn fra preseed-installationen, blev aldrig rettet,
@@ -155,8 +158,9 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_developer_ed25519 <span class="at">-p</span> 2222 developer@192.168.122.11</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/debian_comparison_guest_ed25519 <span class="at">-p</span> 2222 guest@192.168.122.11</span></code></pre></div>
 </section>
-<section id="nixos-linux101-srv-192.168.122.10" class="compare-side">
-<h4>NixOS: <code>linux101-srv</code> (192.168.122.10)</h4>
+<section id="nixos-nixos-comparison-192.168.122.10"
+class="compare-side">
+<h4>NixOS: <code>nixos-comparison</code> (192.168.122.10)</h4>
 <div class="sourceCode" id="cb4"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ssh</span> <span class="at">-i</span> ~/.ssh/linux101_ed25519 <span class="at">-p</span> 2222 admin@192.168.122.10</span></code></pre></div>
 <p>Andre roller:</p>
@@ -173,13 +177,13 @@ login, kun fra <code>192.168.122.1</code> (værten selv), kun på port
 <p><strong>[vært]</strong></p>
 <div class="sourceCode" id="cb6"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh list <span class="at">--all</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh start linux101-srv        <span class="co"># eller: debian-comparison</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh shutdown linux101-srv     <span class="co"># ordentlig nedlukning</span></span></code></pre></div>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh start nixos-comparison        <span class="co"># eller: debian-comparison</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh shutdown nixos-comparison     <span class="co"># ordentlig nedlukning</span></span></code></pre></div>
 <p><strong>Direkte konsol-adgang</strong> (eneste vej ind som
 <code>root</code>, siden <code>root</code> ikke kan SSH’e på nogen af
 VM’erne):</p>
 <div class="sourceCode" id="cb7"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh console linux101-srv      <span class="co"># eller: debian-comparison</span></span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh console nixos-comparison      <span class="co"># eller: debian-comparison</span></span></code></pre></div>
 <p>Kommandoen ovenfor beder om login. På <strong>Debian</strong>-VM’en:
 brugernavn <code>root</code>, adgangskode
 <code>comparison-temp-pw</code> (sat under selve installationen). På
@@ -198,7 +202,7 @@ slukket.</p>
 <div class="sourceCode" id="cb8"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># [vært]</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh list <span class="at">--all</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh start linux101-srv        <span class="co"># eller: debian-comparison</span></span></code></pre></div>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> virsh start nixos-comparison        <span class="co"># eller: debian-comparison</span></span></code></pre></div>
 <p><strong>SSH hænger, eller kan slet ikke forbinde, men VM’en
 kører:</strong> Forældet <code>known_hosts</code>-indgang (sker efter
 genopbygning af en VM fra bunden):</p>

@@ -97,7 +97,7 @@ $ virt-install --location debian-13.7.0-amd64-netinst.iso \
 
 ```bash
 $ nix build .#qcow -L
-$ virt-install --name linux101-srv --memory 3072 --vcpus 2 \
+$ virt-install --name nixos-comparison --memory 3072 --vcpus 2 \
     --disk vol=default/linux101-srv.qcow2,bus=virtio \
     --network network=default,model=virtio \
     --graphics none --console pty,target_type=serial \
@@ -176,11 +176,11 @@ gentagen bygning og sammenligner selv output-hashen mod den eksisterende:
 
 ```
 # evaluerer den deklarerede sti, uden at bygge noget
-$ nix eval --raw ".#nixosConfigurations.linux101-srv.config.system.build.toplevel"
-/nix/store/x38lab3zq77b9mxsn8br266df4m23vxd-nixos-system-linux101-srv-...
+$ nix eval --raw ".#nixosConfigurations.nixos-comparison.config.system.build.toplevel"
+/nix/store/8dnnc5bimgv0hza6rwlv1chfgkvy56c2-nixos-system-nixos-comparison-...
 # tvinger en ægte ny bygning, sammenligner selv hash mod ovenstående
-$ nix build ".#nixosConfigurations.linux101-srv.config.system.build.toplevel" --rebuild -L
-checking outputs of '/nix/store/s5m1i4ff5six5w482jwli7b6sraj944n-...-nixos-system-...drv'...
+$ nix build ".#nixosConfigurations.nixos-comparison.config.system.build.toplevel" --rebuild -L
+checking outputs of '/nix/store/kq5cfysipkzm3isli5353axyw50gd100-...-nixos-system-...drv'...
 ```
 
 Ingen "may not be deterministic"-fejl ved en tvunget, ægte genbygning: selve systemkonfigurationen
@@ -218,17 +218,17 @@ format (se tabel og forklaring nedenfor).
 
 ### Begge VM'er, side om side
 
-Ud over `linux101-srv` køres der til denne rapport også en **rigtig** Debian-VM
+Ud over `nixos-comparison` køres der til denne rapport også en **rigtig** Debian-VM
 (`debian-comparison`), opsat i hånden efter den traditionelle, imperative arbejdsgang, på nøjagtig
 samme QEMU/KVM/libvirt-grundlag. Formålet er at gøre sammenligningerne i modul 1-6 til en reel,
 efterprøvet A/B-test i stedet for kun en teoretisk modstilling.
 
 <table>
 <thead>
-<tr><th>Aspekt</th><th>Debian (<code>debian-comparison</code>)</th><th>NixOS (<code>linux101-srv</code>)</th></tr>
+<tr><th>Aspekt</th><th>Debian (<code>debian-comparison</code>)</th><th>NixOS (<code>nixos-comparison</code>)</th></tr>
 </thead>
 <tbody>
-<tr><td>Diskimage</td><td><code>/var/lib/libvirt/images/debian-comparison.qcow2</code></td><td><code>/var/lib/libvirt/images/linux101-srv.qcow2</code></td></tr>
+<tr><td>Diskimage</td><td><code>/var/lib/libvirt/images/debian-comparison.qcow2</code></td><td><code>/var/lib/libvirt/images/linux101-srv.qcow2</code> <em>(historisk filnavn, se note nedenfor)</em></td></tr>
 <tr><td>Diskstørrelse</td><td>8,00 GiB</td><td>4,83 GiB</td></tr>
 <tr><td>Statisk IP</td><td><code>192.168.122.11</code></td><td><code>192.168.122.10</code></td></tr>
 <tr><td>vCPU / RAM</td><td colspan="2" style="text-align:center">2 vCPU / 3072 MB (begge, for en fair sammenligning)</td></tr>
@@ -248,6 +248,14 @@ image. Debians `size=8` (GiB) i `virt-install`-kommandoen var derimod et
 derimod identiske på begge VM'er,
 netop for at sammenligningerne i modul 1-6 måler platformsforskelle, ikke forskelle i tildelte
 ressourcer.
+
+**Note om diskimagets filnavn:** VM'en hed oprindeligt `linux101-srv`, efter opgavens egen titel, og
+blev senere omdøbt til `nixos-comparison` for at matche projektets etablerede navnekonvention.
+Selve diskimage-filen beholder bevidst sit oprindelige navn, `virsh domrename` ændrer kun det
+registrerede domænenavn i libvirt, ikke dets disk-sti, og at ændre filnavnet ville kræve at redigere
+domænets disk-XML-definition for en rent kosmetisk gevinst, ingen læser nogensinde ser filnavnet.
+Samme princip som Debian-sidens `preseed.cfg`, der stadig internt refererer det gamle `debian-tmp`
+(se `guide.md`).
 
 ## Repo-struktur
 

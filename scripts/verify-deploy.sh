@@ -25,7 +25,7 @@
 set -euo pipefail
 
 readonly FLAKE_DIR="${HOME}/linux101-config"
-readonly FLAKE_ATTR="nixosConfigurations.linux101-srv.config.system.build.toplevel"
+readonly FLAKE_ATTR="nixosConfigurations.nixos-comparison.config.system.build.toplevel"
 
 main() {
   if [[ ! -d "$FLAKE_DIR" ]]; then
