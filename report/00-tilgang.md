@@ -207,8 +207,8 @@ VM'en køres under QEMU/KVM via libvirt på en CachyOS-vært, og opbygges i tre 
    image. Hele processen er én reproducerbar kommandosekvens uden manuelle installationstrin. Se
    [`scripts/setup.sh`](scripts/setup.sh).
 2. **Iteration:** Ændringer laves ved at redigere `.nix`-filerne, kopiere flake-kilden til VM'en
-   (`~/linux101-config`), og køre `sudo nixos-rebuild switch --flake ~/linux101-config` lokalt på
-   serveren.
+   (`~/nixos-comparison-config`), og køre `sudo nixos-rebuild switch --flake ~/nixos-comparison-config`
+   lokalt på serveren.
 3. **Sikkerhedsnet:** Før en risikabel ændring (fx firewall/sudo) deployes, testes den lokalt med
    `nixos-rebuild build-vm`, som bygger en midlertidig, isoleret test-VM uden at røre den rigtige
    server.

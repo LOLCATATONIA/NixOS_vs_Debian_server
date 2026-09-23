@@ -45,13 +45,13 @@ ssh -i ~/.ssh/debian_comparison_guest_ed25519 -p 2222 guest@192.168.122.11
 #### NixOS: `nixos-comparison` (192.168.122.10)
 
 ```bash
-ssh -i ~/.ssh/linux101_ed25519 -p 2222 admin@192.168.122.10
+ssh -i ~/.ssh/nixos_comparison_admin_ed25519 -p 2222 admin@192.168.122.10
 ```
 
 Andre roller:
 ```bash
-ssh -i ~/.ssh/linux101_developer_ed25519 -p 2222 developer@192.168.122.10
-ssh -i ~/.ssh/linux101_guest_ed25519 -p 2222 guest@192.168.122.10
+ssh -i ~/.ssh/nixos_comparison_developer_ed25519 -p 2222 developer@192.168.122.10
+ssh -i ~/.ssh/nixos_comparison_guest_ed25519 -p 2222 guest@192.168.122.10
 ```
 :::
 :::
@@ -125,8 +125,8 @@ bash /tmp/healthcheck.sh         # samme, uændrede script som NixOS-siden
 ```bash
 sudo -l                          # hvad admin må som root
 sudo nft list ruleset            # firewall-status
-~/linux101-config/scripts/healthcheck.sh
-~/linux101-config/scripts/verify-deploy.sh
+~/nixos-comparison-config/scripts/healthcheck.sh
+~/nixos-comparison-config/scripts/verify-deploy.sh
 ```
 :::
 :::
@@ -165,12 +165,12 @@ bash /tmp/provision.sh
 
 ```bash
 # [vært]
-scp -i ~/.ssh/linux101_ed25519 -P 2222 -r flake.nix flake.lock nixos scripts \
-  admin@192.168.122.10:~/linux101-config/
+scp -i ~/.ssh/nixos_comparison_admin_ed25519 -P 2222 -r flake.nix flake.lock nixos scripts \
+  admin@192.168.122.10:~/nixos-comparison-config/
 ```
 ```bash
 # [nixos-vm]
-sudo nixos-rebuild switch --flake ~/linux101-config
+sudo nixos-rebuild switch --flake ~/nixos-comparison-config
 ```
 Dette er den eneste `nixos-rebuild`-kommando, `admin` må køre, men den kan udtrykke *enhver*
 ændring, der er beskrevet i `configuration.nix`.

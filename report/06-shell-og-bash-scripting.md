@@ -168,7 +168,7 @@ $ echo $?
 
 ## `scripts/healthcheck.sh` (opgave 3)
 
-Køres på **serveren**: `~/linux101-config/scripts/healthcheck.sh`. Kræver den granulære sudo-regel
+Køres på **serveren**: `~/nixos-comparison-config/scripts/healthcheck.sh`. Kræver den granulære sudo-regel
 for `nft list ruleset` (modul 3/4).
 
 ```bash
@@ -237,13 +237,23 @@ main "$@"
 **Eksempeloutput fra det færdige system:**
 
 ```
-[admin@nixos-comparison:~]$ ~/linux101-config/scripts/healthcheck.sh
-Healthcheck for nixos-comparison -- 2026-09-23 11:29:24
+[admin@nixos-comparison:~]$ ~/nixos-comparison-config/scripts/healthcheck.sh
+Healthcheck for nixos-comparison -- 2026-09-23 13:01:53
 
 == Firewall-status ==
   type filter hook prerouting priority mangle + 10; policy drop;
+  meta nfproto ipv4 udp sport . udp dport { 67 . 68, 68 . 67 } accept comment "DHCPv4 client/server"
+  fib saddr . mark check exists accept
   type filter hook input priority filter; policy drop;
+  iifname "lo" accept comment "trusted interfaces"
+  icmpv6 type echo-reply accept
+  ct state vmap { invalid : drop, established : accept, related : accept, new : jump input-allow, untracked : jump input-allow }
+  meta l4proto . th dport @temp-ports accept
+  icmp type echo-request accept comment "allow ping"
+  icmpv6 type != { nd-redirect, 139 } accept comment "Accept all ICMPv6 messages except redirects and node information queries (type 139).  See RFC 4890, section 4.4."
+  ip6 daddr fe80::/64 udp dport 546 accept comment "DHCPv6 client"
   ip saddr 192.168.122.1 tcp dport 2222 accept
+  udp sport 53 accept
 
 == Diskplads ==
 Rodfilsystem: 61% brugt, 1.7G ledig diskplads
@@ -251,7 +261,7 @@ Filesystem      Size  Used Avail Use% Mounted on
 /dev/vda3       4.5G  2.6G  1.7G  61% /
 
 == Aktive/loggede ind brugere ==
-admin    pts/0        2026-09-23 11:29 (192.168.122.1)
+admin    pts/0        2026-09-23 13:01 (192.168.122.1)
 
 == Brugere med UID 0 (ud over root) ==
 Ingen -- kun root har UID 0.
@@ -266,7 +276,7 @@ Verificerer at den kørende konfiguration stemmer overens med den deklarerede (`
 #!/usr/bin/env bash
 set -euo pipefail
 
-readonly FLAKE_DIR="${HOME}/linux101-config"
+readonly FLAKE_DIR="${HOME}/nixos-comparison-config"
 readonly FLAKE_ATTR="nixosConfigurations.nixos-comparison.config.system.build.toplevel"
 
 main() {

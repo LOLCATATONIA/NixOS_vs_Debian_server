@@ -60,7 +60,7 @@ Mon 2026-09-14 12:00:00 UTC 23min logrotate.timer logrotate.service
 **Fremkaldt eksempel** (forsøgt login med forkert nøgle):
 
 ```
-$ ssh -i ~/.ssh/linux101_developer_ed25519 -p 2222 admin@192.168.122.10
+$ ssh -i ~/.ssh/nixos_comparison_developer_ed25519 -p 2222 admin@192.168.122.10
 admin@192.168.122.10: Permission denied (publickey).
 ```
 

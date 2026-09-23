@@ -62,7 +62,7 @@ sudo virt-install --name nixos-comparison --memory 3072 --vcpus 2 \
 **Vellykket SSH-login med nøgle (NixOS):**
 
 ```
-$ ssh -i ~/.ssh/linux101_ed25519 -p 2222 admin@192.168.122.10 'hostname && whoami'
+$ ssh -i ~/.ssh/nixos_comparison_admin_ed25519 -p 2222 admin@192.168.122.10 'hostname && whoami'
 nixos-comparison
 admin
 ```
@@ -79,7 +79,7 @@ admin@192.168.122.10: Permission denied (publickey).
 **Afvist root-login (selv med gyldig nøgle, NixOS):**
 
 ```
-$ ssh -i ~/.ssh/linux101_ed25519 -p 2222 root@192.168.122.10 'echo test'
+$ ssh -i ~/.ssh/nixos_comparison_admin_ed25519 -p 2222 root@192.168.122.10 'echo test'
 root@192.168.122.10: Permission denied (publickey).
 ```
 

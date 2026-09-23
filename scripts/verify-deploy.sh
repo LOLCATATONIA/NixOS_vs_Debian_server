@@ -2,7 +2,7 @@
 # Modul 6: verify-deploy.sh - verificerer at den KØRENDE konfiguration stemmer
 # overens med den DEKLAREREDE konfiguration (flake.nix), uden at ændre noget selv.
 #
-# Køres PÅ SERVEREN, hvor flake-kilden ligger i ~/linux101-config (se
+# Køres PÅ SERVEREN, hvor flake-kilden ligger i ~/nixos-comparison-config (se
 # docs/00-tilgang.md, Fase 2). Kræver ikke sudo.
 #
 # NixOS-argument (se docs/06-shell-og-bash-scripting.md): selve den "idempotente
@@ -24,7 +24,7 @@
 # Brug: ./verify-deploy.sh
 set -euo pipefail
 
-readonly FLAKE_DIR="${HOME}/linux101-config"
+readonly FLAKE_DIR="${HOME}/nixos-comparison-config"
 readonly FLAKE_ATTR="nixosConfigurations.nixos-comparison.config.system.build.toplevel"
 
 main() {

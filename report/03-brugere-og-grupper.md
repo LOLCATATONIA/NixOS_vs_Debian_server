@@ -107,7 +107,7 @@ ikke kun programnavnet.
 ```
 root     ALL=(ALL:ALL)    SETENV: ALL
 %wheel  ALL=(ALL:ALL)    SETENV: ALL
-admin     ALL=(ALL:ALL)    NOPASSWD: /run/current-system/sw/bin/nixos-rebuild switch --flake /home/admin/linux101-config,
+admin     ALL=(ALL:ALL)    NOPASSWD: /run/current-system/sw/bin/nixos-rebuild switch --flake /home/admin/nixos-comparison-config,
     NOPASSWD: /run/current-system/sw/bin/systemctl restart sshd.service,
     NOPASSWD: /run/current-system/sw/bin/chmod g+s /srv/projekt,
     NOPASSWD: /run/current-system/sw/bin/nft list ruleset
@@ -140,6 +140,34 @@ ville et tilsvarende fallback typisk kunne reddes via en almindelig `sudo`-adgan
 root-konsoladgang, som `debian-comparison` faktisk har. Den granulære
 sudo-model er derfor ikke gratis: den fjerner ikke kun uautoriseret adgang, den fjerner også ens
 eget nødspor, hvis noget ikke er forudset præcist.
+
+**En anden, endnu strengere prøve: selve stien i den hvidlistede kommando blev ændret.**
+Flakens mappenavn på serveren blev senere også omdøbt (fra `~/linux101-config` til
+`~/nixos-comparison-config`), denne gang en ændring af selve den streng, sudo-reglen matcher
+bogstaveligt, et hønen/ægget-problem der i teorien er værre end hostname/attribut-omdøbningen
+ovenfor: ændres reglen, før mappen er flyttet, matcher ingen eksisterende sti reglen endnu; flyttes
+mappen først, matcher den utflyttede regel ikke længere noget. Løsningen udnytter at
+`security.sudo.extraRules` blot er deklarativ data, en **ekstra** regel for den nye sti blev
+tilføjet ved siden af den gamle (ren addition, appliceret via den kommando der allerede virkede),
+mappen blev derefter flyttet som en almindelig, ikke-privilegeret brugerhandling, og først da den
+nye sti var bekræftet at virke, blev den gamle regel fjernet:
+
+```
+$ sudo -n nixos-rebuild switch --flake /home/admin/nixos-comparison-config
+Done. The new configuration is /nix/store/zra2zp26hyakmd8h5vywp08n78l8hdgp-nixos-system-nixos-comparison-...
+
+$ sudo -n nixos-rebuild switch --flake /home/admin/linux101-config
+error: getting status of "/home/admin/linux101-config": No such file or directory
+```
+
+Ingen af de to kommandoer nogensinde manglede en gyldig, hvidlistet sti at ramme, der var intet
+øjeblik, hvor `admin` reelt risikerede at blive låst ude. Det er selve svaret på om NixOS'
+fleksibilitetspåstand holder her: ikke fordi den stive, bogstavelige sudo-matchning bliver mindre
+stiv, den gør den ikke, men fordi konfigurationen er data, man kan udvide additivt og derefter
+indskrænke igen, i stedet for en fil, man redigerer destruktivt på stedet. Den tilsvarende operation
+på Debian, en direkte `visudo`-redigering af `/etc/sudoers.d/admin`, har ingen sådan mellemtilstand,
+en fejlskrevet sti er øjeblikkeligt aktiv, uden en tidligere, stadig gyldig generation at falde
+tilbage på.
 
 ## Dokumentation: `/etc/group` og `id`
 

@@ -93,7 +93,7 @@
       users = [ "admin" ];
       commands = [
         {
-          command = "/run/current-system/sw/bin/nixos-rebuild switch --flake /home/admin/linux101-config";
+          command = "/run/current-system/sw/bin/nixos-rebuild switch --flake /home/admin/nixos-comparison-config";
           options = [ "NOPASSWD" ];
         }
         {
