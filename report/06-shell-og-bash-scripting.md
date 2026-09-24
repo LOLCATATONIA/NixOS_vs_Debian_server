@@ -38,6 +38,62 @@ tilstand, og kun de nødvendige ændringer udføres.
 `healthcheck.sh` (opgave 3) har ingen NixOS-specifik vinkel. Det er et almindeligt, portabelt
 statusscript.
 
+## `debian-comparison/provision.sh`: Traditionel-sidens svar på "genkørsel er sikker"
+
+Skrevet **efter** at have udført og målt hvert trin manuelt (modul 1-5), for at samle den
+rækkefølge, der reelt virkede, i ét script. Køres som **root direkte på serveren**, ikke via SSH
+som `admin`, som bevidst er password-låst (modul 3):
+
+```bash
+setup_admin_sudo() {
+  cat > /etc/sudoers.d/admin <<'EOF'
+admin ALL=(ALL) NOPASSWD: /usr/bin/mkdir, /usr/bin/chown, /usr/bin/chmod, /usr/sbin/setfacl, /usr/bin/getfacl
+admin ALL=(ALL) NOPASSWD: /usr/sbin/groupadd, /usr/sbin/usermod, /usr/sbin/useradd
+admin ALL=(ALL:ALL) NOPASSWD: /usr/bin/setfacl, /usr/bin/getfacl, /usr/bin/ls, /usr/bin/touch
+EOF
+  chmod 440 /etc/sudoers.d/admin
+  visudo -c
+}
+
+# ... setup_shared_project_folder, setup_developer_and_guest, setup_guest_acl,
+#     setup_firewall udelades her, allerede vist som "Traditionel"-eksempler i modul 1, 2, 3
+#     og 4, setup_monitoring vises side om side i modul 5 ...
+
+setup_sudo_documentation_rules() {
+  if ! grep -q "nft list ruleset" /etc/sudoers.d/admin 2>/dev/null; then
+    echo "admin ALL=(ALL) NOPASSWD: /usr/sbin/nft list ruleset" >> /etc/sudoers.d/admin
+  fi
+  if ! grep -q "ufw status verbose" /etc/sudoers.d/admin 2>/dev/null; then
+    echo "admin ALL=(ALL) NOPASSWD: /usr/sbin/ufw status verbose" >> /etc/sudoers.d/admin
+  fi
+  # visudo -c blev kun kørt efter den FØRSTE sudoers-skrivning i setup_admin_sudo, ikke
+  # efter disse senere tilføjelser. Uden dette tjek her kunne en tastefejl i en append
+  # ovenfor stille og roligt gøre hele /etc/sudoers.d/admin ugyldig, uden at scriptet
+  # nogensinde ville opdage det.
+  visudo -c
+}
+```
+
+::: {.compare}
+::: {.compare-side}
+#### Debian: idempotent, forsøgt men ufuldstændigt
+
+Hver funktion tjekker om dens eget mål allerede er opnået (`if ! id admin`, `if ! grep -q ...`),
+men der er ingen samlet garanti for at hele scriptet kan køres igen uden bivirkninger, det er
+selv skrevet ind, funktion for funktion, ikke en egenskab af værktøjet. Den reelle fejl fundet
+ovenfor (`visudo -c` manglede efter de *senere* sudoers-tilføjelser, selvom den var til stede
+efter den første) er et konkret eksempel: idempotens her er noget man selv skal bevise, linje for
+linje, hver gang scriptet ændres, og det er let at glemme et sted.
+:::
+::: {.compare-side}
+#### NixOS: idempotent, arkitektonisk
+
+`nixos-rebuild switch` er i sig selv idempotent for hele systemets tilstand, en egenskab af selve
+værktøjet, ikke noget der er skrevet ind funktion for funktion. `setup.sh` (nedenfor) behøver
+derfor kun automatisere selve VM-bootstrap-mekanismen, ikke idempotens i sig selv.
+:::
+:::
+
 ## `scripts/setup.sh`
 
 Automatiserer bygning og (gen)oprettelse af VM'en fra `flake.nix`. Køres på **værten**:
@@ -391,28 +447,11 @@ $ echo $?
 
 ## Delkonklusion
 
-`nixos-rebuild switch` er i sig selv idempotent for hele systemets tilstand, så `setup.sh` behøver
-kun automatisere selve bootstrap-mekanismen (bygning og import af VM'en), ikke idempotens i sig
-selv. Den traditionelle tilgang har intet tilsvarende: et forsøg på retrospektivt at skrive et
-sammenligneligt Bash-provisioneringsscript til Debian-siden krævede at indbygge præcis den slags
-tjek som vist ovenfor for hver enkelt ressource i systemet, ikke kun ét sted, og selv da var
-resultatet kun delvist idempotent. En reel fejl, fundet ved en systematisk gennemgang og siden
-genverificeret ved faktisk at køre scriptet en tredje gang mod den kørende VM:
-
-```bash
-setup_sudo_documentation_rules() {
-  if ! grep -q "nft list ruleset" /etc/sudoers.d/admin 2>/dev/null; then
-    echo "admin ALL=(ALL) NOPASSWD: /usr/sbin/nft list ruleset" >> /etc/sudoers.d/admin
-  fi
-  # visudo -c blev kun kørt efter den FØRSTE sudoers-skrivning i setup_admin_sudo, ikke
-  # efter disse senere tilføjelser. Uden dette tjek her kunne en tastefejl i en append
-  # ovenfor stille og roligt gøre hele /etc/sudoers.d/admin ugyldig, uden at scriptet
-  # nogensinde ville opdage det.
-  visudo -c
-}
-```
-
-`visudo -c` manglede oprindeligt netop her, efter de *senere* sudoers-tilføjelser, selvom den var
-til stede efter den første skrivning. Erfaringen er, at idempotens på NixOS er en arkitektonisk
-egenskab, man får foræret, mens den på Debian er noget, man selv skal bevise, linje for linje, hver
-gang scriptet ændres.
+`provision.sh` og `setup.sh` viser to helt forskellige former for "idempotent": Debian-siden
+opnår det ved at skrive tjek ind manuelt, funktion for funktion, en tilgang der reelt fejlede én
+gang undervejs (`visudo -c`-fundet ovenfor), mens NixOS' idempotens er en egenskab af selve
+`nixos-rebuild switch`, uafhængig af hvor mange gange scriptet ændres. Samme mønster går igen i
+`verify-deploy.sh`: Debian har ingen deklareret facitliste at holde en kørende server op imod,
+kun den akkumulerede historik af kommandoer, der er kørt på den. Erfaringen samlet: automatisering
+under NixOS handler mindre om at skrive scripts, der selv er korrekte, og mere om at udnytte at
+`nixos-rebuild` allerede garanterer korrektheden, hvis konfigurationen først er rigtig.

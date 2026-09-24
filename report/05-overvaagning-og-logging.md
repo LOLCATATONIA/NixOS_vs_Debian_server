@@ -41,15 +41,27 @@ installeret.
 
 ## Evidens: uddrag af logfilen
 
+`monitor.sh` deployes på begge platforme, `provision.sh` sætter det op på Debian-siden (samme
+uændrede script, cron og logrotate, se modul 6), NixOS' `nixos-modules/monitoring.nix` gør det
+samme deklarativt:
+
 ::: {.compare}
 ::: {.compare-side}
-#### Debian: gælder ikke
+#### Debian
 
-`monitor.sh` og dets cron-job er, i modsætning til modul 1/2/4's mekanismer, kun deployet på
-NixOS-siden i dette projekt, ikke fordi scriptet er platformsspecifikt (det er almindelig,
-portabel bash, se modul 6), men fordi en reel Debian-parallel ville kræve ny opsætning og ventetid
-på logdata, uden at tilføje ny platformsindsigt ud over det, `healthcheck.sh` allerede viser i
-modul 6.
+```
+$ cat /var/log/monitor.log
+2026-09-24 09:50:02 CPU=0% DISK=14% MEM=7%
+2026-09-24 09:55:02 CPU=0% DISK=14% MEM=6%
+```
+
+**Logrotation, bekræftet aktiv:**
+
+```
+$ systemctl list-timers logrotate.timer
+NEXT                          LEFT UNIT            ACTIVATES
+Thu 2026-09-24 13:14:46 CEST 30min logrotate.timer logrotate.service
+```
 :::
 ::: {.compare-side}
 #### NixOS
@@ -69,6 +81,10 @@ Mon 2026-09-14 12:00:00 UTC 23min logrotate.timer logrotate.service
 ```
 :::
 :::
+
+Debians `monitor.log` har huller (fx mellem 18. og 24. september), fordi cron kun kører mens VM'en
+er tændt, og VM'en har stået slukket det meste af tiden mellem to testrunder, ikke en fejl i
+opsætningen.
 
 ## Identifikation af mislykkede loginforsøg
 
