@@ -212,14 +212,14 @@ hvorfor selve reglen ikke kan indeholde et `#`-tegn).
 :::
 
 Konsekvensen er reel: `admin` har ingen adgangskode, og `root` har hverken SSH-adgang
-(`PermitRootLogin = "no"`, modul 1) eller en gyldig
-adgangskode til konsollen, så der findes intet fallback, hvis en kommando afviger bare en smule fra
-den præcise, hvidlistede streng. `debian-comparison` har, som vist ovenfor, samme neutraliserede
-`sudo`-gruppe-fallback som NixOS' `wheel`, men til forskel fra NixOS har Debian-siden stadig
-`root`-konsoladgang som et reelt, brugbart nødspor (se VM-sammenligningstabellen i
-`00-tilgang.md`). Den granulære sudo-model er derfor ikke gratis: den fjerner ikke kun
-uautoriseret adgang, den fjerner også ens eget nødspor, hvis noget ikke er forudset præcist,
-medmindre man, som Debian-siden her, bevidst har bevaret én anden vej ind.
+(`PermitRootLogin = "no"`, modul 1) eller en gyldig adgangskode til konsollen, så der findes intet
+fallback, hvis en kommando afviger bare en smule fra den præcise, hvidlistede streng.
+`debian-comparison` har, som vist ovenfor, samme neutraliserede `sudo`-gruppe-fallback som NixOS'
+`wheel`, men til forskel fra NixOS har Debian-siden stadig `root`-konsoladgang som et reelt,
+brugbart nødspor (se VM-sammenligningstabellen i `00-tilgang.md`). Den granulære sudo-model er
+derfor ikke gratis: den fjerner ikke kun uautoriseret adgang, den fjerner også ens eget nødspor,
+hvis noget ikke er forudset præcist, medmindre man, som Debian-siden her, bevidst har bevaret én
+anden vej ind.
 
 Skulle selve stien i den hvidlistede kommando nogensinde skulle ændres (fx hvis config-mappen
 omdøbes), findes der dog en sikker vej uden om denne stivhed: fordi `security.sudo.extraRules` blot

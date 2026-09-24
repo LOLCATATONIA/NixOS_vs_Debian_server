@@ -42,7 +42,7 @@ installeret.
 ## Evidens: uddrag af logfilen
 
 `monitor.sh` deployes på begge platforme, `provision.sh` sætter det op på Debian-siden (samme
-uændrede script, cron og logrotate, se modul 6), NixOS' `nixos-modules/monitoring.nix` gør det
+uændrede script, cron og logrotate, se modul 6), NixOS' `nixos/modules/monitoring.nix` gør det
 samme deklarativt:
 
 ::: {.compare}

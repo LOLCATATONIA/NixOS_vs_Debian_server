@@ -827,7 +827,8 @@ manuelt</td>
 </tr>
 <tr>
 <td>Ikke-root administratorbruger</td>
-<td><code>useradd -m -G sudo admin &amp;&amp; passwd admin</code></td>
+<td><code>useradd -m -G sudo admin &amp;&amp; passwd -l admin</code>
+(adgangskode låst, se modul 3)</td>
 <td><code>users.users.admin = { isNormalUser = true; openssh.authorizedKeys.keys = [...]; };</code>
 i <code>nixos/modules/users.nix</code></td>
 </tr>
@@ -1875,7 +1876,7 @@ symptom på et angreb</td>
 <p><code>monitor.sh</code> deployes på begge platforme,
 <code>provision.sh</code> sætter det op på Debian-siden (samme uændrede
 script, cron og logrotate, se modul 6), NixOS’
-<code>nixos-modules/monitoring.nix</code> gør det samme deklarativt:</p>
+<code>nixos/modules/monitoring.nix</code> gør det samme deklarativt:</p>
 <div class="compare">
 <section id="debian-6" class="compare-side">
 <h4>Debian</h4>
@@ -2207,10 +2208,11 @@ $ echo $?
 <h2
 id="scriptshealthcheck.sh-opgave-3"><code>scripts/healthcheck.sh</code>
 (opgave 3)</h2>
-<p>Køres på <strong>serveren</strong>:
-<code>~/nixos-comparison-config/scripts/healthcheck.sh</code>. Kræver
-den granulære sudo-regel for <code>nft list ruleset</code> (modul
-3/4).</p>
+<p>Køres på <strong>serveren</strong> (NixOS:
+<code>~/nixos-comparison-config/scripts/healthcheck.sh</code>; Debian:
+kopieret og kørt som <code>bash /tmp/healthcheck.sh</code>, se eksemplet
+nedenfor). Kræver den granulære sudo-regel for
+<code>nft list ruleset</code> (modul 3/4).</p>
 <details><summary>Vis kode (64 linjer)</summary>
 <div class="sourceCode" id="cb54"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>

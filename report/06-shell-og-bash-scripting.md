@@ -235,8 +235,9 @@ $ echo $?
 
 ## `scripts/healthcheck.sh` (opgave 3)
 
-Køres på **serveren**: `~/nixos-comparison-config/scripts/healthcheck.sh`. Kræver den granulære sudo-regel
-for `nft list ruleset` (modul 3/4).
+Køres på **serveren** (NixOS: `~/nixos-comparison-config/scripts/healthcheck.sh`; Debian: kopieret
+og kørt som `bash /tmp/healthcheck.sh`, se eksemplet nedenfor). Kræver den granulære sudo-regel for
+`nft list ruleset` (modul 3/4).
 
 ```bash
 #!/usr/bin/env bash

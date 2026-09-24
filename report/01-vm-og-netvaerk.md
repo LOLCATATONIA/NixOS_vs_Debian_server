@@ -18,7 +18,7 @@ af andre.
 |---|---|---|
 | Installer Linux server-distro uden GUI | Boot en installations-ISO og gennemgå en interaktiv netinst-wizard | `nix build .#qcow` bygger et diskimage direkte fra `flake.nix` (ingen interaktion); `virt-install --import` opretter VM'en |
 | Statisk IP og sigende hostname | Redigér `/etc/network/interfaces` eller netplan manuelt | `networking.hostName` og `networking.interfaces.eth0.ipv4.addresses` i `nixos/modules/network.nix` |
-| Ikke-root administratorbruger | `useradd -m -G sudo admin && passwd admin` | `users.users.admin = { isNormalUser = true; openssh.authorizedKeys.keys = [...]; };` i `nixos/modules/users.nix` |
+| Ikke-root administratorbruger | `useradd -m -G sudo admin && passwd -l admin` (adgangskode låst, se modul 3) | `users.users.admin = { isNormalUser = true; openssh.authorizedKeys.keys = [...]; };` i `nixos/modules/users.nix` |
 | Deaktiver direkte root-login via SSH | Redigér `/etc/ssh/sshd_config`, genstart `sshd` manuelt | `services.openssh.settings.PermitRootLogin = "no";`, genereret ved hver `nixos-rebuild switch` |
 | Kun nøglebaseret SSH | Redigér `sshd_config`, læg nøgle i `~/.ssh/authorized_keys` manuelt | `services.openssh.settings.PasswordAuthentication = false;` + `authorizedKeys.keys`, samme versionsstyrede fil |
 
