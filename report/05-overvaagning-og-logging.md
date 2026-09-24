@@ -39,7 +39,7 @@ installeret.
 | Diskforbrug (`/`) | > 85% | Et fyldt filsystem kan forårsage tjenestenedbrud og er et kendt symptom på et angreb |
 | Hukommelsesforbrug | > 90% | Kan indikere en runaway-proces eller misbrug (fx crypto-mining) |
 
-## Evidens: uddrag af logfilen
+## Evidens: uddrag af logfilen (NixOS)
 
 ```
 $ cat /var/log/monitor.log
@@ -55,7 +55,7 @@ NEXT                         LEFT UNIT            ACTIVATES
 Mon 2026-09-14 12:00:00 UTC 23min logrotate.timer logrotate.service
 ```
 
-## Identifikation af mislykkede loginforsøg
+## Identifikation af mislykkede loginforsøg (NixOS)
 
 **Fremkaldt eksempel** (forsøgt login med forkert nøgle):
 

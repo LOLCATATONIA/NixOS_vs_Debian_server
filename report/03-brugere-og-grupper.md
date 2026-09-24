@@ -85,7 +85,7 @@ NixOS genererer i stedet **én samlet**, skrivebeskyttet `/etc/sudoers`-fil ud f
 konfigurationen ved hver rebuild, ikke separate drop-in-filer, der kan glemmes eller efterlades
 uden versionsstyring.
 
-## Bevis: granulær sudo virker
+## Bevis: granulær sudo virker (NixOS)
 
 ```
 # -n: fejl med det samme, i stedet for at vente på en adgangskode der aldrig kommer

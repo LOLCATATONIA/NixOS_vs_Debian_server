@@ -115,12 +115,12 @@ nøglebaseret SSH):
 
 ```bash
 # /etc/hostname
-nixos-comparison
+debian-comparison
 
 # /etc/network/interfaces
-auto eth0
-iface eth0 inet static
-    address 192.168.122.10/24
+auto ens2
+iface ens2 inet static
+    address 192.168.122.11/24
 
 # /etc/ssh/sshd_config
 PermitRootLogin no

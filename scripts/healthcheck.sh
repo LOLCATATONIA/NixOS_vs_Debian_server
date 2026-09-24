@@ -28,6 +28,8 @@ check_firewall() {
 check_disk() {
   section "Diskplads"
   local usage avail
+  # df --output=pcent skriver en header-linje og et efterfølgende "%"; tail/tr strippes
+  # væk for at få et rent heltal, egnet til sammenligningen nedenfor
   usage=$(df --output=pcent / | tail -1 | tr -dc '0-9')
   avail=$(df -h --output=avail / | tail -1 | tr -d '[:space:]')
   echo "Rodfilsystem: ${usage}% brugt, ${avail} ledig diskplads"
@@ -39,6 +41,8 @@ check_disk() {
 
 check_users() {
   section "Aktive/loggede ind brugere"
+  # 'who' viser kun AKTIVE sessioner, ikke historisk login-aktivitet; det er tilstrækkeligt
+  # her, da formålet er et øjebliksbillede, ikke en revisionslog (se journalctl, modul 5)
   who
 }
 

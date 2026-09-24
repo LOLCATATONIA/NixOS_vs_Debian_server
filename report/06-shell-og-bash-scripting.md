@@ -144,7 +144,7 @@ igen fra bunden": uanset om scriptet køres første eller femtende gang, konverg
 til det samme, nemlig præcis én VM ved navn `nixos-comparison`, bygget fra den `flake.nix`, der
 ligger på tidspunktet for kørslen.
 
-**Idempotens, bevist ved to kørsler i træk:**
+**Idempotens, bevist ved to kørsler i træk (NixOS):**
 
 ```
 $ ./scripts/setup.sh
@@ -196,6 +196,8 @@ check_firewall() {
 check_disk() {
   section "Diskplads"
   local usage avail
+  # df --output=pcent skriver en header-linje og et efterfølgende "%"; tail/tr strippes
+  # væk for at få et rent heltal, egnet til sammenligningen nedenfor
   usage=$(df --output=pcent / | tail -1 | tr -dc '0-9')
   avail=$(df -h --output=avail / | tail -1 | tr -d '[:space:]')
   echo "Rodfilsystem: ${usage}% brugt, ${avail} ledig diskplads"
@@ -207,6 +209,8 @@ check_disk() {
 
 check_users() {
   section "Aktive/loggede ind brugere"
+  # 'who' viser kun AKTIVE sessioner, ikke historisk login-aktivitet; det er tilstrækkeligt
+  # her, da formålet er et øjebliksbillede, ikke en revisionslog (se journalctl, modul 5)
   who
 }
 
@@ -234,7 +238,7 @@ main() {
 main "$@"
 ```
 
-**Eksempeloutput fra det færdige system:**
+**Eksempeloutput fra det færdige system (kørt på NixOS-VM'en, scriptet selv er platformsuafhængigt):**
 
 ```
 [admin@nixos-comparison:~]$ ~/nixos-comparison-config/scripts/healthcheck.sh
@@ -308,7 +312,7 @@ main() {
 main "$@"
 ```
 
-**Bevis, begge grene testet:**
+**Bevis, begge grene testet (NixOS):**
 
 ```
 $ ./verify-deploy.sh

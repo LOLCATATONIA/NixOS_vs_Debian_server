@@ -72,7 +72,7 @@ derfor nødvendig, for at kilde-IP-begrænsningen reelt får effekt.
 |---|---|---|---|---|
 | 2222 | TCP | SSH (flyttet fra 22) | Eneste administrative adgangsvej til serveren | Fjernkodeudførelse ved kompromitteret nøgle. Afbødes af nøglebaseret auth, ingen root-login og kilde-IP-begrænsning |
 
-## Eksport af de aktive firewall-regler
+## Eksport af de aktive firewall-regler (NixOS)
 
 ```
 $ sudo nft list ruleset
@@ -105,7 +105,7 @@ table inet nixos-fw {
 Politikken er `drop` (default deny). Kun loopback, etablerede/relaterede forbindelser, ICMP, DHCP,
 og SSH fra præcis `192.168.122.1` accepteres eksplicit.
 
-**Verifikation** (forsøgt fra en ikke-godkendt kilde-IP på samme undernet):
+**Verifikation (NixOS)** (forsøgt fra en ikke-godkendt kilde-IP på samme undernet):
 
 ```
 # -b: bind forbindelsen til en anden lokal adresse, for at simulere en uautoriseret kilde

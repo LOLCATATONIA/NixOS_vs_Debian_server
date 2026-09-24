@@ -47,10 +47,16 @@ get_cpu_usage() {
 }
 
 get_disk_usage() {
+  # df --output=pcent skriver en header-linje og et efterfølgende "%"; tail/tr strippes
+  # væk for at få et rent heltal
   df --output=pcent / | tail -1 | tr -dc '0-9'
 }
 
 get_mem_usage() {
+  # felt 7 ("available") er kernens eget skøn over hukommelse der reelt kan frigives til
+  # nye processer (inkl. genbrugelig cache), felt 2 er total. "available" bruges i stedet
+  # for det ældre "free" (felt 4), som ikke tæller genbrugelig cache med og derfor typisk
+  # ville rapportere et kunstigt højt, misvisende forbrug
   free | awk '/^Mem:/ { printf "%d", ($2-$7)*100/$2 }'
 }
 
