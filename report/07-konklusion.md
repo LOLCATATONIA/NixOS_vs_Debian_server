@@ -79,14 +79,6 @@ indlæringskurve for én udvikler: markant færre sysadmins kender Nix' sprog og
 kender `apt`/`systemctl`/`sudoers`, hvilket er en reel risiko ved overdragelse, oncall-vagter og
 rekruttering til en driftsorganisation, uafhængigt af hvor tekniske fordele NixOS i øvrigt har.
 
-**Hvad denne rapport bevidst ikke konkluderer på.** Fire spørgsmål, der oprindeligt var tiltænkt
-denne konklusion, blev ikke nået inden for projektets tidsramme, og er derfor udeladt her i stedet
-for at blive besvaret uden evidens: en målt genoprettelsestid (RTO) ved en fuld genopbygning,
-patch-/CVE-respons-hastighed sammenlignet direkte mellem `nixpkgs` og Debians sikkerhedskanal, en
-empirisk CIS/STIG-hærdningsaudit kørt mod begge VM'er, og hvorvidt Debian-siden kan nærme sig
-NixOS' ét-scripts fulde genopbygning. Rapporten postulerer ikke svar på disse, blot at de forbliver
-åbne.
-
 ## Samlet vurdering
 
 Evidensen samlet peger ikke på at NixOS er universelt bedre, men på at dens fordele er reelle og
