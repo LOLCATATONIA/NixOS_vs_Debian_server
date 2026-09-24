@@ -1314,17 +1314,6 @@ kommando (Debians output starter endda med en advarsel om at
 <code>ufw</code> og <code>iptables-nft</code> deler samme nftables-lag,
 en reel driftsdetalje, ikke tilføjet for effekt).</p>
 <div class="compare">
-<section id="nixos-hele-kommandolinjen-er-del-af-matchningen"
-class="compare-side">
-<h4>NixOS: hele kommandolinjen er del af matchningen</h4>
-<pre><code>$ sudo systemctl restart sshd.service
-OK
-
-$ sudo -n systemctl restart dbus-broker.service
-sudo: a password is required</code></pre>
-<p>Selv en anden <code>systemctl restart</code>-kommando afvises.
-Afgrænsningen er på den fulde kommandolinje, argumenter inklusive.</p>
-</section>
 <section id="debian-kun-kommandoens-sti-er-del-af-matchningen"
 class="compare-side">
 <h4>Debian: kun kommandoens sti er del af matchningen</h4>
@@ -1336,6 +1325,17 @@ drwxrwxrwx 2 root root 40 Sep 24 09:49 /tmp/sudo-arg-test</code></pre>
 (<code>/usr/bin/mkdir</code>, <code>/usr/bin/chmod</code>), ikke dens
 argumenter, så et vilkårligt sted og en vilkårlig tilstand accepteres
 uden adgangskode.</p>
+</section>
+<section id="nixos-hele-kommandolinjen-er-del-af-matchningen"
+class="compare-side">
+<h4>NixOS: hele kommandolinjen er del af matchningen</h4>
+<pre><code>$ sudo systemctl restart sshd.service
+OK
+
+$ sudo -n systemctl restart dbus-broker.service
+sudo: a password is required</code></pre>
+<p>Selv en anden <code>systemctl restart</code>-kommando afvises.
+Afgrænsningen er på den fulde kommandolinje, argumenter inklusive.</p>
 </section>
 </div>
 <p>Ingen af platformene er entydigt bedst her, samme underliggende

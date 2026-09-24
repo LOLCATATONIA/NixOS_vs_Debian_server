@@ -122,6 +122,19 @@ nftables-lag, en reel driftsdetalje, ikke tilføjet for effekt).
 
 ::: {.compare}
 ::: {.compare-side}
+#### Debian: kun kommandoens sti er del af matchningen
+
+```
+$ sudo -n mkdir -p /tmp/sudo-arg-test
+$ sudo -n chmod 777 /tmp/sudo-arg-test
+$ ls -ld /tmp/sudo-arg-test
+drwxrwxrwx 2 root root 40 Sep 24 09:49 /tmp/sudo-arg-test
+```
+
+`/etc/sudoers.d/admin` navngiver kun kommandoens sti (`/usr/bin/mkdir`, `/usr/bin/chmod`), ikke
+dens argumenter, så et vilkårligt sted og en vilkårlig tilstand accepteres uden adgangskode.
+:::
+::: {.compare-side}
 #### NixOS: hele kommandolinjen er del af matchningen
 
 ```
@@ -134,19 +147,6 @@ sudo: a password is required
 
 Selv en anden `systemctl restart`-kommando afvises. Afgrænsningen er på den fulde kommandolinje,
 argumenter inklusive.
-:::
-::: {.compare-side}
-#### Debian: kun kommandoens sti er del af matchningen
-
-```
-$ sudo -n mkdir -p /tmp/sudo-arg-test
-$ sudo -n chmod 777 /tmp/sudo-arg-test
-$ ls -ld /tmp/sudo-arg-test
-drwxrwxrwx 2 root root 40 Sep 24 09:49 /tmp/sudo-arg-test
-```
-
-`/etc/sudoers.d/admin` navngiver kun kommandoens sti (`/usr/bin/mkdir`, `/usr/bin/chmod`), ikke
-dens argumenter, så et vilkårligt sted og en vilkårlig tilstand accepteres uden adgangskode.
 :::
 :::
 
