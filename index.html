@@ -1735,14 +1735,25 @@ table inet nixos-fw {
 }</code></pre>
 </section>
 </div>
-<p>Forskellen skyldes ikke at Debian er mindre sikkert, <code>ufw</code>
-genererer bevidst et fast, IPv4-<strong>og</strong>-IPv6-dækkende
-rammeværk (logging-, tracking- og “skip-to-policy”-chains) uanset hvor
-lidt brugeren selv beder om, mens NixOS’ <code>nftables</code>-modul kun
-genererer præcis de chains, den deklarerede konfiguration rent faktisk
-beder om. Samme effektive politik, men langt mere genereret kode at
-holde styr på, hvis noget nogensinde skal fejlsøges direkte i
-output’et.</p>
+<p>Forskellen skyldes ikke at Debian er mindre sikkert, den er
+arkitektonisk: <code>ufw</code> er reelt en
+<strong>iptables</strong>-regelgenerator, verificeret direkte via dens
+egne skabeloner (<code>/usr/share/ufw/before.rules</code> indeholder
+bogstavelig iptables-syntaks som
+<code>-A ufw-before-input -i lo -j ACCEPT</code>), og
+<code>update-alternatives</code> viser at <code>iptables</code> her
+peger på <code>iptables-nft</code>, kernens oversættelseslag der lader
+iptables-kommandoer virke oven på nftables. Al den ekstra volumen er
+derfor arvet fra iptables’ ældre model, fire adskilte skabeloner for
+IPv4/IPv6 fra dag ét, en fast before/user/after-kædestruktur (en bevidst
+brugervenlighedsfunktion, ikke bloat, den giver
+<code>ufw allow</code>-kommandoer et sikkert indsætningspunkt uden selv
+at skulle styre regelrækkefølge), samt en <code>counter</code>-erklæring
+på hver oversat regel, arvet fra <code>iptables -v</code>s
+altid-tællende adfærd. NixOS’ <code>nftables</code>-modul er skrevet
+direkte til nftables, uden den historiske bagage, og genererer derfor
+kun præcis de chains, den deklarerede konfiguration rent faktisk beder
+om.</p>
 <p><strong>Verifikation, identisk adfærd på begge platforme</strong>
 (forsøgt fra en ikke-godkendt kilde-IP på samme undernet):</p>
 <pre><code># -b: bind forbindelsen til en anden lokal adresse, for at simulere en uautoriseret kilde
@@ -2473,8 +2484,14 @@ en del af den deklarerede konfiguration.</p>
 kompleksitet.</strong> Modul 4 viser at <code>ufw</code>s genererede
 nftables-ruleset er 386 linjer over 69 chains, mod NixOS’ 33 linjer over
 4 chains, for præcis samme <code>drop</code>-standardpolitik og samme
-ene tilladte kilde. Mindre genereret regelværk at holde styr på, hvis
-noget nogensinde skal fejlsøges direkte i output’et.</p>
+ene tilladte kilde. Årsagen er arkitektonisk, ikke et sikkerhedsproblem:
+<code>ufw</code> er reelt en iptables-regelgenerator, oversat gennem
+<code>iptables-nft</code> til nftables, og bærer 15+ års
+iptables-designarv med sig (adskilte IPv4/IPv6-skabeloner, fast
+kæde-staging), mens NixOS’ <code>nftables</code>-modul er skrevet
+direkte til nftables uden den bagage. Mindre genereret regelværk at
+holde styr på, hvis noget nogensinde skal fejlsøges direkte i
+output’et.</p>
 <h2 id="ulemper-ærligt-underbygget">Ulemper, ærligt underbygget</h2>
 <p><strong>Et ekstra fejlfindingslag, ikke et erstattende.</strong>
 Flere af projektets egne fund krævede forståelse af både almindelig

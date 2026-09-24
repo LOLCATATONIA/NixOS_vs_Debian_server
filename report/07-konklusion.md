@@ -46,8 +46,11 @@ konfiguration.
 
 **Samme effektive sikkerhedspolitik, markant mindre genereret kompleksitet.** Modul 4 viser at
 `ufw`s genererede nftables-ruleset er 386 linjer over 69 chains, mod NixOS' 33 linjer over 4 chains,
-for præcis samme `drop`-standardpolitik og samme ene tilladte kilde. Mindre genereret regelværk at
-holde styr på, hvis noget nogensinde skal fejlsøges direkte i output'et.
+for præcis samme `drop`-standardpolitik og samme ene tilladte kilde. Årsagen er arkitektonisk, ikke
+et sikkerhedsproblem: `ufw` er reelt en iptables-regelgenerator, oversat gennem `iptables-nft` til
+nftables, og bærer 15+ års iptables-designarv med sig (adskilte IPv4/IPv6-skabeloner, fast
+kæde-staging), mens NixOS' `nftables`-modul er skrevet direkte til nftables uden den bagage. Mindre
+genereret regelværk at holde styr på, hvis noget nogensinde skal fejlsøges direkte i output'et.
 
 ## Ulemper, ærligt underbygget
 

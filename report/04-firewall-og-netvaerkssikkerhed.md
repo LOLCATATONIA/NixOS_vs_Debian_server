@@ -135,11 +135,17 @@ table inet nixos-fw {
 :::
 :::
 
-Forskellen skyldes ikke at Debian er mindre sikkert, `ufw` genererer bevidst et fast,
-IPv4-**og**-IPv6-dækkende rammeværk (logging-, tracking- og "skip-to-policy"-chains) uanset hvor lidt
-brugeren selv beder om, mens NixOS' `nftables`-modul kun genererer præcis de chains, den deklarerede
-konfiguration rent faktisk beder om. Samme effektive politik, men langt mere genereret kode at
-holde styr på, hvis noget nogensinde skal fejlsøges direkte i output'et.
+Forskellen skyldes ikke at Debian er mindre sikkert, den er arkitektonisk: `ufw` er reelt en
+**iptables**-regelgenerator, verificeret direkte via dens egne skabeloner
+(`/usr/share/ufw/before.rules` indeholder bogstavelig iptables-syntaks som `-A ufw-before-input -i
+lo -j ACCEPT`), og `update-alternatives` viser at `iptables` her peger på `iptables-nft`, kernens
+oversættelseslag der lader iptables-kommandoer virke oven på nftables. Al den ekstra volumen er
+derfor arvet fra iptables' ældre model, fire adskilte skabeloner for IPv4/IPv6 fra dag ét, en fast
+before/user/after-kædestruktur (en bevidst brugervenlighedsfunktion, ikke bloat, den giver
+`ufw allow`-kommandoer et sikkert indsætningspunkt uden selv at skulle styre regelrækkefølge), samt
+en `counter`-erklæring på hver oversat regel, arvet fra `iptables -v`s altid-tællende adfærd. NixOS'
+`nftables`-modul er skrevet direkte til nftables, uden den historiske bagage, og genererer derfor
+kun præcis de chains, den deklarerede konfiguration rent faktisk beder om.
 
 **Verifikation, identisk adfærd på begge platforme** (forsøgt fra en ikke-godkendt kilde-IP på
 samme undernet):
