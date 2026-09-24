@@ -892,7 +892,8 @@ platforme (NixOS: <code>nixos/modules/network.nix</code>; Debian:
 NixOS-siden lukker adgangsvejen yderligere af med en direkte ugyldig
 adgangskode-hash (<code>users.users.root.hashedPassword = "!"</code>),
 Debian-siden har i stedet en gyldig, men kun konsol-tilgængelig,
-<code>root</code>-adgangskode (modul 3).</p>
+<code>root</code>-adgangskode (<code>comparison-temp-pw</code>, se
+VM-sammenligningstabellen i <code>00-tilgang.md</code>).</p>
 <p><strong>Debian-siden: en reel installationsblokering, fundet og
 rettet.</strong> Under opsætningen af den faktiske
 Debian-sammenligningsserver fejlede DHCP under selve installationen.
@@ -1266,10 +1267,11 @@ uden versionsstyring.</p>
 $ sudo -n whoami
 sudo: a password is required</code></pre>
 <p><strong>Delt succes:</strong> <code>sudo -n nft list ruleset</code>
-lykkes uden adgangskode på begge platforme, et af de få punkter hvor de
-to regelsæt reelt overlapper (Debians output starter endda med en
-advarsel om at <code>ufw</code> og <code>iptables-nft</code> deler samme
-nftables-lag, en reel driftsdetalje, ikke tilføjet for effekt).</p>
+lykkes uden adgangskode på begge platforme, det eneste punkt hvor de to
+regelsæt reelt er identiske, ikke bare begge har en regel for samme
+kommando (Debians output starter endda med en advarsel om at
+<code>ufw</code> og <code>iptables-nft</code> deler samme nftables-lag,
+en reel driftsdetalje, ikke tilføjet for effekt).</p>
 <div class="compare">
 <section id="nixos-hele-kommandolinjen-er-del-af-matchningen"
 class="compare-side">
@@ -1333,11 +1335,12 @@ en kommando afviger bare en smule fra den præcise, hvidlistede streng.
 <code>debian-comparison</code> har, som vist ovenfor, samme
 neutraliserede <code>sudo</code>-gruppe-fallback som NixOS’
 <code>wheel</code>, men til forskel fra NixOS har Debian-siden stadig
-<code>root</code>-konsoladgang som et reelt, brugbart nødspor (modul 1).
-Den granulære sudo-model er derfor ikke gratis: den fjerner ikke kun
-uautoriseret adgang, den fjerner også ens eget nødspor, hvis noget ikke
-er forudset præcist, medmindre man, som Debian-siden her, bevidst har
-bevaret én anden vej ind.</p>
+<code>root</code>-konsoladgang som et reelt, brugbart nødspor (se
+VM-sammenligningstabellen i <code>00-tilgang.md</code>). Den granulære
+sudo-model er derfor ikke gratis: den fjerner ikke kun uautoriseret
+adgang, den fjerner også ens eget nødspor, hvis noget ikke er forudset
+præcist, medmindre man, som Debian-siden her, bevidst har bevaret én
+anden vej ind.</p>
 <p>Skulle selve stien i den hvidlistede kommando nogensinde skulle
 ændres (fx hvis config-mappen omdøbes), findes der dog en sikker vej
 uden om denne stivhed: fordi <code>security.sudo.extraRules</code> blot
@@ -1371,11 +1374,16 @@ $ id guest
 uid=1002(guest) gid=100(users) groups=100(users),999(guest)</code></pre>
 </details>
 <h2 id="delkonklusion-2">Delkonklusion</h2>
-<p>Begge platforme kan opnå præcis samme granulære, kommando-specifikke
-sudo-adgang, blot udtrykt forskelligt (separate
-<code>/etc/sudoers.d/</code>-filer vs. én genereret
-<code>/etc/sudoers</code>). Den erfaring, der er værd at fremhæve, er
-dog at den deklarative tilgang ikke er immun over for reelle fejl: den
+<p>Begge platforme bygger på den samme sudoers-mekanisme, men det viste
+sig, at “granulær” ikke betyder det samme i praksis: Debian-sidens
+sti-kun-regler var bredere end tilsigtet (vilkårlige
+<code>chmod</code>/<code>mkdir</code>-argumenter), mens NixOS’
+fulde-kommandolinje-match var strengere, til tider for strengt (et
+harmløst <code>#attribut</code>-tillæg afvist). Ingen af delene er en
+fejl i selve sammenligningen, det er to reelt forskellige konsekvenser
+af samme underliggende værktøj, afhængig af om reglen udtrykkes som en
+sti eller en hel linje. Den erfaring, der derudover er værd at fremhæve,
+er at den deklarative tilgang ikke er immun over for reelle fejl: den
 oprindelige <code>security.sudo.extraRules</code>-regel for
 fjern-deployment <em>så</em> korrekt ud (<code>sudo -l</code> viste den
 rigtige adgang), men fejlede alligevel ved et faktisk deploy-forsøg,
@@ -1516,8 +1524,8 @@ nftables-kode for at udtrykke den samme politik:</p>
 </tbody>
 </table>
 <div class="compare">
-<section id="debian-uddrag-se-note-nedenfor" class="compare-side">
-<h4>Debian (uddrag, se note nedenfor)</h4>
+<section id="debian-uddrag" class="compare-side">
+<h4>Debian (uddrag)</h4>
 <pre><code>$ sudo nft list ruleset
     type filter hook input priority filter; policy drop;
     type filter hook output priority filter; policy accept;

@@ -99,7 +99,8 @@ root@<IP>: Permission denied (publickey).
 Root afvises fordi `PermitRootLogin = "no"` på begge platforme (NixOS: `nixos/modules/network.nix`;
 Debian: `/etc/ssh/sshd_config`, se "Samme fire opgaver" nedenfor). NixOS-siden lukker adgangsvejen
 yderligere af med en direkte ugyldig adgangskode-hash (`users.users.root.hashedPassword = "!"`),
-Debian-siden har i stedet en gyldig, men kun konsol-tilgængelig, `root`-adgangskode (modul 3).
+Debian-siden har i stedet en gyldig, men kun konsol-tilgængelig, `root`-adgangskode
+(`comparison-temp-pw`, se VM-sammenligningstabellen i `00-tilgang.md`).
 
 **Debian-siden: en reel installationsblokering, fundet og rettet.** Under opsætningen af den
 faktiske Debian-sammenligningsserver fejlede DHCP under selve installationen. `sudo nft list

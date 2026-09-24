@@ -86,7 +86,7 @@ nftables-kode for at udtrykke den samme politik:
 
 ::: {.compare}
 ::: {.compare-side}
-#### Debian (uddrag, se note nedenfor)
+#### Debian (uddrag)
 
 ```
 $ sudo nft list ruleset

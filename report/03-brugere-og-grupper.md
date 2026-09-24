@@ -103,9 +103,10 @@ $ sudo -n whoami
 sudo: a password is required
 ```
 
-**Delt succes:** `sudo -n nft list ruleset` lykkes uden adgangskode på begge platforme, et af de få
-punkter hvor de to regelsæt reelt overlapper (Debians output starter endda med en advarsel om at
-`ufw` og `iptables-nft` deler samme nftables-lag, en reel driftsdetalje, ikke tilføjet for effekt).
+**Delt succes:** `sudo -n nft list ruleset` lykkes uden adgangskode på begge platforme, det eneste
+punkt hvor de to regelsæt reelt er identiske, ikke bare begge har en regel for samme kommando
+(Debians output starter endda med en advarsel om at `ufw` og `iptables-nft` deler samme
+nftables-lag, en reel driftsdetalje, ikke tilføjet for effekt).
 
 ::: {.compare}
 ::: {.compare-side}
@@ -173,9 +174,10 @@ adgangskode, og `root` har hverken SSH-adgang (`PermitRootLogin = "no"`, modul 1
 adgangskode til konsollen, så der findes intet fallback, hvis en kommando afviger bare en smule fra
 den præcise, hvidlistede streng. `debian-comparison` har, som vist ovenfor, samme neutraliserede
 `sudo`-gruppe-fallback som NixOS' `wheel`, men til forskel fra NixOS har Debian-siden stadig
-`root`-konsoladgang som et reelt, brugbart nødspor (modul 1). Den granulære sudo-model er derfor
-ikke gratis: den fjerner ikke kun uautoriseret adgang, den fjerner også ens eget nødspor, hvis noget
-ikke er forudset præcist, medmindre man, som Debian-siden her, bevidst har bevaret én anden vej ind.
+`root`-konsoladgang som et reelt, brugbart nødspor (se VM-sammenligningstabellen i
+`00-tilgang.md`). Den granulære sudo-model er derfor ikke gratis: den fjerner ikke kun
+uautoriseret adgang, den fjerner også ens eget nødspor, hvis noget ikke er forudset præcist,
+medmindre man, som Debian-siden her, bevidst har bevaret én anden vej ind.
 
 Skulle selve stien i den hvidlistede kommando nogensinde skulle ændres (fx hvis config-mappen
 omdøbes), findes der dog en sikker vej uden om denne stivhed: fordi `security.sudo.extraRules` blot
@@ -207,9 +209,13 @@ uid=1002(guest) gid=100(users) groups=100(users),999(guest)
 
 ## Delkonklusion
 
-Begge platforme kan opnå præcis samme granulære, kommando-specifikke sudo-adgang, blot udtrykt
-forskelligt (separate `/etc/sudoers.d/`-filer vs. én genereret `/etc/sudoers`). Den erfaring, der er
-værd at fremhæve, er dog at den deklarative tilgang ikke er immun over for reelle fejl: den
+Begge platforme bygger på den samme sudoers-mekanisme, men det viste sig, at "granulær" ikke
+betyder det samme i praksis: Debian-sidens sti-kun-regler var bredere end tilsigtet (vilkårlige
+`chmod`/`mkdir`-argumenter), mens NixOS' fulde-kommandolinje-match var strengere, til tider for
+strengt (et harmløst `#attribut`-tillæg afvist). Ingen af delene er en fejl i selve
+sammenligningen, det er to reelt forskellige konsekvenser af samme underliggende værktøj, afhængig
+af om reglen udtrykkes som en sti eller en hel linje. Den erfaring, der derudover er værd at
+fremhæve, er at den deklarative tilgang ikke er immun over for reelle fejl: den
 oprindelige `security.sudo.extraRules`-regel for fjern-deployment *så* korrekt ud (`sudo -l` viste
 den rigtige adgang), men fejlede alligevel ved et faktisk deploy-forsøg, fordi den forsøgte at
 forudsige `nixos-rebuild`s interne kommandoindpakning i stedet for at pege på selve værktøjet (se
