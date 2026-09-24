@@ -13,13 +13,24 @@ sudo med begrænsede rettigheder reducerer skadesomfanget, hvis en konto komprom
 
 ## Rollestruktur
 
-| Bruger | Sekundær gruppe (`extraGroups`) | Rolle-specifik adgang | Begrundelse |
-|---|---|---|---|
-| `admin` | `wheel` (medlemskab alene giver ingen adgang, se nedenfor) | Granulære, navngivne `sudo`-regler | Skal kunne drifte serveren uden ubegrænset root-adgang |
-| `developer` | `projekt` *(fra modul 2)* | Læse-/skriveadgang til `/srv/projekt` via gruppe-rettigheder | Udviklere skal kunne bidrage til det fælles projektområde |
-| `guest` | `guest` *(ny)* | Læseadgang til `/srv/projekt` via gruppe-ACL, ingen skriveadgang | En ekstern part skal kunne se, men ikke ændre, projektdata |
+Samme tre roller er oprettet på begge VM'er, med samme tilsigtede adgang, verificeret direkte med
+`id` på begge platforme (se nedenfor):
 
-Alle tre brugeres faktiske primære gruppe er `users` (gid 100), NixOS' standard for
+| Bruger | Debian-gruppe(r) | NixOS-gruppe (`extraGroups`) | Rolle-specifik adgang | Begrundelse |
+|---|---|---|---|---|
+| `admin` | `sudo`, `projekt` | `wheel` (medlemskab alene giver ingen adgang, se nedenfor) | Granulære, navngivne `sudo`-regler | Skal kunne drifte serveren uden ubegrænset root-adgang |
+| `developer` | `projekt` | `projekt` *(fra modul 2)* | Læse-/skriveadgang til `/srv/projekt` via gruppe-rettigheder | Udviklere skal kunne bidrage til det fælles projektområde |
+| `guest` | `guest` | `guest` *(ny)* | Læseadgang til `/srv/projekt` via gruppe-ACL, ingen skriveadgang | En ekstern part skal kunne se, men ikke ændre, projektdata |
+
+**En reel, lille afvigelse:** Debians `admin` endte selv som medlem af `projekt`
+(`sudo chown admin:projekt /srv/projekt` kræver ikke dette, men gruppen blev tilføjet undervejs i
+den traditionelle opsætning), mens NixOS' `admin` aldrig er medlem af `projekt`, fordi
+`systemd.tmpfiles.rules` (modul 2) sætter ejerskabet direkte og deklarativt, uden at nogen bruger
+behøver være medlem af gruppen for at det virker. Et lille, konkret eksempel på at den
+imperative tilgang har en tendens til at akkumulere adgang, den deklarative tilgang beder kun om
+præcis den tilstand, der er behov for.
+
+Alle tre NixOS-brugeres faktiske primære gruppe er `users` (gid 100), NixOS' standard for
 `isNormalUser = true`, se `id`-output nedenfor. Den rolle-specifikke adgang kommer fra
 gruppemedlemsskabet ovenfor, sat via `extraGroups`, ikke fra selve den primære gruppe.
 
@@ -194,6 +205,27 @@ destruktivt på stedet, koster selve stivheden ikke det samme som den ville på 
 
 ## Dokumentation: `/etc/group` og `id`
 
+::: {.compare}
+::: {.compare-side}
+#### Debian
+
+```
+$ grep -E "^(sudo|projekt|guest):" /etc/group
+sudo:x:27:admin
+projekt:x:1001:admin,developer
+guest:x:1003:
+
+$ id admin
+uid=1000(admin) gid=1000(admin) groups=1000(admin),4(adm),27(sudo),1001(projekt)
+$ id developer
+uid=1002(developer) gid=1004(developer) groups=1004(developer),1001(projekt)
+$ id guest
+uid=1003(guest) gid=1003(guest) groups=1003(guest)
+```
+:::
+::: {.compare-side}
+#### NixOS
+
 ```
 $ grep -E "^(wheel|projekt|guest):" /etc/group
 wheel:x:1:admin
@@ -207,6 +239,8 @@ uid=1001(developer) gid=100(users) groups=100(users),997(projekt)
 $ id guest
 uid=1002(guest) gid=100(users) groups=100(users),999(guest)
 ```
+:::
+:::
 
 ## Delkonklusion
 
