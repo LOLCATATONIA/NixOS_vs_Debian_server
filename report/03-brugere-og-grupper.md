@@ -85,14 +85,15 @@ Begge tilgange er granulære i princippet, men mekanikken, og dermed hvad "granu
 er forskellig: Debian samler regler i separate filer under `/etc/sudoers.d/`, tilføjet én linje ad
 gangen i takt med at behovet opstod, NixOS har slet ikke denne mappe, verificeret direkte:
 
-```
-$ ls /etc/sudoers.d/
-ls: cannot access '/etc/sudoers.d/': No such file or directory
-```
+| Kommando | Debian | NixOS |
+|---|---|---|
+| `ls /etc/sudoers.d/` | `admin`, `README` | `ls: cannot access '/etc/sudoers.d/': No such file or directory` |
 
 NixOS genererer i stedet **én samlet**, skrivebeskyttet `/etc/sudoers`-fil ud fra hele
 konfigurationen ved hver rebuild, ikke separate drop-in-filer, der kan glemmes eller efterlades
-uden versionsstyring.
+uden versionsstyring. Selv Debians `README`-fil er et lille eksempel på den spredte tilgang: en
+statisk forklaring, der ligger ved siden af de faktiske regler, i stedet for at være del af én
+selv-dokumenterende, versionsstyret konfiguration.
 
 ## Bevis: granulær sudo virker
 
