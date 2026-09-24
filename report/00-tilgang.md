@@ -171,8 +171,20 @@ Flakes er teknisk set stadig en eksperimentel Nix-funktion, selvom de reelt er d
 facto-standarden i økosystemet. Derfor skal de aktiveres eksplicit med
 `--extra-experimental-features "nix-command flakes"` (synligt i `verify-deploy.sh`, modul 6).
 
-**Reproducerbarheden er efterprøvet, ikke kun antaget.** Nix' `--rebuild`-flag tvinger en ægte
-gentagen bygning og sammenligner selv output-hashen mod den eksisterende:
+::: {.compare}
+::: {.compare-side}
+#### Debian: gælder ikke
+
+Pakker installeret via `apt` har intet indholdsadresseret hash at genbygge og sammenligne mod, en
+`.deb`-pakkes indhold er hvad vedligeholderen uploadede, ikke noget der genbygges lokalt og
+verificeres. Reproducerbarhed i denne tekniske forstand er derfor ikke et begreb, der findes på
+Debian-siden af denne sammenligning.
+:::
+::: {.compare-side}
+#### NixOS: reproducerbarheden er efterprøvet, ikke kun antaget
+
+Nix' `--rebuild`-flag tvinger en ægte gentagen bygning og sammenligner selv output-hashen mod den
+eksisterende:
 
 ```
 # evaluerer den deklarerede sti, uden at bygge noget
@@ -199,6 +211,8 @@ afviger. Konklusionen er derfor mere præcis end en ukvalificeret "NixOS er repr
 gælder for den deklarerede systemtilstand, som reelt betyder noget for drift og verifikation
 (`verify-deploy.sh`, modul 6), men ikke for et afledt build-artefakt med en iboende tilfældig
 komponent.
+:::
+:::
 
 VM'en køres under QEMU/KVM via libvirt på en CachyOS-vært, og opbygges i tre faser:
 

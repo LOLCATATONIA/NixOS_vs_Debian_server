@@ -39,7 +39,8 @@ af andre.
 
 ## Bevis: bootstrap og SSH-adgang
 
-**Bootstrap-kommandosekvens:**
+**Bootstrap-kommandosekvens** (Debian-sidens installationsproces er vist side om side med denne i
+`00-tilgang.md`):
 
 ```
 # byg det færdige, konfigurerede diskimage fra flake.nix

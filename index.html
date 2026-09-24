@@ -580,8 +580,19 @@ teknisk set stadig en eksperimentel Nix-funktion, selvom de reelt er de
 facto-standarden i økosystemet. Derfor skal de aktiveres eksplicit med
 <code>--extra-experimental-features "nix-command flakes"</code> (synligt
 i <code>verify-deploy.sh</code>, modul 6).</p>
-<p><strong>Reproducerbarheden er efterprøvet, ikke kun antaget.</strong>
-Nix’ <code>--rebuild</code>-flag tvinger en ægte gentagen bygning og
+<div class="compare">
+<section id="debian-gælder-ikke" class="compare-side">
+<h4>Debian: gælder ikke</h4>
+<p>Pakker installeret via <code>apt</code> har intet indholdsadresseret
+hash at genbygge og sammenligne mod, en <code>.deb</code>-pakkes indhold
+er hvad vedligeholderen uploadede, ikke noget der genbygges lokalt og
+verificeres. Reproducerbarhed i denne tekniske forstand er derfor ikke
+et begreb, der findes på Debian-siden af denne sammenligning.</p>
+</section>
+<section id="nixos-reproducerbarheden-er-efterprøvet-ikke-kun-antaget"
+class="compare-side">
+<h4>NixOS: reproducerbarheden er efterprøvet, ikke kun antaget</h4>
+<p>Nix’ <code>--rebuild</code>-flag tvinger en ægte gentagen bygning og
 sammenligner selv output-hashen mod den eksisterende:</p>
 <pre><code># evaluerer den deklarerede sti, uden at bygge noget
 $ nix eval --raw &quot;.#nixosConfigurations.nixos-comparison.config.system.build.toplevel&quot;
@@ -605,6 +616,8 @@ er reproducerbart”: det gælder for den deklarerede systemtilstand, som
 reelt betyder noget for drift og verifikation
 (<code>verify-deploy.sh</code>, modul 6), men ikke for et afledt
 build-artefakt med en iboende tilfældig komponent.</p>
+</section>
+</div>
 <p>VM’en køres under QEMU/KVM via libvirt på en CachyOS-vært, og
 opbygges i tre faser:</p>
 <ol type="1">
@@ -845,7 +858,9 @@ genbruges; en privat nøgle findes kun ét sted og kan ikke gættes.</li>
 </ul>
 <h2 id="bevis-bootstrap-og-ssh-adgang">Bevis: bootstrap og
 SSH-adgang</h2>
-<p><strong>Bootstrap-kommandosekvens:</strong></p>
+<p><strong>Bootstrap-kommandosekvens</strong> (Debian-sidens
+installationsproces er vist side om side med denne i
+<code>00-tilgang.md</code>):</p>
 <details><summary>Vis kode (15 linjer)</summary>
 <pre><code># byg det færdige, konfigurerede diskimage fra flake.nix
 nix build .#qcow -L
@@ -1429,7 +1444,7 @@ kommandomatch.</strong> Sudoers’ fulde-kommandolinje-match (vist
 ovenfor) er selve pointen med granulær adgang, men den er bogstavelig,
 ikke semantisk:</p>
 <div class="compare">
-<section id="debian-gælder-ikke" class="compare-side">
+<section id="debian-gælder-ikke-1" class="compare-side">
 <h4>Debian: gælder ikke</h4>
 <p><code>--flake sti#attribut</code>-syntaksen er en Nix-specifik måde
 at referere en bestemt konfiguration i en flake på. Debians
@@ -2136,7 +2151,7 @@ til det samme, nemlig præcis én VM ved navn
 <code>nixos-comparison</code>, bygget fra den <code>flake.nix</code>,
 der ligger på tidspunktet for kørslen.</p>
 <div class="compare">
-<section id="debian-gælder-ikke-1" class="compare-side">
+<section id="debian-gælder-ikke-2" class="compare-side">
 <h4>Debian: gælder ikke</h4>
 <p>Der findes intet tilsvarende ét-script for Debian-siden i dette
 projekt. Selve installationsprocessen (<code>preseed</code> +
@@ -2344,7 +2359,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb57-1"><a href=
 <span id="cb57-33"><a href="#cb57-33" aria-hidden="true" tabindex="-1"></a><span class="ex">main</span> <span class="st">&quot;</span><span class="va">$@</span><span class="st">&quot;</span></span></code></pre></div>
 </details>
 <div class="compare">
-<section id="debian-gælder-ikke-2" class="compare-side">
+<section id="debian-gælder-ikke-3" class="compare-side">
 <h4>Debian: gælder ikke</h4>
 <p>Der findes intet Debian-modstykke til <code>verify-deploy.sh</code>,
 fordi der ikke findes noget at sammenligne en “kørende tilstand” med. En
