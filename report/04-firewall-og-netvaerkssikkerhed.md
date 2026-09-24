@@ -72,7 +72,38 @@ derfor nødvendig, for at kilde-IP-begrænsningen reelt får effekt.
 |---|---|---|---|---|
 | 2222 | TCP | SSH (flyttet fra 22) | Eneste administrative adgangsvej til serveren | Fjernkodeudførelse ved kompromitteret nøgle. Afbødes af nøglebaseret auth, ingen root-login og kilde-IP-begrænsning |
 
-## Eksport af de aktive firewall-regler (NixOS)
+## Eksport af de aktive firewall-regler
+
+**Samme effektive politik, meget forskellig mængde genereret regelværk.** `sudo nft list ruleset`
+på begge platforme viser: `drop`-standardpolitik, kun SSH fra `192.168.122.1` tilladt eksplicit.
+Men ufw (Debian) og NixOS' egen deklarerede ruleset producerer meget forskellige mængder faktisk
+nftables-kode for at udtrykke den samme politik:
+
+| | Debian (`ufw`) | NixOS |
+|---|---|---|
+| Linjer (`nft list ruleset`) | 386 | 33 |
+| Chains | 69 | 4 |
+
+::: {.compare}
+::: {.compare-side}
+#### Debian (uddrag, se note nedenfor)
+
+```
+$ sudo nft list ruleset
+	type filter hook input priority filter; policy drop;
+	type filter hook output priority filter; policy accept;
+	type filter hook forward priority filter; policy drop;
+
+	chain ufw-user-input {
+		ip saddr 192.168.122.1 tcp dport 2222 accept
+	}
+```
+
+De resterende ~380 linjer er ufw's faste, altid-genererede rammeværk (logging-, tracking- og
+loopback-chains for både IPv4 og IPv6), uafhængigt af hvor mange regler brugeren selv har tilføjet.
+:::
+::: {.compare-side}
+#### NixOS (fuld)
 
 ```
 $ sudo nft list ruleset
@@ -101,19 +132,25 @@ table inet nixos-fw {
 	}
 }
 ```
+:::
+:::
 
-Politikken er `drop` (default deny). Kun loopback, etablerede/relaterede forbindelser, ICMP, DHCP,
-og SSH fra præcis `192.168.122.1` accepteres eksplicit.
+Forskellen skyldes ikke at Debian er mindre sikkert, `ufw` genererer bevidst et fast,
+IPv4-**og**-IPv6-dækkende rammeværk (logging-, tracking- og "skip-to-policy"-chains) uanset hvor lidt
+brugeren selv beder om, mens NixOS' `nftables`-modul kun genererer præcis de chains, den deklarerede
+konfiguration rent faktisk beder om. Samme effektive politik, men langt mere genereret kode at
+holde styr på, hvis noget nogensinde skal fejlsøges direkte i output'et.
 
-**Verifikation (NixOS)** (forsøgt fra en ikke-godkendt kilde-IP på samme undernet):
+**Verifikation, identisk adfærd på begge platforme** (forsøgt fra en ikke-godkendt kilde-IP på
+samme undernet):
 
 ```
 # -b: bind forbindelsen til en anden lokal adresse, for at simulere en uautoriseret kilde
-$ ssh -p 2222 -b 192.168.122.99 admin@192.168.122.10 'hostname'
-ssh: connect to host 192.168.122.10 port 2222: Connection timed out
+$ ssh -p 2222 -b 192.168.122.99 admin@<IP> 'hostname'   # Debian: .11, NixOS: .10
+ssh: connect to host <IP> port 2222: Connection timed out
 
-$ ssh -p 2222 admin@192.168.122.10 'hostname'   # fra 192.168.122.1 (tilladt)
-nixos-comparison
+$ ssh -p 2222 admin@<IP> 'hostname'   # fra 192.168.122.1 (tilladt)
+debian-comparison   # eller nixos-comparison, afhængig af hvilken VM
 ```
 
 ## Delkonklusion

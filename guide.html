@@ -281,9 +281,13 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href=
 strukturel forskel:</strong> NixOS’ granulære sudo kan alligevel
 udtrykke vilkårlige ændringer, fordi den ene tilladte kommando
 (<code>nixos-rebuild switch</code>) selv læser en fuldstændig,
-deklareret tilstand. Debians granulære sudo er <em>reelt</em> begrænset
-til den opremsede kommandoliste, en helt ny opgave kræver altid en
-administrativ udvidelse af listen først. Se
+deklareret tilstand. <code>admin</code> er ganske vist medlem af Debians
+<code>sudo</code>-gruppe, som i princippet giver fuld, password-krævende
+root-adgang, men kontoen er password-låst (matcher NixOS-siden), så den
+adgang er reelt uopnåelig, se modul 3. Debians granulære sudo er derfor
+<em>i praksis</em> begrænset til den opremsede kommandoliste, en helt ny
+opgave kræver enten en administrativ udvidelse af listen, eller
+<code>root</code>-konsoladgang (se ovenfor). Se
 <code>TODO/07-syntese-nixos-fremtidens-valg.md</code>.</p>
 <h2 id="hvis-noget-går-grueligt-galt-fuld-genopbygning">Hvis noget går
 grueligt galt: fuld genopbygning</h2>

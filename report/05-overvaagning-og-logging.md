@@ -39,6 +39,12 @@ installeret.
 | Diskforbrug (`/`) | > 85% | Et fyldt filsystem kan forårsage tjenestenedbrud og er et kendt symptom på et angreb |
 | Hukommelsesforbrug | > 90% | Kan indikere en runaway-proces eller misbrug (fx crypto-mining) |
 
+`monitor.sh` og dets cron-job er, i modsætning til modul 1/3/4's mekanismer, kun deployet på
+NixOS-siden i dette projekt, ikke fordi scriptet er platformsspecifikt (det er almindelig,
+portabel bash, se modul 6), men fordi en reel Debian-parallel ville kræve ny opsætning og ventetid
+på logdata, uden at tilføje ny platformsindsigt ud over det, `healthcheck.sh` allerede viser i
+modul 6.
+
 ## Evidens: uddrag af logfilen (NixOS)
 
 ```

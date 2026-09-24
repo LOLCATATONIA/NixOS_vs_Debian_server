@@ -177,9 +177,12 @@ Dette er den eneste `nixos-rebuild`-kommando, `admin` må køre, men den kan udt
 
 **Dette er ikke et mindre praktisk problem, det er en strukturel forskel:** NixOS' granulære sudo
 kan alligevel udtrykke vilkårlige ændringer, fordi den ene tilladte kommando (`nixos-rebuild
-switch`) selv læser en fuldstændig, deklareret tilstand. Debians granulære sudo er *reelt*
-begrænset til den opremsede kommandoliste, en helt ny opgave kræver altid en administrativ
-udvidelse af listen først. Se `TODO/07-syntese-nixos-fremtidens-valg.md`.
+switch`) selv læser en fuldstændig, deklareret tilstand. `admin` er ganske vist medlem af Debians
+`sudo`-gruppe, som i princippet giver fuld, password-krævende root-adgang, men kontoen er
+password-låst (matcher NixOS-siden), så den adgang er reelt uopnåelig, se modul 3. Debians
+granulære sudo er derfor *i praksis* begrænset til den opremsede kommandoliste, en helt ny opgave
+kræver enten en administrativ udvidelse af listen, eller `root`-konsoladgang (se ovenfor). Se
+`TODO/07-syntese-nixos-fremtidens-valg.md`.
 
 ## Hvis noget går grueligt galt: fuld genopbygning
 

@@ -59,32 +59,47 @@ sudo virt-install --name nixos-comparison --memory 3072 --vcpus 2 \
     --import --os-variant generic --noautoconsole
 ```
 
-**Vellykket SSH-login med nøgle (NixOS):**
+**Vellykket SSH-login med nøgle:**
+
+::: {.compare}
+::: {.compare-side}
+#### Debian
+
+```
+$ ssh -i ~/.ssh/debian_comparison_admin_ed25519 -p 2222 admin@192.168.122.11 'hostname && whoami'
+debian-comparison
+admin
+```
+:::
+::: {.compare-side}
+#### NixOS
 
 ```
 $ ssh -i ~/.ssh/nixos_comparison_admin_ed25519 -p 2222 admin@192.168.122.10 'hostname && whoami'
 nixos-comparison
 admin
 ```
+:::
+:::
 
-**Afvist password-login (NixOS):**
+**Afvist password-login og afvist root-login: identisk adfærd på begge platforme.** Kun IP og
+nøglefil adskiller kommandoerne, selve resultatet er ens:
 
 ```
-# tving et password-forsøg, selvom en gyldig nøgle findes
-$ ssh -v -p 2222 -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@192.168.122.10 'echo test'
+# tving et password-forsøg, selvom en gyldig nøgle findes (Debian: .11, NixOS: .10)
+$ ssh -v -p 2222 -o PreferredAuthentications=password -o PubkeyAuthentication=no admin@<IP> 'echo test'
 debug1: Authentications that can continue: publickey
-admin@192.168.122.10: Permission denied (publickey).
+admin@<IP>: Permission denied (publickey).
+
+# root, selv med en ellers gyldig admin-nøgle
+$ ssh -i <admin-nøgle> -p 2222 root@<IP> 'echo test'
+root@<IP>: Permission denied (publickey).
 ```
 
-**Afvist root-login (selv med gyldig nøgle, NixOS):**
-
-```
-$ ssh -i ~/.ssh/nixos_comparison_admin_ed25519 -p 2222 root@192.168.122.10 'echo test'
-root@192.168.122.10: Permission denied (publickey).
-```
-
-Root afvises fordi `PermitRootLogin = "no"`. Root har derudover ingen gyldig adgangskode
-(`users.users.root.hashedPassword = "!"`), hvilket lukker adgangsvejen helt af.
+Root afvises fordi `PermitRootLogin = "no"` på begge platforme (NixOS: `nixos/modules/network.nix`;
+Debian: `/etc/ssh/sshd_config`, se "Samme fire opgaver" nedenfor). NixOS-siden lukker adgangsvejen
+yderligere af med en direkte ugyldig adgangskode-hash (`users.users.root.hashedPassword = "!"`),
+Debian-siden har i stedet en gyldig, men kun konsol-tilgængelig, `root`-adgangskode (modul 3).
 
 **Debian-siden: en reel installationsblokering, fundet og rettet.** Under opsætningen af den
 faktiske Debian-sammenligningsserver fejlede DHCP under selve installationen. `sudo nft list

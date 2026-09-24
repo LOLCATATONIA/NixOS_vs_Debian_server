@@ -31,6 +31,14 @@ bruger, for at undgå at systemet låser sig selv ude. I praksis er denne adgang
 adgangskode, så almindelig wheel-baseret sudo reelt er uopnåeligt. Al faktisk adgang kommer i
 stedet fra `security.sudo.extraRules`.
 
+**Debian-siden har, verificeret direkte, samme underliggende mønster.** `admin` på
+`debian-comparison` er medlem af standardgruppen `sudo` (`groups=...,27(sudo),...`), som Debians
+eget `/etc/sudoers` som udgangspunkt giver fuld, password-krævende root-adgang
+(`(ALL : ALL) ALL`, synligt i `sudo -l`). Denne adgang er, akkurat som `wheel` ovenfor,
+neutraliseret i praksis: kontoen er password-låst (`passwd -S admin` → `L`), så der ikke findes
+nogen adgangskode at opgive. Al faktisk, brugbar adgang kommer i stedet fra de eksplicitte
+`NOPASSWD`-linjer i `/etc/sudoers.d/admin`, samme princip, forskellig implementering.
+
 ## Sammenligning: traditionel tilgang vs. NixOS
 
 ::: {.compare}
@@ -41,10 +49,11 @@ stedet fra `security.sudo.extraRules`.
 $ sudo useradd -m -G projekt developer
 $ sudo useradd -m -G guest guest
 
-# /etc/sudoers.d/admin
-admin ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart sshd.service
-admin ALL=(ALL) NOPASSWD: /usr/bin/chmod g+s /srv/projekt
+# /etc/sudoers.d/admin (reelt indhold, akkumuleret modul for modul)
+admin ALL=(ALL) NOPASSWD: /usr/bin/mkdir, /usr/bin/chown, /usr/bin/chmod, /usr/sbin/setfacl, /usr/bin/getfacl
+admin ALL=(ALL) NOPASSWD: /usr/sbin/groupadd, /usr/sbin/usermod, /usr/sbin/useradd
 admin ALL=(ALL) NOPASSWD: /usr/sbin/nft list ruleset
+admin ALL=(ALL) NOPASSWD: /usr/sbin/ufw status verbose
 ```
 :::
 ::: {.compare-side}
@@ -72,9 +81,9 @@ security.sudo.extraRules = [{
 :::
 :::
 
-Begge tilgange giver samme granulære, kommando-specifikke sudo, men mekanikken er forskellig:
-Debian samler regler i separate filer under `/etc/sudoers.d/`, NixOS har slet ikke denne mappe,
-verificeret direkte:
+Begge tilgange er granulære i princippet, men mekanikken, og dermed hvad "granulær" reelt betyder,
+er forskellig: Debian samler regler i separate filer under `/etc/sudoers.d/`, tilføjet én linje ad
+gangen i takt med at behovet opstod, NixOS har slet ikke denne mappe, verificeret direkte:
 
 ```
 $ ls /etc/sudoers.d/
@@ -85,13 +94,24 @@ NixOS genererer i stedet **én samlet**, skrivebeskyttet `/etc/sudoers`-fil ud f
 konfigurationen ved hver rebuild, ikke separate drop-in-filer, der kan glemmes eller efterlades
 uden versionsstyring.
 
-## Bevis: granulær sudo virker (NixOS)
+## Bevis: granulær sudo virker
 
 ```
 # -n: fejl med det samme, i stedet for at vente på en adgangskode der aldrig kommer
+# (identisk resultat på både nixos-comparison og debian-comparison)
 $ sudo -n whoami
 sudo: a password is required
+```
 
+**Delt succes:** `sudo -n nft list ruleset` lykkes uden adgangskode på begge platforme, et af de få
+punkter hvor de to regelsæt reelt overlapper (Debians output starter endda med en advarsel om at
+`ufw` og `iptables-nft` deler samme nftables-lag, en reel driftsdetalje, ikke tilføjet for effekt).
+
+::: {.compare}
+::: {.compare-side}
+#### NixOS: hele kommandolinjen er del af matchningen
+
+```
 $ sudo systemctl restart sshd.service
 OK
 
@@ -100,9 +120,31 @@ sudo: a password is required
 ```
 
 Selv en anden `systemctl restart`-kommando afvises. Afgrænsningen er på den fulde kommandolinje,
-ikke kun programnavnet.
+argumenter inklusive.
+:::
+::: {.compare-side}
+#### Debian: kun kommandoens sti er del af matchningen
 
-**Den genererede `/etc/sudoers`** (0440, kun læsbar af root):
+```
+$ sudo -n mkdir -p /tmp/sudo-arg-test
+$ sudo -n chmod 777 /tmp/sudo-arg-test
+$ ls -ld /tmp/sudo-arg-test
+drwxrwxrwx 2 root root 40 Sep 24 09:49 /tmp/sudo-arg-test
+```
+
+`/etc/sudoers.d/admin` navngiver kun kommandoens sti (`/usr/bin/mkdir`, `/usr/bin/chmod`), ikke
+dens argumenter, så et vilkårligt sted og en vilkårlig tilstand accepteres uden adgangskode.
+:::
+:::
+
+Ingen af platformene er entydigt bedst her, samme underliggende sudoers-mekanisme giver
+modsatrettede konsekvenser, afhængig af hvor præcist den enkelte regel er skrevet: NixOS' fulde
+kommandolinje-match kan blive for snæver (et harmløst tillæg afvises, se nedenfor), mens Debians
+sti-kun-match her viste sig bredere end formentlig tilsigtet, ikke fordi platformen er mindre
+sikker, men fordi disse specifikke linjer blev skrevet uden argumentbegrænsning.
+
+**Den genererede `/etc/sudoers`** (0440, kun læsbar af root, NixOS-siden; Debian-sidens
+tilsvarende, reelle `/etc/sudoers.d/admin`-indhold er vist i Sammenligningen ovenfor):
 
 ```
 root     ALL=(ALL:ALL)    SETENV: ALL
@@ -129,10 +171,11 @@ konfiguration der bygges, er nok til at blive afvist (ingen tilfældighed, se De
 hvorfor selve reglen ikke kan indeholde et `#`-tegn). Konsekvensen er reel: `admin` har ingen
 adgangskode, og `root` har hverken SSH-adgang (`PermitRootLogin = "no"`, modul 1) eller en gyldig
 adgangskode til konsollen, så der findes intet fallback, hvis en kommando afviger bare en smule fra
-den præcise, hvidlistede streng. På en traditionel Debian-server ville et tilsvarende fallback
-typisk kunne reddes via en almindelig `sudo`-adgangskode eller root-konsoladgang, som
-`debian-comparison` faktisk har. Den granulære sudo-model er derfor ikke gratis: den fjerner ikke
-kun uautoriseret adgang, den fjerner også ens eget nødspor, hvis noget ikke er forudset præcist.
+den præcise, hvidlistede streng. `debian-comparison` har, som vist ovenfor, samme neutraliserede
+`sudo`-gruppe-fallback som NixOS' `wheel`, men til forskel fra NixOS har Debian-siden stadig
+`root`-konsoladgang som et reelt, brugbart nødspor (modul 1). Den granulære sudo-model er derfor
+ikke gratis: den fjerner ikke kun uautoriseret adgang, den fjerner også ens eget nødspor, hvis noget
+ikke er forudset præcist, medmindre man, som Debian-siden her, bevidst har bevaret én anden vej ind.
 
 Skulle selve stien i den hvidlistede kommando nogensinde skulle ændres (fx hvis config-mappen
 omdøbes), findes der dog en sikker vej uden om denne stivhed: fordi `security.sudo.extraRules` blot
