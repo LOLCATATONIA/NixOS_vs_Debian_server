@@ -266,6 +266,18 @@ id="toc-scriptsverify-deploy.sh"><code>scripts/verify-deploy.sh</code></a></li>
 <li><a href="#delkonklusion-5"
 id="toc-delkonklusion-5">Delkonklusion</a></li>
 </ul></li>
+<li><a href="#konklusion-er-nixos-fremtidens-sikrere-valg"
+id="toc-konklusion-er-nixos-fremtidens-sikrere-valg">Konklusion: Er
+NixOS fremtidens sikrere valg?</a>
+<ul>
+<li><a href="#fordele-med-konkret-evidens"
+id="toc-fordele-med-konkret-evidens">Fordele, med konkret
+evidens</a></li>
+<li><a href="#ulemper-ærligt-underbygget"
+id="toc-ulemper-ærligt-underbygget">Ulemper, ærligt underbygget</a></li>
+<li><a href="#samlet-vurdering" id="toc-samlet-vurdering">Samlet
+vurdering</a></li>
+</ul></li>
 </ul>
 </nav>
 <h1 id="overordnet-tilgang-og-metodevalg">Overordnet tilgang og
@@ -2400,5 +2412,145 @@ Erfaringen samlet: automatisering under NixOS handler mindre om at
 skrive scripts, der selv er korrekte, og mere om at udnytte at
 <code>nixos-rebuild</code> allerede garanterer korrektheden, hvis
 konfigurationen først er rigtig.</p>
+<h1 id="konklusion-er-nixos-fremtidens-sikrere-valg">Konklusion: Er
+NixOS fremtidens sikrere valg?</h1>
+<p>Opgaven foreslog Debian eller Ubuntu Server. Rapporten har i stedet
+brugt NixOS til at undersøge et åbent spørgsmål: giver den deklarative
+tilgang reelle sikkerhedsmæssige fordele over den traditionelle,
+imperative arbejdsgang, eller er forskellen kosmetisk? Svaret, baseret
+på seks moduler og en reel A/B-sammenligning mod en faktisk Debian-VM,
+er hverken et ukvalificeret ja eller et “det kommer an på behovet”. Det
+er nedenfor forsøgt som en konkret stillingtagen, med evidensen
+navngivet, ikke kun påstået.</p>
+<h2 id="fordele-med-konkret-evidens">Fordele, med konkret evidens</h2>
+<p><strong>Konfigurationsdrift bliver synlig, i stedet for at kunne
+gemme sig.</strong> <code>00-tilgang.md</code>s “Samlet billede” viser
+at Debian-sidens seks moduler er spredt over mindst otte forskellige
+filer og kommandotyper, hver redigerbar for sig, uden noget der
+repræsenterer hele systemets tilstand som én genskabelig enhed. NixOS’
+<code>verify-deploy.sh</code> (modul 6) kan derfor stille et spørgsmål,
+Debian-siden strukturelt ikke kan besvare: “stemmer det kørende system
+overens med det, der er erklæret?” Der findes bevidst intet
+Debian-modstykke til det script, ikke fordi det ville være svært at
+skrive, men fordi der ikke findes nogen deklareret facitliste at holde
+en traditionel server op imod.</p>
+<p><strong>Reproducerbarhed, faktisk efterprøvet med et diff, ikke kun
+antaget.</strong> <code>nix build --rebuild</code> tvinger en ægte
+genbygning og sammenligner selv output-hashen
+(<code>00-tilgang.md</code>). Konklusionen er bevidst afgrænset: den
+gælder den deklarerede systemtilstand, ikke det færdige diskimage som
+artefakt (<code>mkfs.ext4</code>s tilfældige UUID gør det artefakt
+ikke-deterministisk). Den afgrænsning gør selve påstanden mere
+troværdig, ikke mindre, fordi dens grænser er kendte og testede.</p>
+<p><strong>Sudo-reglers sikre migration, demonstreret live.</strong>
+Modul 3 viste at <code>security.sudo.extraRules</code> kan udvides
+additivt (en ny regel tilføjes ved siden af den gamle, den gamle fjernes
+først når den nye er bekræftet), så en sti i den ene, hvidlistede
+sudo-kommando kunne ændres uden at <code>admin</code> på noget tidspunkt
+manglede en gyldig kommando at falde tilbage på. Den tilsvarende
+operation på Debian, en direkte <code>visudo</code>-redigering, har
+ingen sådan mellemtilstand.</p>
+<p><strong>Idempotens er en egenskab af værktøjet, ikke noget man selv
+skal bevise.</strong> Debians <code>provision.sh</code> (modul 6)
+forsøger idempotens ved at indbygge et tjek i hver enkelt funktion, og
+fejlede reelt én gang undervejs (<code>visudo -c</code> manglede efter
+senere sudoers-tilføjelser). <code>nixos-rebuild switch</code> er
+idempotent for hele systemtilstanden, uden at nogen skal huske at skrive
+det tjek ind.</p>
+<p><strong>Den direkte A/B-sammenligning viser en reel, målt forskel i
+friktion.</strong> En fuld, manuel genskabelse af modul 1-6 på den
+faktiske Debian-VM tog cirka 280 sekunders ren udførelsestid og
+afslørede undervejs fem uventede fund, tre manglende pakker på en
+minimal installation (<code>sudo</code>, <code>acl</code>,
+<code>cron</code>), én klassisk Unix-gruppekollision
+(<code>useradd -G</code> vs. <code>-g</code>), og én der direkte rettede
+en unøjagtig påstand i selve rapporten (<code>/var/log/auth.log</code>
+findes ikke uden <code>rsyslog</code>). NixOS-siden udtrykker den samme
+sluttilstand som én, allerede skrevet <code>nixos-rebuild switch</code>,
+uden pakkeopdagelse undervejs, fordi hele afhængighedstræet allerede er
+en del af den deklarerede konfiguration.</p>
+<p><strong>Samme effektive sikkerhedspolitik, markant mindre genereret
+kompleksitet.</strong> Modul 4 viser at <code>ufw</code>s genererede
+nftables-ruleset er 386 linjer over 69 chains, mod NixOS’ 33 linjer over
+4 chains, for præcis samme <code>drop</code>-standardpolitik og samme
+ene tilladte kilde. Mindre genereret regelværk at holde styr på, hvis
+noget nogensinde skal fejlsøges direkte i output’et.</p>
+<h2 id="ulemper-ærligt-underbygget">Ulemper, ærligt underbygget</h2>
+<p><strong>Et ekstra fejlfindingslag, ikke et erstattende.</strong>
+Flere af projektets egne fund krævede forståelse af både almindelig
+Linux-fejlfinding og Nix’ eget evalueringslag: modul 3’s sudo-regel, der
+<em>så</em> korrekt ud i <code>sudo -l</code> men fejlede ved et faktisk
+deploy, fordi den forsøgte at forudsige <code>nixos-rebuild</code>s
+interne kommandoindpakning; det uventede <code>#</code>-tegn i en
+flake-reference, der stille afkorter en sudoers-linje; og modul 4’s
+<code>openFirewall</code>-standardværdi, der lægger sig oveni en
+eksplicit regel i stedet for at blive overskrevet, plus en separat
+<code>rpfilter</code>-kæde, der blokerede DNS-svar uden om selve
+input-kæden. Ingen af disse var synlige ved at læse konfigurationen
+alene, alle krævede faktisk at teste og fejlsøge live. Den deklarative
+tilgang fjerner ikke fejl, den flytter dem.</p>
+<p><strong>NixOS vinder ikke alle steder, og bør ikke antages at gøre
+det.</strong> Modul 2 er det tydeligste modeksempel: ACL-baseret
+adgangsstyring (<code>setfacl</code>/<code>getfacl</code>) er byte for
+byte identisk på begge platforme, fordi NixOS bevidst ikke gør
+datafil-rettigheder deklarative. Debian-sidens <code>provision.sh</code>
+var i øvrigt ikke systematisk sværere at skrive end at bruge NixOS, blot
+ramt af andre typer fejl (manglende pakker, en Unix-gruppekollision) end
+Nix-sidens (evalueringsfejl, modul-sammenlægning).</p>
+<p><strong>Det stive, bogstavelige sudo-eksakt-match har en reel
+omkostning, ikke kun en teoretisk.</strong> Modul 3 viste at
+<code>admin</code> på den hærdede NixOS-VM ikke har noget nødspor, hvis
+en kommando afviger bare en smule fra den præcise, hvidlistede streng,
+hverken en adgangskode eller en root-fallback. Debian, med samme
+neutraliserede <code>wheel</code>/<code>sudo</code>-gruppe-mekanisme,
+beholder stadig <code>root</code>-konsoladgang som et reelt, brugbart
+nødspor. Sikkerheden ved at fjerne det nødspor er reel, men den er ikke
+gratis.</p>
+<p><strong>Bemandings- og videnrisiko.</strong> Dette punkt er ikke
+testet empirisk i dette projekt, det kan det ikke være med én person og
+to VM’er, men det er en reel driftsmæssig faktor, ikke kun en
+indlæringskurve for én udvikler: markant færre sysadmins kender Nix’
+sprog og mentale model end kender
+<code>apt</code>/<code>systemctl</code>/<code>sudoers</code>, hvilket er
+en reel risiko ved overdragelse, oncall-vagter og rekruttering til en
+driftsorganisation, uafhængigt af hvor tekniske fordele NixOS i øvrigt
+har.</p>
+<p><strong>Hvad denne rapport bevidst ikke konkluderer på.</strong> Fire
+spørgsmål, der oprindeligt var tiltænkt denne konklusion, blev ikke nået
+inden for projektets tidsramme, og er derfor udeladt her i stedet for at
+blive besvaret uden evidens: en målt genoprettelsestid (RTO) ved en fuld
+genopbygning, patch-/CVE-respons-hastighed sammenlignet direkte mellem
+<code>nixpkgs</code> og Debians sikkerhedskanal, en empirisk
+CIS/STIG-hærdningsaudit kørt mod begge VM’er, og hvorvidt Debian-siden
+kan nærme sig NixOS’ ét-scripts fulde genopbygning. Rapporten postulerer
+ikke svar på disse, blot at de forbliver åbne.</p>
+<h2 id="samlet-vurdering">Samlet vurdering</h2>
+<p>Evidensen samlet peger ikke på at NixOS er universelt bedre, men på
+at dens fordele er reelle og mest værd, når prisen for
+konfigurationsdrift er høj, og dens ulemper er reelle og mest tunge, når
+organisationens bindende begrænsning er tilgængelig viden, ikke teknisk
+kapacitet.</p>
+<p><strong>NixOS er det stærkere valg for:</strong> en organisation,
+hvor det at kunne bevise, hvad der reelt kører, og hvorfor, vejer
+tungere end at kunne rekruttere bredt til driften, typisk
+compliance-tunge eller sikkerhedskritiske miljøer, hvor
+<code>verify-deploy.sh</code>s spørgsmål (“stemmer det kørende system
+overens med det erklærede?”) reelt stilles jævnligt, og hvor et team
+allerede har eller kan investere i Nix-kompetence som en varig del af
+driftsorganisationen, ikke en engangsindsats.</p>
+<p><strong>Den traditionelle tilgang er stadig at foretrække
+for:</strong> en organisation, hvor bemanding og tilgængelig viden er
+den bindende begrænsning, hvor arbejdet i praksis domineres af opgaver,
+der er reelt værktøjs-identiske uanset platform (modul 2 er beviset på
+at dette forekommer, ikke kun en teoretisk mulighed), eller hvor et team
+ikke kan absorbere det ekstra Nix-evalueringslag oven i almindelig
+Linux-drift uden at det går ud over leveringshastighed på kort sigt.</p>
+<p>Den ærligste, enkeltstående konklusion er derfor: NixOS’
+sikkerhedsmæssige fordele er ikke en myte, tre af dem (drift-synlighed,
+efterprøvet reproducerbarhed, og en dokumenteret, sikker vej gennem en
+ellers stiv sudo-model) er direkte demonstreret i dette projekt, ikke
+kun påstået. Men de fordele købes med et reelt, ikke-teoretisk ekstra
+fejlfindingslag og en bemandingsrisiko, som en sikkerhedsvurdering, der
+kun ser på arkitektur, let overser.</p>
 </body>
 </html>
