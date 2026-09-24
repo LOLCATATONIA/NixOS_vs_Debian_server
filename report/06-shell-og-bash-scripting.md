@@ -144,7 +144,16 @@ igen fra bunden": uanset om scriptet køres første eller femtende gang, konverg
 til det samme, nemlig præcis én VM ved navn `nixos-comparison`, bygget fra den `flake.nix`, der
 ligger på tidspunktet for kørslen.
 
-**Idempotens, bevist ved to kørsler i træk (NixOS):**
+::: {.compare}
+::: {.compare-side}
+#### Debian: gælder ikke
+
+Der findes intet tilsvarende ét-script for Debian-siden i dette projekt. Selve installationsprocessen
+(`preseed` + `virt-install --location`) er den tidskrævende, skrøbelige del (modul 1), en fuld
+genopbygning betyder her at gentage hele installationsforløbet forfra, ikke køre én kommando.
+:::
+::: {.compare-side}
+#### NixOS: idempotens, bevist ved to kørsler i træk
 
 ```
 $ ./scripts/setup.sh
@@ -165,6 +174,8 @@ Vol nixos-comparison.qcow2 created
 $ echo $?
 0
 ```
+:::
+:::
 
 ## `scripts/healthcheck.sh` (opgave 3)
 
@@ -238,11 +249,39 @@ main() {
 main "$@"
 ```
 
-**Eksempeloutput fra det færdige system (kørt på NixOS-VM'en, scriptet selv er platformsuafhængigt):**
+**Eksempeloutput fra det færdige system, kørt uændret på begge platforme:**
+
+::: {.compare}
+::: {.compare-side}
+#### Debian
+
+```
+[admin@debian-comparison:~]$ bash /tmp/healthcheck.sh
+Healthcheck for debian-comparison -- 2026-09-24 12:31:54
+
+== Firewall-status ==
+  ip saddr 192.168.122.1 tcp dport 2222 counter packets 14 bytes 840 accept
+  [... 124 linjer i alt, se modul 4's chain-optælling ...]
+
+== Diskplads ==
+Rodfilsystem: 14% brugt, 6.0G ledig diskplads
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda1       7.4G  989M  6.0G  14% /
+
+== Aktive/loggede ind brugere ==
+admin    sshd         2026-09-24 12:31 (192.168.122.1)
+admin    sshd pts/0   2026-09-24 12:31 (192.168.122.1)
+
+== Brugere med UID 0 (ud over root) ==
+Ingen -- kun root har UID 0.
+```
+:::
+::: {.compare-side}
+#### NixOS
 
 ```
 [admin@nixos-comparison:~]$ ~/nixos-comparison-config/scripts/healthcheck.sh
-Healthcheck for nixos-comparison -- 2026-09-23 13:01:53
+Healthcheck for nixos-comparison -- 2026-09-24 10:32:26
 
 == Firewall-status ==
   type filter hook prerouting priority mangle + 10; policy drop;
@@ -265,11 +304,18 @@ Filesystem      Size  Used Avail Use% Mounted on
 /dev/vda3       4.5G  2.6G  1.7G  61% /
 
 == Aktive/loggede ind brugere ==
-admin    pts/0        2026-09-23 13:01 (192.168.122.1)
+admin    pts/0        2026-09-24 10:32 (192.168.122.1)
 
 == Brugere med UID 0 (ud over root) ==
 Ingen -- kun root har UID 0.
 ```
+:::
+:::
+
+Selve scriptet er byte for byte identisk, kørt uændret på begge VM'er. Firewall-sektionen viser
+samme mønster som modul 4's ruleset-eksport: `grep`-filteret i `check_firewall` matcher langt flere
+linjer på Debian, fordi ufw's genererede ruleset (125 linjer her, mod NixOS' 13) i sig selv er langt
+større for at udtrykke den samme politik.
 
 ## `scripts/verify-deploy.sh`
 
@@ -312,7 +358,16 @@ main() {
 main "$@"
 ```
 
-**Bevis, begge grene testet (NixOS):**
+::: {.compare}
+::: {.compare-side}
+#### Debian: gælder ikke
+
+Der findes intet Debian-modstykke til `verify-deploy.sh`, fordi der ikke findes noget at
+sammenligne en "kørende tilstand" med. En traditionel server har ingen deklareret, evaluerbar
+facitliste at holde op imod, kun den akkumulerede historik af kommandoer, der er kørt på den.
+:::
+::: {.compare-side}
+#### NixOS: bevis, begge grene testet
 
 ```
 $ ./verify-deploy.sh
@@ -331,6 +386,8 @@ ADVARSEL: systemet er drevet væk fra den deklarerede konfiguration.
 $ echo $?
 1
 ```
+:::
+:::
 
 ## Delkonklusion
 

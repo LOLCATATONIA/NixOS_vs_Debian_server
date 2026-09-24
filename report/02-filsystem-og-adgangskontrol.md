@@ -56,63 +56,127 @@ systemd.tmpfiles.rules = [
 :::
 
 **ACL til afgrænset adgang** bruger derimod nøjagtig de samme `setfacl`-kommandoer på begge
-platforme, NixOS overtager ikke ACL'er på datafiler deklarativt, så metoden forbliver identisk med
-den traditionelle, se `Opgave 4` nedenfor.
+platforme, NixOS overtager ikke ACL'er på datafiler deklarativt, så metoden er identisk med den
+traditionelle, vist side om side i Opgave 4 nedenfor.
 
 ## Opgave 2: Delt projektmappe (ikke `chmod 777`)
 
-**Evidens (NixOS):**
+::: {.compare}
+::: {.compare-side}
+#### Debian
+
+```
+$ ls -ld /srv/projekt
+drwxrws--- 2 admin projekt 4096 Sep 24 12:28 /srv/projekt
+```
+:::
+::: {.compare-side}
+#### NixOS
 
 ```
 $ ls -ld /srv/projekt
 drwxrws--- 2 admin projekt 4096 Sep 14 09:05 /srv/projekt
 ```
+:::
+:::
 
 `2770`: ejer og gruppe (`projekt`) har fuld adgang, andre har ingen. Setgid (`2`) sikrer at nye
 filer arver gruppen `projekt` automatisk. `chmod 777` undgås, fordi det giver alle på systemet
-adgang og dermed modarbejder need-to-know-princippet.
+adgang og dermed modarbejder need-to-know-princippet. Identisk resultat på begge platforme, kun
+opnået på hver sin måde (se Sammenligningen ovenfor).
 
 ## Opgave 3: Identifikation og rettelse af forkert konfigurerede rettigheder
 
-**Før (NixOS):**
+::: {.compare}
+::: {.compare-side}
+#### Debian
+
+```
+$ ls -l /srv/projekt/
+-rw-rw-rw- 1 admin projekt 12 Sep 18 13:22 app.conf
+-rwxrwxrwx 1 admin projekt 12 Sep 18 13:22 deploy.sh
+
+$ chmod 640 /srv/projekt/app.conf
+$ chmod 750 /srv/projekt/deploy.sh
+$ ls -l /srv/projekt/
+-rw-r----- 1 admin projekt 12 Sep 18 13:22 app.conf
+-rwxr-x--- 1 admin projekt 12 Sep 18 13:22 deploy.sh
+```
+:::
+::: {.compare-side}
+#### NixOS
 
 ```
 $ ls -l /srv/projekt/
 -rw-rw-rw- 1 admin projekt 37 Sep 14 09:07 app.conf
 -rwxrwxrwx 1 admin projekt 28 Sep 14 09:07 deploy.sh
-```
 
-`app.conf` (666) er world-writable, og `deploy.sh` (777) er både world-writable og eksekverbart.
-Sidstnævnte er et klassisk privilege escalation-mønster: enhver kan overskrive et script, som senere
-køres med højere rettigheder.
-
-**Rettelse og efter (NixOS):**
-
-```
 $ chmod 640 /srv/projekt/app.conf
 $ chmod 750 /srv/projekt/deploy.sh
 $ ls -l /srv/projekt/
 -rw-r----- 1 admin projekt 37 Sep 14 09:07 app.conf
 -rwxr-x--- 1 admin projekt 28 Sep 14 09:07 deploy.sh
 ```
+:::
+:::
+
+`app.conf` (666) er world-writable, og `deploy.sh` (777) er både world-writable og eksekverbart.
+Sidstnævnte er et klassisk privilege escalation-mønster: enhver kan overskrive et script, som senere
+køres med højere rettigheder. Samme fejl, samme rettelse, samme `chmod`-kommandoer på begge
+platforme, denne opgave har intet med NixOS' deklarative model at gøre, det er almindelig
+Unix-rettighedsstyring.
 
 ## Opgave 4: ACL til midlertidig, afgrænset adgang
 
-**Før: ingen adgang (NixOS)**
+::: {.compare}
+::: {.compare-side}
+#### Debian
 
 ```
 $ sudo -u revisor ls /srv/projekt
 ls: cannot open directory '/srv/projekt': Permission denied
 ```
+:::
+::: {.compare-side}
+#### NixOS
 
-**Tildeling og efter (NixOS):**
+```
+$ sudo -u revisor ls /srv/projekt
+ls: cannot open directory '/srv/projekt': Permission denied
+```
+:::
+:::
+
+**Tildeling og efter, identisk kommandosekvens på begge platforme:**
 
 ```
 # giv revisor læse- og gennemsøgningsret til selve mappen
 $ sudo setfacl -m u:revisor:rx /srv/projekt
 # og kun læseret til de eksisterende filer (-R: samme regel rekursivt)
 $ sudo setfacl -R -m u:revisor:r /srv/projekt/app.conf /srv/projekt/deploy.sh
+```
 
+::: {.compare}
+::: {.compare-side}
+#### Debian
+
+```
+$ sudo -u revisor ls -l /srv/projekt
+-rw-r-----+ 1 admin projekt 12 Sep 18 13:22 app.conf
+-rwxr-x---+ 1 admin projekt 12 Sep 18 13:22 deploy.sh
+
+$ getfacl /srv/projekt
+user::rwx
+user:revisor:r-x
+group::rwx
+mask::rwx
+other::---
+```
+:::
+::: {.compare-side}
+#### NixOS
+
+```
 $ sudo -u revisor ls -l /srv/projekt
 -rw-r-----+ 1 admin projekt 37 Sep 14 09:07 app.conf
 -rwxr-x---+ 1 admin projekt 28 Sep 14 09:07 deploy.sh
@@ -124,8 +188,11 @@ group::rwx
 mask::rwx
 other::---
 ```
+:::
+:::
 
-Gruppen `projekt` har fortsat ingen nye medlemmer. `revisor` fik adgang udelukkende via ACL'en.
+Gruppen `projekt` har fortsat ingen nye medlemmer på nogen af platformene. `revisor` fik adgang
+udelukkende via ACL'en, og resultatet er, byte for byte, identisk.
 
 ## Delkonklusion
 

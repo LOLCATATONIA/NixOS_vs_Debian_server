@@ -39,13 +39,20 @@ installeret.
 | Diskforbrug (`/`) | > 85% | Et fyldt filsystem kan forårsage tjenestenedbrud og er et kendt symptom på et angreb |
 | Hukommelsesforbrug | > 90% | Kan indikere en runaway-proces eller misbrug (fx crypto-mining) |
 
-`monitor.sh` og dets cron-job er, i modsætning til modul 1/3/4's mekanismer, kun deployet på
+## Evidens: uddrag af logfilen
+
+::: {.compare}
+::: {.compare-side}
+#### Debian: gælder ikke
+
+`monitor.sh` og dets cron-job er, i modsætning til modul 1/2/4's mekanismer, kun deployet på
 NixOS-siden i dette projekt, ikke fordi scriptet er platformsspecifikt (det er almindelig,
 portabel bash, se modul 6), men fordi en reel Debian-parallel ville kræve ny opsætning og ventetid
 på logdata, uden at tilføje ny platformsindsigt ud over det, `healthcheck.sh` allerede viser i
 modul 6.
-
-## Evidens: uddrag af logfilen (NixOS)
+:::
+::: {.compare-side}
+#### NixOS
 
 ```
 $ cat /var/log/monitor.log
@@ -60,22 +67,36 @@ $ systemctl list-timers logrotate.timer
 NEXT                         LEFT UNIT            ACTIVATES
 Mon 2026-09-14 12:00:00 UTC 23min logrotate.timer logrotate.service
 ```
+:::
+:::
 
-## Identifikation af mislykkede loginforsøg (NixOS)
+## Identifikation af mislykkede loginforsøg
 
-**Fremkaldt eksempel** (forsøgt login med forkert nøgle):
-
-```
-$ ssh -i ~/.ssh/nixos_comparison_developer_ed25519 -p 2222 admin@192.168.122.10
-admin@192.168.122.10: Permission denied (publickey).
-```
-
-**Tilsvarende log-linje:**
+**Fremkaldt eksempel, identisk metode på begge platforme** (forsøgt login med forkert nøgle):
 
 ```
-$ journalctl -u sshd
+$ ssh -i <developer-nøgle> -p 2222 admin@<IP>   # Debian: .11, NixOS: .10
+admin@<IP>: Permission denied (publickey).
+```
+
+**Tilsvarende log-linje, forskelligt tjenestenavn (se Sammenligningen ovenfor):**
+
+::: {.compare}
+::: {.compare-side}
+#### Debian: `journalctl -u ssh`
+
+```
+Sep 24 12:30:25 debian-comparison sshd-session[854]: Connection closed by authenticating user admin 192.168.122.1 port 41698 [preauth]
+```
+:::
+::: {.compare-side}
+#### NixOS: `journalctl -u sshd`
+
+```
 Sep 23 11:28:03 nixos-comparison sshd-session[1440]: Connection closed by authenticating user admin 192.168.122.1 port 38252 [preauth]
 ```
+:::
+:::
 
 **Hvordan et unormalt mønster ville se ud:** Mange gentagne `[preauth]`-afvisninger på kort tid for
 samme eller forskellige brugernavne tyder på automatiseret brute-forcing. Forsøg fra en anden
