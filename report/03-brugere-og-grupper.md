@@ -156,8 +156,21 @@ kommandolinje-match kan blive for snæver (et harmløst tillæg afvises, se nede
 sti-kun-match her viste sig bredere end formentlig tilsigtet, ikke fordi platformen er mindre
 sikker, men fordi disse specifikke linjer blev skrevet uden argumentbegrænsning.
 
-**Den genererede `/etc/sudoers`** (0440, kun læsbar af root, NixOS-siden; Debian-sidens
-tilsvarende, reelle `/etc/sudoers.d/admin`-indhold er vist i Sammenligningen ovenfor):
+**Den genererede sudoers-konfiguration, fuldt indhold, begge platforme:**
+
+::: {.compare}
+::: {.compare-side}
+#### Debian: `/etc/sudoers.d/admin`
+
+```
+admin ALL=(ALL) NOPASSWD: /usr/bin/mkdir, /usr/bin/chown, /usr/bin/chmod, /usr/sbin/setfacl, /usr/bin/getfacl
+admin ALL=(ALL) NOPASSWD: /usr/sbin/groupadd, /usr/sbin/usermod, /usr/sbin/useradd
+admin ALL=(ALL) NOPASSWD: /usr/sbin/nft list ruleset
+admin ALL=(ALL) NOPASSWD: /usr/sbin/ufw status verbose
+```
+:::
+::: {.compare-side}
+#### NixOS: `/etc/sudoers` (0440, kun læsbar af root)
 
 ```
 root     ALL=(ALL:ALL)    SETENV: ALL
@@ -167,9 +180,22 @@ admin     ALL=(ALL:ALL)    NOPASSWD: /run/current-system/sw/bin/nixos-rebuild sw
     NOPASSWD: /run/current-system/sw/bin/chmod g+s /srv/projekt,
     NOPASSWD: /run/current-system/sw/bin/nft list ruleset
 ```
+:::
+:::
 
 **Note: en driftsmæssig omkostning ved den snævre kommandomatch.** Sudoers' fulde-kommandolinje-match
 (vist ovenfor) er selve pointen med granulær adgang, men den er bogstavelig, ikke semantisk:
+
+::: {.compare}
+::: {.compare-side}
+#### Debian: gælder ikke
+
+`--flake sti#attribut`-syntaksen er en Nix-specifik måde at referere en bestemt konfiguration i en
+flake på. Debians sudoers-regler citerer altid en almindelig, fuldt kvalificeret kommando uden
+`#`-tegn, så denne faldgrube kan slet ikke opstå her.
+:::
+::: {.compare-side}
+#### NixOS
 
 ```
 $ sudo -n nixos-rebuild switch --flake /home/admin/nixos-comparison-config
@@ -181,8 +207,12 @@ sudo: a password is required
 
 Et harmløst, semantisk identisk `#nixos-comparison`-tillæg, der blot gør eksplicit hvilken
 konfiguration der bygges, er nok til at blive afvist (ingen tilfældighed, se Delkonklusionen for
-hvorfor selve reglen ikke kan indeholde et `#`-tegn). Konsekvensen er reel: `admin` har ingen
-adgangskode, og `root` har hverken SSH-adgang (`PermitRootLogin = "no"`, modul 1) eller en gyldig
+hvorfor selve reglen ikke kan indeholde et `#`-tegn).
+:::
+:::
+
+Konsekvensen er reel: `admin` har ingen adgangskode, og `root` har hverken SSH-adgang
+(`PermitRootLogin = "no"`, modul 1) eller en gyldig
 adgangskode til konsollen, så der findes intet fallback, hvis en kommando afviger bare en smule fra
 den præcise, hvidlistede streng. `debian-comparison` har, som vist ovenfor, samme neutraliserede
 `sudo`-gruppe-fallback som NixOS' `wheel`, men til forskel fra NixOS har Debian-siden stadig
