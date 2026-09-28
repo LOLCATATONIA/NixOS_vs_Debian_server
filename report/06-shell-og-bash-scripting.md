@@ -80,7 +80,7 @@ setup_sudo_documentation_rules() {
 
 Hver funktion tjekker om dens eget mål allerede er opnået (`if ! id admin`, `if ! grep -q ...`),
 men der er ingen samlet garanti for at hele scriptet kan køres igen uden bivirkninger, det er
-selv skrevet ind, funktion for funktion, ikke en egenskab af værktøjet. Den reelle fejl fundet
+selv skrevet ind, funktion for funktion, ikke en egenskab af værktøjet. Manglen fundet
 ovenfor (`visudo -c` manglede efter de *senere* sudoers-tilføjelser, selvom den var til stede
 efter den første) er et konkret eksempel: idempotens her er noget man selv skal bevise, linje for
 linje, hver gang scriptet ændres, og det er let at glemme et sted.
@@ -123,7 +123,7 @@ ensure_nix_in_path() {
     source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh 2>/dev/null || true
   fi
   if ! command -v nix &>/dev/null; then
-    echo "FEJL: 'nix' blev ikke fundet i PATH. Se docs/01-vm-og-netvaerk.md." >&2
+    echo "FEJL: 'nix' blev ikke fundet i PATH." >&2
     exit 1
   fi
 }
@@ -448,11 +448,11 @@ $ echo $?
 
 ## Delkonklusion
 
-`provision.sh` og `setup.sh` viser to helt forskellige former for "idempotent": Debian-siden
-opnår det ved at skrive tjek ind manuelt, funktion for funktion, en tilgang der reelt fejlede én
-gang undervejs (`visudo -c`-fundet ovenfor), mens NixOS' idempotens er en egenskab af selve
-`nixos-rebuild switch`, uafhængig af hvor mange gange scriptet ændres. Samme mønster går igen i
-`verify-deploy.sh`: Debian har ingen deklareret facitliste at holde en kørende server op imod,
-kun den akkumulerede historik af kommandoer, der er kørt på den. Erfaringen samlet: automatisering
-under NixOS handler mindre om at skrive scripts, der selv er korrekte, og mere om at udnytte at
+`provision.sh` og `setup.sh` viser to forskellige former for idempotens: Debian-siden opnår den ved
+at skrive tjek ind manuelt, funktion for funktion, en tilgang der efterlod en mangel
+(`visudo -c`-fundet ovenfor), mens NixOS' idempotens er en egenskab af selve `nixos-rebuild
+switch`, uafhængig af hvor mange gange scriptet ændres. Samme mønster går igen i
+`verify-deploy.sh`: Debian har ingen deklareret facitliste at holde en kørende server op imod, kun
+den akkumulerede historik af kommandoer, der er kørt på den. Under NixOS handler automatisering
+derfor mindre om at skrive scripts, der selv er korrekte, og mere om at udnytte at
 `nixos-rebuild` allerede garanterer korrektheden, hvis konfigurationen først er rigtig.

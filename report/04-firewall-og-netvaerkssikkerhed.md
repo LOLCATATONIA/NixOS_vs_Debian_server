@@ -28,9 +28,9 @@ $ sudo ufw default allow outgoing
 $ sudo ufw enable
 ```
 
-(Bevidst **ingen** separat `ufw allow 2222/tcp`, den ville tillade porten fra *alle* kilder og
+(Der er **ingen** separat `ufw allow 2222/tcp`, den ville tillade porten fra *alle* kilder og
 dermed underminere kilde-IP-reglen ovenfor, samme faldgrube som NixOS-sidens `openFirewall`,
-beskrevet i noten nedenfor. Kommandorækkefølgen her er den faktisk testede.)
+beskrevet i noten nedenfor. Kommandorækkefølgen her er den testede.)
 :::
 ::: {.compare-side}
 #### NixOS: én deklareret blok
@@ -63,8 +63,7 @@ derfor nødvendig, for at kilde-IP-begrænsningen reelt får effekt.
   `/32`-interval er stadig et defineret interval, blot af størrelse 1. Da VM'en udelukkende
   administreres fra denne ene maskine, ville et bredere interval tillade kilder, der aldrig reelt
   skal have adgang.
-- **Ingen andre porte åbnes:** der er bevidst ikke opsat en demo-webservice udelukkende for at
-  udfylde portbegrundelsestabellen.
+- **Ingen andre porte åbnes:** serveren udbyder ingen andre tjenester udadtil.
 
 ## Portbegrundelsestabel
 
@@ -135,14 +134,13 @@ table inet nixos-fw {
 :::
 :::
 
-Forskellen skyldes ikke at Debian er mindre sikkert, den er arkitektonisk: `ufw` er reelt en
-**iptables**-regelgenerator, verificeret direkte via dens egne skabeloner
-(`/usr/share/ufw/before.rules` indeholder bogstavelig iptables-syntaks som `-A ufw-before-input -i
+Forskellen er arkitektonisk: `ufw` er en **iptables**-regelgenerator, som dens egne skabeloner
+viser (`/usr/share/ufw/before.rules` indeholder iptables-syntaks som `-A ufw-before-input -i
 lo -j ACCEPT`), og `update-alternatives` viser at `iptables` her peger på `iptables-nft`, kernens
 oversættelseslag der lader iptables-kommandoer virke oven på nftables. Al den ekstra volumen er
 derfor arvet fra iptables' ældre model, fire adskilte skabeloner for IPv4/IPv6 fra dag ét, en fast
-before/user/after-kædestruktur (en bevidst brugervenlighedsfunktion, ikke bloat, den giver
-`ufw allow`-kommandoer et sikkert indsætningspunkt uden selv at skulle styre regelrækkefølge), samt
+before/user/after-kædestruktur (en brugervenlighedsfunktion: den giver
+`ufw allow`-kommandoer et fast indsætningspunkt uden at brugeren selv skal styre regelrækkefølge), samt
 en `counter`-erklæring på hver oversat regel, arvet fra `iptables -v`s altid-tællende adfærd. NixOS'
 `nftables`-modul er skrevet direkte til nftables, uden den historiske bagage, og genererer derfor
 kun præcis de chains, den deklarerede konfiguration rent faktisk beder om.
@@ -161,14 +159,13 @@ debian-comparison   # eller nixos-comparison, afhængig af hvilken VM
 
 ## Delkonklusion
 
-Begge platforme lander på samme sikre slutresultat: default deny, kun SSH åbent, og kun fra
-værtens egen adresse. Modul 4 er dog det sted i projektet, hvor NixOS' egne abstraktioner skabte
-mest reel fejlsøgning: `services.openssh.openFirewall`s standardværdi lægger sig oveni en eksplicit
-kilde-IP-regel i stedet for at blive overskrevet af den (fordi porte-lister merges på tværs af
-moduler), og en separat, streng `rpfilter`-kæde (reverse-path-filtrering, en anti-spoofing-kontrol
-der afviser trafik, hvis svarruten ikke matcher den forventede) blokerede DNS-svar helt uden om
-selve input-kæden, længe efter den tilsyneladende rigtige regel var sat. Ingen af de to fejl var synlige
-ved at læse konfigurationen alene, begge krævede faktisk at teste adgangen fra en anden kilde-IP og
-fejlsøge live. Oplevelsen modsiger dermed en for simpel fortælling om at "deklarativt er
-gennemsigtigt": NixOS' lag af sammenlagte standardværdier kan skjule fejl lige så effektivt som
-Debians spredte konfigurationsfiler, blot af en anden art.
+Begge platforme lander på samme resultat: default deny, kun SSH åbent, og kun fra værtens egen
+adresse. Modul 4 er det sted i projektet, hvor NixOS' egne abstraktioner skabte mest fejlsøgning:
+`services.openssh.openFirewall`s standardværdi lægger sig oveni en eksplicit kilde-IP-regel i
+stedet for at blive overskrevet af den (fordi porte-lister merges på tværs af moduler), og en
+separat, streng `rpfilter`-kæde (reverse-path-filtrering, en anti-spoofing-kontrol der afviser
+trafik, hvis svarruten ikke matcher den forventede) blokerede DNS-svar helt uden om selve
+input-kæden, længe efter den tilsyneladende rigtige regel var sat. Ingen af de to fejl var synlige
+ved at læse konfigurationen alene, begge krævede at teste adgangen fra en anden kilde-IP og
+fejlsøge live. NixOS' lag af sammenlagte standardværdier kan skjule fejl på samme måde som Debians
+spredte konfigurationsfiler, blot af en anden art.

@@ -35,7 +35,7 @@ ensure_nix_in_path() {
     source /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh 2>/dev/null || true
   fi
   if ! command -v nix &>/dev/null; then
-    echo "FEJL: 'nix' blev ikke fundet i PATH. Se docs/01-vm-og-netvaerk.md." >&2
+    echo "FEJL: 'nix' blev ikke fundet i PATH." >&2
     exit 1
   fi
 }

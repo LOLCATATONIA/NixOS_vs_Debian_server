@@ -40,7 +40,7 @@ af andre.
 ## Bevis: bootstrap og SSH-adgang
 
 **Bootstrap-kommandosekvens** (Debian-sidens installationsproces er vist side om side med denne i
-`00-tilgang.md`):
+[Konkret: selve installationsprocessen side om side](#konkret-selve-installationsprocessen-side-om-side)):
 
 ```
 # byg det færdige, konfigurerede diskimage fra flake.nix
@@ -101,9 +101,9 @@ Root afvises fordi `PermitRootLogin = "no"` på begge platforme (NixOS: `nixos/m
 Debian: `/etc/ssh/sshd_config`, se "Samme fire opgaver" nedenfor). NixOS-siden lukker adgangsvejen
 yderligere af med en direkte ugyldig adgangskode-hash (`users.users.root.hashedPassword = "!"`),
 Debian-siden har i stedet en gyldig, men kun konsol-tilgængelig, `root`-adgangskode
-(`comparison-temp-pw`, se VM-sammenligningstabellen i `00-tilgang.md`).
+(`comparison-temp-pw`, se tabellen [Begge VM'er, side om side](#begge-vmer-side-om-side)).
 
-**Debian-siden: en reel installationsblokering, fundet og rettet.** Under opsætningen af den
+**Debian-siden: en installationsblokering, fundet og rettet.** Under opsætningen af den
 faktiske Debian-sammenligningsserver fejlede DHCP under selve installationen. `sudo nft list
 ruleset` på **værten** viste at `ufw-user-input` kun havde regler for DNS (port 53), ingen regel
 for DHCP-serverporten (UDP 67):
@@ -176,15 +176,13 @@ berørt.
 
 ## Delkonklusion
 
-Modul 1 viser den tydeligste strukturelle forskel i hele rapporten: NixOS har reelt intet
+Modul 1 viser den tydeligste strukturelle forskel i hele rapporten: NixOS har intet
 installationstrin. `nix build .#qcow` producerer et færdigt, konfigureret image, og `virt-install
---import` importerer det uden en eneste interaktiv beslutning, mens Debian kræver en rigtig
+--import` importerer det uden en eneste interaktiv beslutning, mens Debian kræver en
 installationsproces, før modul 1's egentlige opgaver (statisk IP, ny bruger, SSH-hærdning) kan
-starte. Konkret var forskellen stor: Debians installer forsøger som udgangspunkt DHCP under
-netværksopsætningen, medmindre den preseedes til statisk IP, og her blokerede en host-side
-`ufw`-regel al DHCP-trafik, hvilket forsinkede opsætningen reelt, indtil årsagen blev fundet og en
-statisk IP-preseed blev valgt i stedet. NixOS-siden rammer aldrig dette: der findes slet ikke en
-installationsfase, der afhænger af noget netværksprotokol overhovedet. Det er ikke et bevis på at
-NixOS generelt er "nemmere" — kun at dens bootstrap har færre bevægelige dele, når den først er sat
-korrekt op. Til gengæld er Debians fejlsøgningsterræn (DHCP, netværksinterfaces) langt mere
-almindeligt kendt end at fejlsøge Nix' eget evalueringslag.
+starte. Debians installer forsøger som udgangspunkt DHCP under netværksopsætningen, medmindre den
+preseedes til statisk IP, og her blokerede en host-side `ufw`-regel al DHCP-trafik, indtil årsagen
+blev fundet og en statisk IP-preseed blev valgt. NixOS-siden har ingen installationsfase, der
+afhænger af en netværksprotokol. Det viser kun, at NixOS' bootstrap har færre bevægelige dele, når
+den først er sat korrekt op. Til gengæld er Debians fejlsøgningsterræn (DHCP, netværksinterfaces)
+langt mere almindeligt kendt end at fejlsøge Nix' eget evalueringslag.

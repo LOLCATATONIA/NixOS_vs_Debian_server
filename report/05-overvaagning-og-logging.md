@@ -18,7 +18,7 @@ analytiker kigger efter tegn på uautoriserede loginforsøg.
 | Logrotation | `/etc/logrotate.d/monitor` | `services.logrotate.settings."/var/log/monitor.log"` |
 | Fejlede loginforsøg | `journalctl -u ssh` (ikke `/var/log/auth.log`, se note nedenfor) | `journalctl -u sshd` |
 
-**Rettelse, verificeret direkte på en frisk Debian-installation:** `/var/log/auth.log` findes ikke
+**På en frisk Debian-installation** findes `/var/log/auth.log` ikke
 automatisk. Det kræver `rsyslog`, som ikke er en del af en minimal installation. En moderne, minimal
 Debian-server bruger, ligesom NixOS, udelukkende `journald` som standard, indtil `rsyslog` eksplicit
 installeres. Forskellen mellem platformene ligger derfor ikke i *om* `journald` bruges, begge gør,
@@ -124,9 +124,7 @@ root-login er deaktiveret (modul 1).
 
 Modul 5 er et af de mest symmetriske i rapporten: cron, logrotation og `journald` fungerer stort
 set ens på begge platforme, og NixOS' fordel her er organisatorisk (samlet i én fil) snarere end
-arkitektonisk. Den mest lærerige erfaring kom, da en oprindelig antagelse om at Debian bruger
-`/var/log/auth.log` viste sig at være forkert på en frisk, minimal installation uden `rsyslog`, en
-fejl der først blev fanget ved faktisk at teste på den rigtige Debian-VM, ikke ved at antage
-kendskab til platformen. Den reelle, mere subtile forskel ligger derfor ikke i hvilke værktøjer der
-bruges, men i at NixOS strukturelt ikke *kan* ende med en separat `auth.log` ved et uheld eller en
-vane, mens Debian kan udvides til begge dele afhængigt af hvad der installeres senere.
+arkitektonisk. En antagelse om at Debian bruger `/var/log/auth.log` var forkert på en frisk,
+minimal installation uden `rsyslog`. Forskellen ligger ikke i hvilke værktøjer der bruges, men i at
+NixOS strukturelt ikke *kan* ende med en separat `auth.log` ved et uheld eller en vane, mens Debian
+kan udvides til begge dele afhængigt af hvad der installeres senere.

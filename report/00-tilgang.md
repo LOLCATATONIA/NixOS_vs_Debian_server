@@ -70,8 +70,7 @@ reelt paradigmeskifte, fra at tænke i en *sekvens af kommandoer* til at tænke 
 sluttilstand*, og en fejl i konfigurationen viser sig ofte som en kryptisk Nix-evalueringsfejl, hvor
 den traditionelle tilgangs fejlmeddelelser (fra `useradd`, `systemctl`, `ufw`) typisk er mere
 umiddelbart genkendelige. Hvor NixOS' arbejdsgang adskiller sig væsentligt fra Debians, dokumenteres
-eksplicit hvad forskellen konkret er, og hvorfor den deklarative løsning vurderes som ligeværdig
-eller stærkere, side om side i hvert modul.
+eksplicit hvad forskellen konkret er, side om side i hvert modul.
 
 ### Konkret: selve installationsprocessen side om side
 
@@ -234,7 +233,7 @@ format (se tabel og forklaring nedenfor).
 
 Ud over `nixos-comparison` køres der til denne rapport også en **rigtig** Debian-VM
 (`debian-comparison`), opsat i hånden efter den traditionelle, imperative arbejdsgang, på nøjagtig
-samme QEMU/KVM/libvirt-grundlag. Formålet er at gøre sammenligningerne i modul 1-6 til en reel,
+samme QEMU/KVM/libvirt-grundlag. Formålet er at gøre sammenligningerne i modul 1-6 til en
 efterprøvet A/B-test i stedet for kun en teoretisk modstilling.
 
 <table>
@@ -252,8 +251,7 @@ efterprøvet A/B-test i stedet for kun en teoretisk modstilling.
 </tbody>
 </table>
 
-Diskstørrelsen er den eneste reelle asymmetri, og selve årsagen til forskellen er et lille eksempel
-på projektets egen pointe: NixOS' størrelse er slet ikke et valg, den er en **automatisk** konsekvens
+Diskstørrelsen er den eneste asymmetri. NixOS' størrelse er ikke et valg, den er en **automatisk** konsekvens
 af `nixos-generators`' `qcow`-format, som selv beregner diskstørrelsen ud fra det deklarerede
 systems **closure** (hele det udregnede træ af pakker og filer, systemet reelt kræver for at køre).
 `DISK_SIZE_BYTES` i `scripts/setup.sh` er blot den *målte* byte-størrelse af det allerede byggede

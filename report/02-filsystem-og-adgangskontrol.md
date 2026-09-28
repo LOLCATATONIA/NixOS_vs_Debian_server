@@ -198,8 +198,6 @@ udelukkende via ACL'en, og resultatet er, byte for byte, identisk.
 
 For selve mappeoprettelsen er NixOS' fordel klar: én deklareret linje
 (`systemd.tmpfiles.rules`) erstatter tre kommandoer, der ellers skal huskes og gentages identisk
-hver gang. For ACL-delen (opgave 4) er der derimod slet ingen forskel: `setfacl`/`getfacl` bruges
-uændret på begge platforme, fordi NixOS ikke forsøger at gøre datafil-rettigheder deklarative.
-Det gør modul 2 til det første sted i projektet, hvor NixOS ikke automatisk vinder, en påmindelse om
-at vurdere hver opgave for sig, i stedet for at antage at den deklarative tilgang er bedre alle
-steder blot fordi den er bedre nogle steder.
+hver gang. For ACL-delen (opgave 4) er der ingen forskel: `setfacl`/`getfacl` bruges uændret på
+begge platforme, fordi NixOS ikke gør datafil-rettigheder deklarative. Modul 2 er det første sted,
+hvor NixOS ikke har en fordel.

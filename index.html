@@ -266,17 +266,10 @@ id="toc-scriptsverify-deploy.sh"><code>scripts/verify-deploy.sh</code></a></li>
 <li><a href="#delkonklusion-5"
 id="toc-delkonklusion-5">Delkonklusion</a></li>
 </ul></li>
-<li><a href="#konklusion-er-nixos-fremtidens-sikrere-valg"
-id="toc-konklusion-er-nixos-fremtidens-sikrere-valg">Konklusion: Er
-NixOS fremtidens sikrere valg?</a>
+<li><a href="#konklusion" id="toc-konklusion">Konklusion</a>
 <ul>
-<li><a href="#fordele-med-konkret-evidens"
-id="toc-fordele-med-konkret-evidens">Fordele, med konkret
-evidens</a></li>
-<li><a href="#ulemper-ærligt-underbygget"
-id="toc-ulemper-ærligt-underbygget">Ulemper, ærligt underbygget</a></li>
-<li><a href="#samlet-vurdering" id="toc-samlet-vurdering">Samlet
-vurdering</a></li>
+<li><a href="#fordele" id="toc-fordele">Fordele</a></li>
+<li><a href="#ulemper" id="toc-ulemper">Ulemper</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -444,8 +437,7 @@ Nix-evalueringsfejl, hvor den traditionelle tilgangs fejlmeddelelser
 (fra <code>useradd</code>, <code>systemctl</code>, <code>ufw</code>)
 typisk er mere umiddelbart genkendelige. Hvor NixOS’ arbejdsgang
 adskiller sig væsentligt fra Debians, dokumenteres eksplicit hvad
-forskellen konkret er, og hvorfor den deklarative løsning vurderes som
-ligeværdig eller stærkere, side om side i hvert modul.</p>
+forskellen konkret er, side om side i hvert modul.</p>
 <h3 id="konkret-selve-installationsprocessen-side-om-side">Konkret:
 selve installationsprocessen side om side</h3>
 <p>Før den strukturelle pointe nedenfor, et konkret eksempel på hvad
@@ -658,7 +650,7 @@ også en <strong>rigtig</strong> Debian-VM
 (<code>debian-comparison</code>), opsat i hånden efter den
 traditionelle, imperative arbejdsgang, på nøjagtig samme
 QEMU/KVM/libvirt-grundlag. Formålet er at gøre sammenligningerne i modul
-1-6 til en reel, efterprøvet A/B-test i stedet for kun en teoretisk
+1-6 til en efterprøvet A/B-test i stedet for kun en teoretisk
 modstilling.</p>
 <table>
 <thead>
@@ -747,11 +739,10 @@ Ingen adgangskode sat, login umuligt (<code>hashedPassword = “!”</code>)
 </tr>
 </tbody>
 </table>
-<p>Diskstørrelsen er den eneste reelle asymmetri, og selve årsagen til
-forskellen er et lille eksempel på projektets egen pointe: NixOS’
-størrelse er slet ikke et valg, den er en <strong>automatisk</strong>
-konsekvens af <code>nixos-generators</code>’ <code>qcow</code>-format,
-som selv beregner diskstørrelsen ud fra det deklarerede systems
+<p>Diskstørrelsen er den eneste asymmetri. NixOS’ størrelse er ikke et
+valg, den er en <strong>automatisk</strong> konsekvens af
+<code>nixos-generators</code>’ <code>qcow</code>-format, som selv
+beregner diskstørrelsen ud fra det deklarerede systems
 <strong>closure</strong> (hele det udregnede træ af pakker og filer,
 systemet reelt kræver for at køre). <code>DISK_SIZE_BYTES</code> i
 <code>scripts/setup.sh</code> er blot den <em>målte</em> byte-størrelse
@@ -872,8 +863,9 @@ genbruges; en privat nøgle findes kun ét sted og kan ikke gættes.</li>
 <h2 id="bevis-bootstrap-og-ssh-adgang">Bevis: bootstrap og
 SSH-adgang</h2>
 <p><strong>Bootstrap-kommandosekvens</strong> (Debian-sidens
-installationsproces er vist side om side med denne i
-<code>00-tilgang.md</code>):</p>
+installationsproces er vist side om side med denne i <a
+href="#konkret-selve-installationsprocessen-side-om-side">Konkret: selve
+installationsprocessen side om side</a>):</p>
 <details><summary>Vis kode (15 linjer)</summary>
 <pre><code># byg det færdige, konfigurerede diskimage fra flake.nix
 nix build .#qcow -L
@@ -924,8 +916,9 @@ NixOS-siden lukker adgangsvejen yderligere af med en direkte ugyldig
 adgangskode-hash (<code>users.users.root.hashedPassword = "!"</code>),
 Debian-siden har i stedet en gyldig, men kun konsol-tilgængelig,
 <code>root</code>-adgangskode (<code>comparison-temp-pw</code>, se
-VM-sammenligningstabellen i <code>00-tilgang.md</code>).</p>
-<p><strong>Debian-siden: en reel installationsblokering, fundet og
+tabellen <a href="#begge-vmer-side-om-side">Begge VM’er, side om
+side</a>).</p>
+<p><strong>Debian-siden: en installationsblokering, fundet og
 rettet.</strong> Under opsætningen af den faktiske
 Debian-sammenligningsserver fejlede DHCP under selve installationen.
 <code>sudo nft list ruleset</code> på <strong>værten</strong> viste at
@@ -986,22 +979,20 @@ sørger selv for at aktivere ændringen korrekt, uanset hvilke tjenester
 der reelt er berørt.</p>
 <h2 id="delkonklusion">Delkonklusion</h2>
 <p>Modul 1 viser den tydeligste strukturelle forskel i hele rapporten:
-NixOS har reelt intet installationstrin. <code>nix build .#qcow</code>
+NixOS har intet installationstrin. <code>nix build .#qcow</code>
 producerer et færdigt, konfigureret image, og
 <code>virt-install --import</code> importerer det uden en eneste
-interaktiv beslutning, mens Debian kræver en rigtig installationsproces,
-før modul 1’s egentlige opgaver (statisk IP, ny bruger, SSH-hærdning)
-kan starte. Konkret var forskellen stor: Debians installer forsøger som
-udgangspunkt DHCP under netværksopsætningen, medmindre den preseedes til
-statisk IP, og her blokerede en host-side <code>ufw</code>-regel al
-DHCP-trafik, hvilket forsinkede opsætningen reelt, indtil årsagen blev
-fundet og en statisk IP-preseed blev valgt i stedet. NixOS-siden rammer
-aldrig dette: der findes slet ikke en installationsfase, der afhænger af
-noget netværksprotokol overhovedet. Det er ikke et bevis på at NixOS
-generelt er “nemmere” — kun at dens bootstrap har færre bevægelige dele,
-når den først er sat korrekt op. Til gengæld er Debians
-fejlsøgningsterræn (DHCP, netværksinterfaces) langt mere almindeligt
-kendt end at fejlsøge Nix’ eget evalueringslag.</p>
+interaktiv beslutning, mens Debian kræver en installationsproces, før
+modul 1’s egentlige opgaver (statisk IP, ny bruger, SSH-hærdning) kan
+starte. Debians installer forsøger som udgangspunkt DHCP under
+netværksopsætningen, medmindre den preseedes til statisk IP, og her
+blokerede en host-side <code>ufw</code>-regel al DHCP-trafik, indtil
+årsagen blev fundet og en statisk IP-preseed blev valgt. NixOS-siden har
+ingen installationsfase, der afhænger af en netværksprotokol. Det viser
+kun, at NixOS’ bootstrap har færre bevægelige dele, når den først er sat
+korrekt op. Til gengæld er Debians fejlsøgningsterræn (DHCP,
+netværksinterfaces) langt mere almindeligt kendt end at fejlsøge Nix’
+eget evalueringslag.</p>
 <h1 id="modul-2-filsystemet-og-adgangskontrol">Modul 2: Filsystemet og
 adgangskontrol</h1>
 <h2 id="formål-1">Formål</h2>
@@ -1210,13 +1201,10 @@ og resultatet er, byte for byte, identisk.</p>
 <p>For selve mappeoprettelsen er NixOS’ fordel klar: én deklareret linje
 (<code>systemd.tmpfiles.rules</code>) erstatter tre kommandoer, der
 ellers skal huskes og gentages identisk hver gang. For ACL-delen (opgave
-4) er der derimod slet ingen forskel:
-<code>setfacl</code>/<code>getfacl</code> bruges uændret på begge
-platforme, fordi NixOS ikke forsøger at gøre datafil-rettigheder
-deklarative. Det gør modul 2 til det første sted i projektet, hvor NixOS
-ikke automatisk vinder, en påmindelse om at vurdere hver opgave for sig,
-i stedet for at antage at den deklarative tilgang er bedre alle steder
-blot fordi den er bedre nogle steder.</p>
+4) er der ingen forskel: <code>setfacl</code>/<code>getfacl</code>
+bruges uændret på begge platforme, fordi NixOS ikke gør
+datafil-rettigheder deklarative. Modul 2 er det første sted, hvor NixOS
+ikke har en fordel.</p>
 <h1 id="modul-3-bruger--og-gruppestyring">Modul 3: Bruger- og
 gruppestyring</h1>
 <h2 id="formål-2">Formål</h2>
@@ -1231,8 +1219,7 @@ begrænsede rettigheder reducerer skadesomfanget, hvis en konto
 kompromitteres.</p>
 <h2 id="rollestruktur">Rollestruktur</h2>
 <p>Samme tre roller er oprettet på begge VM’er, med samme tilsigtede
-adgang, verificeret direkte med <code>id</code> på begge platforme (se
-nedenfor):</p>
+adgang, vist med <code>id</code> på begge platforme (se nedenfor):</p>
 <table>
 <colgroup>
 <col style="width: 20%" />
@@ -1277,17 +1264,16 @@ skriveadgang</td>
 </tr>
 </tbody>
 </table>
-<p><strong>En reel, lille afvigelse:</strong> Debians <code>admin</code>
-endte selv som medlem af <code>projekt</code>
+<p><strong>Afvigelse:</strong> Debians <code>admin</code> endte selv som
+medlem af <code>projekt</code>
 (<code>sudo chown admin:projekt /srv/projekt</code> kræver ikke dette,
 men gruppen blev tilføjet undervejs i den traditionelle opsætning), mens
 NixOS’ <code>admin</code> aldrig er medlem af <code>projekt</code>,
 fordi <code>systemd.tmpfiles.rules</code> (modul 2) sætter ejerskabet
 direkte og deklarativt, uden at nogen bruger behøver være medlem af
-gruppen for at det virker. Et lille, konkret eksempel på at den
-imperative tilgang har en tendens til at akkumulere adgang, den
-deklarative tilgang beder kun om præcis den tilstand, der er behov
-for.</p>
+gruppen for at det virker. Et eksempel på at den imperative tilgang har
+en tendens til at akkumulere adgang, mens den deklarative kun beder om
+præcis den tilstand, der er behov for.</p>
 <p>Alle tre NixOS-brugeres faktiske primære gruppe er <code>users</code>
 (gid 100), NixOS’ standard for <code>isNormalUser = true</code>, se
 <code>id</code>-output nedenfor. Den rolle-specifikke adgang kommer fra
@@ -1304,9 +1290,9 @@ sin standardværdi (<code>true</code>), og <code>admin</code> har ingen
 adgangskode, så almindelig wheel-baseret sudo reelt er uopnåeligt. Al
 faktisk adgang kommer i stedet fra
 <code>security.sudo.extraRules</code>.</p>
-<p><strong>Debian-siden har, verificeret direkte, samme underliggende
-mønster.</strong> <code>admin</code> på <code>debian-comparison</code>
-er medlem af standardgruppen <code>sudo</code>
+<p><strong>Debian-siden har samme underliggende mønster.</strong>
+<code>admin</code> på <code>debian-comparison</code> er medlem af
+standardgruppen <code>sudo</code>
 (<code>groups=...,27(sudo),...</code>), som Debians eget
 <code>/etc/sudoers</code> som udgangspunkt giver fuld, password-krævende
 root-adgang (<code>(ALL : ALL) ALL</code>, synligt i
@@ -1325,13 +1311,15 @@ traditionel tilgang vs. NixOS</h2>
 <code>/etc/sudoers.d/</code></h4>
 <div class="sourceCode" id="cb28"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo useradd <span class="at">-m</span> <span class="at">-G</span> projekt developer</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo useradd <span class="at">-m</span> <span class="at">-G</span> guest guest</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/sudoers.d/admin (reelt indhold, akkumuleret modul for modul)</span></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="ex">admin</span> ALL=<span class="er">(</span><span class="ex">ALL</span><span class="kw">)</span> <span class="ex">NOPASSWD:</span> /usr/bin/mkdir, /usr/bin/chown, /usr/bin/chmod, /usr/sbin/setfacl, /usr/bin/getfacl</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="ex">admin</span> ALL=<span class="er">(</span><span class="ex">ALL</span><span class="kw">)</span> <span class="ex">NOPASSWD:</span> /usr/sbin/groupadd, /usr/sbin/usermod, /usr/sbin/useradd</span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="ex">admin</span> ALL=<span class="er">(</span><span class="ex">ALL</span><span class="kw">)</span> <span class="ex">NOPASSWD:</span> /usr/sbin/nft list ruleset</span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="ex">admin</span> ALL=<span class="er">(</span><span class="ex">ALL</span><span class="kw">)</span> <span class="ex">NOPASSWD:</span> /usr/sbin/ufw status verbose</span></code></pre></div>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo groupadd guest</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="co"># -g (primær gruppe), ikke -G: useradd opretter ellers selv en gruppe &quot;guest&quot;, der allerede findes</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo useradd <span class="at">-m</span> <span class="at">-g</span> guest guest</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/sudoers.d/admin (reelt indhold, akkumuleret modul for modul)</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a><span class="ex">admin</span> ALL=<span class="er">(</span><span class="ex">ALL</span><span class="kw">)</span> <span class="ex">NOPASSWD:</span> /usr/bin/mkdir, /usr/bin/chown, /usr/bin/chmod, /usr/sbin/setfacl, /usr/bin/getfacl</span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a><span class="ex">admin</span> ALL=<span class="er">(</span><span class="ex">ALL</span><span class="kw">)</span> <span class="ex">NOPASSWD:</span> /usr/sbin/groupadd, /usr/sbin/usermod, /usr/sbin/useradd</span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a><span class="ex">admin</span> ALL=<span class="er">(</span><span class="ex">ALL</span><span class="kw">)</span> <span class="ex">NOPASSWD:</span> /usr/sbin/nft list ruleset</span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a><span class="ex">admin</span> ALL=<span class="er">(</span><span class="ex">ALL</span><span class="kw">)</span> <span class="ex">NOPASSWD:</span> /usr/sbin/ufw status verbose</span></code></pre></div>
 </section>
 <section id="nixos-users.nix" class="compare-side">
 <h4>NixOS: <code>users.nix</code></h4>
@@ -1358,8 +1346,8 @@ class="sourceCode nix"><code class="sourceCode nix"><span id="cb29-1"><a href="#
 <p>Begge tilgange er granulære i princippet, men mekanikken, og dermed
 hvad “granulær” reelt betyder, er forskellig: Debian samler regler i
 separate filer under <code>/etc/sudoers.d/</code>, tilføjet én linje ad
-gangen i takt med at behovet opstod, NixOS har slet ikke denne mappe,
-verificeret direkte:</p>
+gangen i takt med at behovet opstod, NixOS har slet ikke denne
+mappe:</p>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -1395,10 +1383,9 @@ $ sudo -n whoami
 sudo: a password is required</code></pre>
 <p><strong>Delt succes:</strong> <code>sudo -n nft list ruleset</code>
 lykkes uden adgangskode på begge platforme, det eneste punkt hvor de to
-regelsæt reelt er identiske, ikke bare begge har en regel for samme
-kommando (Debians output starter endda med en advarsel om at
-<code>ufw</code> og <code>iptables-nft</code> deler samme nftables-lag,
-en reel driftsdetalje, ikke tilføjet for effekt).</p>
+regelsæt er identiske (Debians output starter med en advarsel om at
+<code>ufw</code> og <code>iptables-nft</code> deler samme
+nftables-lag).</p>
 <div class="compare">
 <section id="debian-kun-kommandoens-sti-er-del-af-matchningen"
 class="compare-side">
@@ -1424,13 +1411,11 @@ sudo: a password is required</code></pre>
 Afgrænsningen er på den fulde kommandolinje, argumenter inklusive.</p>
 </section>
 </div>
-<p>Ingen af platformene er entydigt bedst her, samme underliggende
-sudoers-mekanisme giver modsatrettede konsekvenser, afhængig af hvor
-præcist den enkelte regel er skrevet: NixOS’ fulde kommandolinje-match
-kan blive for snæver (et harmløst tillæg afvises, se nedenfor), mens
-Debians sti-kun-match her viste sig bredere end formentlig tilsigtet,
-ikke fordi platformen er mindre sikker, men fordi disse specifikke
-linjer blev skrevet uden argumentbegrænsning.</p>
+<p>Samme sudoers-mekanisme giver modsatrettede konsekvenser, afhængigt
+af hvor præcist den enkelte regel er skrevet: NixOS’ fulde
+kommandolinje-match kan blive for snæver (et harmløst tillæg afvises, se
+nedenfor), mens Debians sti-kun-regler er bredere end tilsigtet, fordi
+de er skrevet uden argumentbegrænsning.</p>
 <p><strong>Den genererede sudoers-konfiguration, fuldt indhold, begge
 platforme:</strong></p>
 <div class="compare">
@@ -1450,6 +1435,26 @@ admin     ALL=(ALL:ALL)    NOPASSWD: /run/current-system/sw/bin/nixos-rebuild sw
     NOPASSWD: /run/current-system/sw/bin/systemctl restart sshd.service,
     NOPASSWD: /run/current-system/sw/bin/chmod g+s /srv/projekt,
     NOPASSWD: /run/current-system/sw/bin/nft list ruleset</code></pre>
+</section>
+</div>
+<p><strong>Ugyldig regel:</strong></p>
+<div class="compare">
+<section id="debian-visudo--c-skal-kaldes-manuelt" class="compare-side">
+<h4>Debian: <code>visudo -c</code> skal kaldes manuelt</h4>
+<p><code>visudo -c</code> er et separat kald, som scriptet selv skal
+huske. <code>provision.sh</code> udelod det efter de senere
+sudoers-tilføjelser (modul 6).</p>
+</section>
+<section id="nixos-afvist-ved-build" class="compare-side">
+<h4>NixOS: afvist ved build</h4>
+<pre><code># en bevidst ugyldig linje i security.sudo.extraRules
+$ nix build .#nixosConfigurations.nixos-comparison.config.environment.etc.sudoers.source
+error: Cannot build &#39;/nix/store/...-sudoers.drv&#39;.
+       Reason: builder failed with exit code 1.
+       &gt; /nix/store/...-sudoers-in:7:9: syntax error
+       &gt; this is not valid sudoers</code></pre>
+<p>NixOS’ <code>sudo</code>-modul kører <code>visudo -c</code> på den
+genererede fil, før den installeres. Intet aktiveres.</p>
 </section>
 </div>
 <p><strong>Note: en driftsmæssig omkostning ved den snævre
@@ -1479,7 +1484,7 @@ tilfældighed, se Delkonklusionen for hvorfor selve reglen ikke kan
 indeholde et <code>#</code>-tegn).</p>
 </section>
 </div>
-<p>Konsekvensen er reel: <code>admin</code> har ingen adgangskode, og
+<p>Konsekvensen: <code>admin</code> har ingen adgangskode, og
 <code>root</code> har hverken SSH-adgang
 (<code>PermitRootLogin = "no"</code>, modul 1) eller en gyldig
 adgangskode til konsollen, så der findes intet fallback, hvis en
@@ -1487,29 +1492,22 @@ kommando afviger bare en smule fra den præcise, hvidlistede streng.
 <code>debian-comparison</code> har, som vist ovenfor, samme
 neutraliserede <code>sudo</code>-gruppe-fallback som NixOS’
 <code>wheel</code>, men til forskel fra NixOS har Debian-siden stadig
-<code>root</code>-konsoladgang som et reelt, brugbart nødspor (se
-VM-sammenligningstabellen i <code>00-tilgang.md</code>). Den granulære
-sudo-model er derfor ikke gratis: den fjerner ikke kun uautoriseret
-adgang, den fjerner også ens eget nødspor, hvis noget ikke er forudset
-præcist, medmindre man, som Debian-siden her, bevidst har bevaret én
-anden vej ind.</p>
+<code>root</code>-konsoladgang som et brugbart nødspor (se tabellen <a
+href="#begge-vmer-side-om-side">Begge VM’er, side om side</a>). Den
+granulære sudo-model er derfor ikke gratis: den fjerner ikke kun
+uautoriseret adgang, den fjerner også ens eget nødspor, hvis noget ikke
+er forudset præcist, medmindre man, som Debian-siden her, bevidst har
+bevaret én anden vej ind.</p>
 <p>Skulle selve stien i den hvidlistede kommando nogensinde skulle
-ændres (fx hvis config-mappen omdøbes), findes der dog en sikker vej
-uden om denne stivhed: fordi <code>security.sudo.extraRules</code> blot
-er en deklareret liste, kan en ny sti tilføjes som en
-<strong>ekstra</strong> regel, ved siden af den gamle, appliceret via
-den kommando der allerede virker. Først når den nye sti er bekræftet at
-virke, fjernes den gamle regel, via den nu-virkende, nye kommando. På
-intet tidspunkt i den overgang mangler <code>admin</code> en gyldig,
-hvidlistet kommando at falde tilbage på. Den tilsvarende operation på
-Debian, en direkte <code>visudo</code>-redigering af
-<code>/etc/sudoers.d/admin</code>, har ingen sådan mellemtilstand: en
-fejlskrevet sti er øjeblikkeligt aktiv, uden en tidligere, stadig gyldig
-generation at falde tilbage på. Den stive, bogstavelige matchning bliver
-ikke mindre stiv af det, men fordi konfigurationen er data, man kan
-udvide additivt og derefter indskrænke igen i stedet for en fil man
-redigerer destruktivt på stedet, koster selve stivheden ikke det samme
-som den ville på en traditionel server.</p>
+ændres (fx hvis config-mappen omdøbes), kan den nye sti tilføjes som en
+<strong>ekstra</strong> regel ved siden af den gamle, appliceret via den
+kommando der allerede virker. Først når den nye sti er bekræftet at
+virke, fjernes den gamle regel via den nye kommando. På intet tidspunkt
+mangler <code>admin</code> en gyldig, hvidlistet kommando. Samme
+fremgangsmåde virker på Debian med en ekstra linje i
+<code>sudoers.d</code>. Forskellen er, at NixOS afviser en ugyldig regel
+ved build (se ovenfor), mens Debian kræver et manuelt
+<code>visudo -c</code>.</p>
 <h2 id="dokumentation-etcgroup-og-id">Dokumentation:
 <code>/etc/group</code> og <code>id</code></h2>
 <div class="compare">
@@ -1543,29 +1541,22 @@ uid=1002(guest) gid=100(users) groups=100(users),999(guest)</code></pre>
 </section>
 </div>
 <h2 id="delkonklusion-2">Delkonklusion</h2>
-<p>Begge platforme bygger på den samme sudoers-mekanisme, men det viste
-sig, at “granulær” ikke betyder det samme i praksis: Debian-sidens
-sti-kun-regler var bredere end tilsigtet (vilkårlige
-<code>chmod</code>/<code>mkdir</code>-argumenter), mens NixOS’
-fulde-kommandolinje-match var strengere, til tider for strengt (et
-harmløst <code>#attribut</code>-tillæg afvist). Ingen af delene er en
-fejl i selve sammenligningen, det er to reelt forskellige konsekvenser
-af samme underliggende værktøj, afhængig af om reglen udtrykkes som en
-sti eller en hel linje. Den erfaring, der derudover er værd at fremhæve,
-er at den deklarative tilgang ikke er immun over for reelle fejl: den
-oprindelige <code>security.sudo.extraRules</code>-regel for
-fjern-deployment <em>så</em> korrekt ud (<code>sudo -l</code> viste den
-rigtige adgang), men fejlede alligevel ved et faktisk deploy-forsøg,
-fordi den forsøgte at forudsige <code>nixos-rebuild</code>s interne
+<p>Begge platforme bygger på den samme sudoers-mekanisme, men “granulær”
+betyder ikke det samme i praksis: Debian-sidens sti-kun-regler er
+bredere end tilsigtet (vilkårlige
+<code>chmod</code>/<code>mkdir</code>-argumenter), mens NixOS’ fulde
+kommandolinje-match er strengere, til tider for strengt (et harmløst
+<code>#attribut</code>-tillæg afvises). På NixOS så den oprindelige
+<code>security.sudo.extraRules</code>-regel for fjern-deployment korrekt
+ud i <code>sudo -l</code>, men fejlede ved et faktisk deploy, fordi den
+forsøgte at forudsige <code>nixos-rebuild</code>s interne
 kommandoindpakning i stedet for at pege på selve værktøjet (se
 kommentaren “ARKITEKTUR-REVISION” i
-<code>nixos/modules/users.nix</code>). Der blev også fundet en konkret,
-uventet faldgrube: <code>#</code>-tegnet i en flake-reference
-(<code>--flake sti#attribut</code>) bliver læst som sudoers’ eget
-kommentartegn og afkorter resten af linjen. Pointen er ikke at NixOS er
-skrøbeligt, men at den deklarative tilgang flytter fejlene, den fjerner
-dem ikke, og de kræver stadig at man rent faktisk tester et deploy, ikke
-kun læser konfigurationen.</p>
+<code>nixos/modules/users.nix</code>). Desuden bliver <code>#</code> i
+en flake-reference (<code>--flake sti#attribut</code>) læst som sudoers’
+kommentartegn og afkorter resten af linjen. Fejlene flyttes altså, de
+forsvinder ikke, og de findes kun ved at teste et deploy, ikke ved at
+læse konfigurationen.</p>
 <h1 id="modul-4-firewall-og-netværkssikkerhed">Modul 4: Firewall og
 netværkssikkerhed</h1>
 <h2 id="formål-3">Formål</h2>
@@ -1583,30 +1574,30 @@ kilde-IP-begrænsning), side om side:</p>
 <div class="compare">
 <section id="traditionel-fire-ufw-kommandoer" class="compare-side">
 <h4>Traditionel: fire <code>ufw</code>-kommandoer</h4>
-<div class="sourceCode" id="cb38"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tillad kun SSH fra værtens egen adresse</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw allow from 192.168.122.1 to any port 2222 proto tcp</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="co"># blokér alt andet indgående som udgangspunkt</span></span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default deny incoming</span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default allow outgoing</span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw enable</span></code></pre></div>
-<p>(Bevidst <strong>ingen</strong> separat
+<div class="sourceCode" id="cb39"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># tillad kun SSH fra værtens egen adresse</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw allow from 192.168.122.1 to any port 2222 proto tcp</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="co"># blokér alt andet indgående som udgangspunkt</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default deny incoming</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw default allow outgoing</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> sudo ufw enable</span></code></pre></div>
+<p>(Der er <strong>ingen</strong> separat
 <code>ufw allow 2222/tcp</code>, den ville tillade porten fra
 <em>alle</em> kilder og dermed underminere kilde-IP-reglen ovenfor,
 samme faldgrube som NixOS-sidens <code>openFirewall</code>, beskrevet i
-noten nedenfor. Kommandorækkefølgen her er den faktisk testede.)</p>
+noten nedenfor. Kommandorækkefølgen her er den testede.)</p>
 </section>
 <section id="nixos-én-deklareret-blok" class="compare-side">
 <h4>NixOS: én deklareret blok</h4>
-<div class="sourceCode" id="cb39"><pre
-class="sourceCode nix"><code class="sourceCode nix"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># nixos/modules/firewall.nix</span></span>
-<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>networking<span class="op">.</span>firewall<span class="op">.</span>enable = <span class="cn">true</span>;</span>
-<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>networking<span class="op">.</span>firewall<span class="op">.</span>backend = <span class="st">&quot;nftables&quot;</span>;</span>
-<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>services<span class="op">.</span>openssh<span class="op">.</span>ports = <span class="op">[</span> <span class="dv">2222</span> <span class="op">]</span>;</span>
-<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>services<span class="op">.</span>openssh<span class="op">.</span>openFirewall = <span class="cn">false</span>;  <span class="co"># se note nedenfor</span></span>
-<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>networking<span class="op">.</span>firewall<span class="op">.</span>extraInputRules = <span class="st">&#39;&#39;</span></span>
-<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="st">  ip saddr 192.168.122.1 tcp dport 2222 accept</span></span>
-<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a><span class="st">&#39;&#39;</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb40"><pre
+class="sourceCode nix"><code class="sourceCode nix"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># nixos/modules/firewall.nix</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>networking<span class="op">.</span>firewall<span class="op">.</span>enable = <span class="cn">true</span>;</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>networking<span class="op">.</span>firewall<span class="op">.</span>backend = <span class="st">&quot;nftables&quot;</span>;</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>services<span class="op">.</span>openssh<span class="op">.</span>ports = <span class="op">[</span> <span class="dv">2222</span> <span class="op">]</span>;</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>services<span class="op">.</span>openssh<span class="op">.</span>openFirewall = <span class="cn">false</span>;  <span class="co"># se note nedenfor</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>networking<span class="op">.</span>firewall<span class="op">.</span>extraInputRules = <span class="st">&#39;&#39;</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="st">  ip saddr 192.168.122.1 tcp dport 2222 accept</span></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="st">&#39;&#39;</span>;</span></code></pre></div>
 </section>
 </div>
 <p><strong>Note:</strong> <code>services.openssh.openFirewall</code> er
@@ -1630,9 +1621,8 @@ værtens egen adresse på libvirts NAT-bro. Et enkelt
 størrelse 1. Da VM’en udelukkende administreres fra denne ene maskine,
 ville et bredere interval tillade kilder, der aldrig reelt skal have
 adgang.</li>
-<li><strong>Ingen andre porte åbnes:</strong> der er bevidst ikke opsat
-en demo-webservice udelukkende for at udfylde
-portbegrundelsestabellen.</li>
+<li><strong>Ingen andre porte åbnes:</strong> serveren udbyder ingen
+andre tjenester udadtil.</li>
 </ul>
 <h2 id="portbegrundelsestabel">Portbegrundelsestabel</h2>
 <table>
@@ -1736,25 +1726,22 @@ table inet nixos-fw {
 }</code></pre>
 </section>
 </div>
-<p>Forskellen skyldes ikke at Debian er mindre sikkert, den er
-arkitektonisk: <code>ufw</code> er reelt en
-<strong>iptables</strong>-regelgenerator, verificeret direkte via dens
-egne skabeloner (<code>/usr/share/ufw/before.rules</code> indeholder
-bogstavelig iptables-syntaks som
-<code>-A ufw-before-input -i lo -j ACCEPT</code>), og
+<p>Forskellen er arkitektonisk: <code>ufw</code> er en
+<strong>iptables</strong>-regelgenerator, som dens egne skabeloner viser
+(<code>/usr/share/ufw/before.rules</code> indeholder iptables-syntaks
+som <code>-A ufw-before-input -i lo -j ACCEPT</code>), og
 <code>update-alternatives</code> viser at <code>iptables</code> her
 peger på <code>iptables-nft</code>, kernens oversættelseslag der lader
 iptables-kommandoer virke oven på nftables. Al den ekstra volumen er
 derfor arvet fra iptables’ ældre model, fire adskilte skabeloner for
-IPv4/IPv6 fra dag ét, en fast before/user/after-kædestruktur (en bevidst
-brugervenlighedsfunktion, ikke bloat, den giver
-<code>ufw allow</code>-kommandoer et sikkert indsætningspunkt uden selv
-at skulle styre regelrækkefølge), samt en <code>counter</code>-erklæring
-på hver oversat regel, arvet fra <code>iptables -v</code>s
-altid-tællende adfærd. NixOS’ <code>nftables</code>-modul er skrevet
-direkte til nftables, uden den historiske bagage, og genererer derfor
-kun præcis de chains, den deklarerede konfiguration rent faktisk beder
-om.</p>
+IPv4/IPv6 fra dag ét, en fast before/user/after-kædestruktur (en
+brugervenlighedsfunktion: den giver <code>ufw allow</code>-kommandoer et
+fast indsætningspunkt uden at brugeren selv skal styre regelrækkefølge),
+samt en <code>counter</code>-erklæring på hver oversat regel, arvet fra
+<code>iptables -v</code>s altid-tællende adfærd. NixOS’
+<code>nftables</code>-modul er skrevet direkte til nftables, uden den
+historiske bagage, og genererer derfor kun præcis de chains, den
+deklarerede konfiguration rent faktisk beder om.</p>
 <p><strong>Verifikation, identisk adfærd på begge platforme</strong>
 (forsøgt fra en ikke-godkendt kilde-IP på samme undernet):</p>
 <pre><code># -b: bind forbindelsen til en anden lokal adresse, for at simulere en uautoriseret kilde
@@ -1764,9 +1751,9 @@ ssh: connect to host &lt;IP&gt; port 2222: Connection timed out
 $ ssh -p 2222 admin@&lt;IP&gt; &#39;hostname&#39;   # fra 192.168.122.1 (tilladt)
 debian-comparison   # eller nixos-comparison, afhængig af hvilken VM</code></pre>
 <h2 id="delkonklusion-3">Delkonklusion</h2>
-<p>Begge platforme lander på samme sikre slutresultat: default deny, kun
-SSH åbent, og kun fra værtens egen adresse. Modul 4 er dog det sted i
-projektet, hvor NixOS’ egne abstraktioner skabte mest reel fejlsøgning:
+<p>Begge platforme lander på samme resultat: default deny, kun SSH
+åbent, og kun fra værtens egen adresse. Modul 4 er det sted i projektet,
+hvor NixOS’ egne abstraktioner skabte mest fejlsøgning:
 <code>services.openssh.openFirewall</code>s standardværdi lægger sig
 oveni en eksplicit kilde-IP-regel i stedet for at blive overskrevet af
 den (fordi porte-lister merges på tværs af moduler), og en separat,
@@ -1774,12 +1761,10 @@ streng <code>rpfilter</code>-kæde (reverse-path-filtrering, en
 anti-spoofing-kontrol der afviser trafik, hvis svarruten ikke matcher
 den forventede) blokerede DNS-svar helt uden om selve input-kæden, længe
 efter den tilsyneladende rigtige regel var sat. Ingen af de to fejl var
-synlige ved at læse konfigurationen alene, begge krævede faktisk at
-teste adgangen fra en anden kilde-IP og fejlsøge live. Oplevelsen
-modsiger dermed en for simpel fortælling om at “deklarativt er
-gennemsigtigt”: NixOS’ lag af sammenlagte standardværdier kan skjule
-fejl lige så effektivt som Debians spredte konfigurationsfiler, blot af
-en anden art.</p>
+synlige ved at læse konfigurationen alene, begge krævede at teste
+adgangen fra en anden kilde-IP og fejlsøge live. NixOS’ lag af
+sammenlagte standardværdier kan skjule fejl på samme måde som Debians
+spredte konfigurationsfiler, blot af en anden art.</p>
 <h1 id="modul-5-system-monitoring-og-logging">Modul 5: System monitoring
 og logging</h1>
 <h2 id="formål-4">Formål</h2>
@@ -1824,17 +1809,17 @@ se note nedenfor)</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Rettelse, verificeret direkte på en frisk
-Debian-installation:</strong> <code>/var/log/auth.log</code> findes ikke
-automatisk. Det kræver <code>rsyslog</code>, som ikke er en del af en
-minimal installation. En moderne, minimal Debian-server bruger, ligesom
-NixOS, udelukkende <code>journald</code> som standard, indtil
-<code>rsyslog</code> eksplicit installeres. Forskellen mellem
-platformene ligger derfor ikke i <em>om</em> <code>journald</code>
-bruges, begge gør, men i at NixOS aldrig kan ende med en separat
-<code>auth.log</code>, da <code>rsyslog</code> ikke er en mulighed at
-tilføje ved et uheld eller en vane, mens Debian kan udvides til begge
-dele afhængigt af hvad der er installeret.</p>
+<p><strong>På en frisk Debian-installation</strong> findes
+<code>/var/log/auth.log</code> ikke automatisk. Det kræver
+<code>rsyslog</code>, som ikke er en del af en minimal installation. En
+moderne, minimal Debian-server bruger, ligesom NixOS, udelukkende
+<code>journald</code> som standard, indtil <code>rsyslog</code>
+eksplicit installeres. Forskellen mellem platformene ligger derfor ikke
+i <em>om</em> <code>journald</code> bruges, begge gør, men i at NixOS
+aldrig kan ende med en separat <code>auth.log</code>, da
+<code>rsyslog</code> ikke er en mulighed at tilføje ved et uheld eller
+en vane, mens Debian kan udvides til begge dele afhængigt af hvad der er
+installeret.</p>
 <h2 id="design-1">Design</h2>
 <ul>
 <li><strong>Cron-job</strong>: kører
@@ -1932,15 +1917,13 @@ trods af at root-login er deaktiveret (modul 1).</p>
 <p>Modul 5 er et af de mest symmetriske i rapporten: cron, logrotation
 og <code>journald</code> fungerer stort set ens på begge platforme, og
 NixOS’ fordel her er organisatorisk (samlet i én fil) snarere end
-arkitektonisk. Den mest lærerige erfaring kom, da en oprindelig
-antagelse om at Debian bruger <code>/var/log/auth.log</code> viste sig
-at være forkert på en frisk, minimal installation uden
-<code>rsyslog</code>, en fejl der først blev fanget ved faktisk at teste
-på den rigtige Debian-VM, ikke ved at antage kendskab til platformen.
-Den reelle, mere subtile forskel ligger derfor ikke i hvilke værktøjer
-der bruges, men i at NixOS strukturelt ikke <em>kan</em> ende med en
-separat <code>auth.log</code> ved et uheld eller en vane, mens Debian
-kan udvides til begge dele afhængigt af hvad der installeres senere.</p>
+arkitektonisk. En antagelse om at Debian bruger
+<code>/var/log/auth.log</code> var forkert på en frisk, minimal
+installation uden <code>rsyslog</code>. Forskellen ligger ikke i hvilke
+værktøjer der bruges, men i at NixOS strukturelt ikke <em>kan</em> ende
+med en separat <code>auth.log</code> ved et uheld eller en vane, mens
+Debian kan udvides til begge dele afhængigt af hvad der installeres
+senere.</p>
 <h1 id="modul-6-shell-og-bash-scripting">Modul 6: Shell og Bash
 scripting</h1>
 <h2 id="formål-5">Formål</h2>
@@ -1955,12 +1938,12 @@ systemhærdning.</p>
 at et script er idempotent?</h2>
 <p>Et idempotent script giver samme slutresultat, uanset om det køres én
 gang eller hundrede gange:</p>
-<div class="sourceCode" id="cb50"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ikke idempotent: tilføjer en ny linje for hver kørsel</span></span>
-<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;hello&quot;</span> <span class="op">&gt;&gt;</span> /etc/myapp.conf</span>
-<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Idempotent: tilføjer kun linjen, hvis den ikke allerede findes</span></span>
-<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-qxF</span> <span class="st">&quot;hello&quot;</span> /etc/myapp.conf <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;hello&quot;</span> <span class="op">&gt;&gt;</span> /etc/myapp.conf</span></code></pre></div>
+<div class="sourceCode" id="cb51"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ikke idempotent: tilføjer en ny linje for hver kørsel</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">&quot;hello&quot;</span> <span class="op">&gt;&gt;</span> /etc/myapp.conf</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Idempotent: tilføjer kun linjen, hvis den ikke allerede findes</span></span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a><span class="fu">grep</span> <span class="at">-qxF</span> <span class="st">&quot;hello&quot;</span> /etc/myapp.conf <span class="kw">||</span> <span class="bu">echo</span> <span class="st">&quot;hello&quot;</span> <span class="op">&gt;&gt;</span> /etc/myapp.conf</span></code></pre></div>
 <p>Det samme gælder for et kald som <code>useradd alice</code>: kørt to
 gange fejler det, fordi brugeren allerede findes, mens
 <code>id alice &amp;&gt;/dev/null || useradd alice</code> kan gentages
@@ -2012,34 +1995,34 @@ manuelt (modul 1-5), for at samle den rækkefølge, der reelt virkede, i
 ét script. Køres som <strong>root direkte på serveren</strong>, ikke via
 SSH som <code>admin</code>, som bevidst er password-låst (modul 3):</p>
 <details><summary>Vis kode (27 linjer)</summary>
-<div class="sourceCode" id="cb51"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setup_admin_sudo()</span> <span class="kw">{</span></span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span> <span class="op">&gt;</span> /etc/sudoers.d/admin <span class="op">&lt;&lt;&#39;EOF&#39;</span></span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="st">admin ALL=(ALL) NOPASSWD: /usr/bin/mkdir, /usr/bin/chown, /usr/bin/chmod, /usr/sbin/setfacl, /usr/bin/getfacl</span></span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a><span class="st">admin ALL=(ALL) NOPASSWD: /usr/sbin/groupadd, /usr/sbin/usermod, /usr/sbin/useradd</span></span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a><span class="st">admin ALL=(ALL:ALL) NOPASSWD: /usr/bin/setfacl, /usr/bin/getfacl, /usr/bin/ls, /usr/bin/touch</span></span>
-<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
-<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">chmod</span> 440 /etc/sudoers.d/admin</span>
-<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">visudo</span> <span class="at">-c</span></span>
-<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a><span class="co"># ... setup_shared_project_folder, setup_developer_and_guest, setup_guest_acl,</span></span>
-<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     setup_firewall udelades her, allerede vist som &quot;Traditionel&quot;-eksempler i modul 1, 2, 3</span></span>
-<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a><span class="co">#     og 4, setup_monitoring vises side om side i modul 5 ...</span></span>
-<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a><span class="fu">setup_sudo_documentation_rules()</span> <span class="kw">{</span></span>
-<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;nft list ruleset&quot;</span> /etc/sudoers.d/admin <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;admin ALL=(ALL) NOPASSWD: /usr/sbin/nft list ruleset&quot;</span> <span class="op">&gt;&gt;</span> /etc/sudoers.d/admin</span>
-<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;ufw status verbose&quot;</span> /etc/sudoers.d/admin <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;admin ALL=(ALL) NOPASSWD: /usr/sbin/ufw status verbose&quot;</span> <span class="op">&gt;&gt;</span> /etc/sudoers.d/admin</span>
-<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb51-22"><a href="#cb51-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># visudo -c blev kun kørt efter den FØRSTE sudoers-skrivning i setup_admin_sudo, ikke</span></span>
-<span id="cb51-23"><a href="#cb51-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># efter disse senere tilføjelser. Uden dette tjek her kunne en tastefejl i en append</span></span>
-<span id="cb51-24"><a href="#cb51-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ovenfor stille og roligt gøre hele /etc/sudoers.d/admin ugyldig, uden at scriptet</span></span>
-<span id="cb51-25"><a href="#cb51-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># nogensinde ville opdage det.</span></span>
-<span id="cb51-26"><a href="#cb51-26" aria-hidden="true" tabindex="-1"></a>  <span class="ex">visudo</span> <span class="at">-c</span></span>
-<span id="cb51-27"><a href="#cb51-27" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
+<div class="sourceCode" id="cb52"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">setup_admin_sudo()</span> <span class="kw">{</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span> <span class="op">&gt;</span> /etc/sudoers.d/admin <span class="op">&lt;&lt;&#39;EOF&#39;</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a><span class="st">admin ALL=(ALL) NOPASSWD: /usr/bin/mkdir, /usr/bin/chown, /usr/bin/chmod, /usr/sbin/setfacl, /usr/bin/getfacl</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="st">admin ALL=(ALL) NOPASSWD: /usr/sbin/groupadd, /usr/sbin/usermod, /usr/sbin/useradd</span></span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="st">admin ALL=(ALL:ALL) NOPASSWD: /usr/bin/setfacl, /usr/bin/getfacl, /usr/bin/ls, /usr/bin/touch</span></span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">chmod</span> 440 /etc/sudoers.d/admin</span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>  <span class="ex">visudo</span> <span class="at">-c</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a><span class="co"># ... setup_shared_project_folder, setup_developer_and_guest, setup_guest_acl,</span></span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     setup_firewall udelades her, allerede vist som &quot;Traditionel&quot;-eksempler i modul 1, 2, 3</span></span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a><span class="co">#     og 4, setup_monitoring vises side om side i modul 5 ...</span></span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a><span class="fu">setup_sudo_documentation_rules()</span> <span class="kw">{</span></span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;nft list ruleset&quot;</span> /etc/sudoers.d/admin <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;admin ALL=(ALL) NOPASSWD: /usr/sbin/nft list ruleset&quot;</span> <span class="op">&gt;&gt;</span> /etc/sudoers.d/admin</span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;ufw status verbose&quot;</span> /etc/sudoers.d/admin <span class="dv">2</span><span class="op">&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;admin ALL=(ALL) NOPASSWD: /usr/sbin/ufw status verbose&quot;</span> <span class="op">&gt;&gt;</span> /etc/sudoers.d/admin</span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># visudo -c blev kun kørt efter den FØRSTE sudoers-skrivning i setup_admin_sudo, ikke</span></span>
+<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># efter disse senere tilføjelser. Uden dette tjek her kunne en tastefejl i en append</span></span>
+<span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ovenfor stille og roligt gøre hele /etc/sudoers.d/admin ugyldig, uden at scriptet</span></span>
+<span id="cb52-25"><a href="#cb52-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># nogensinde ville opdage det.</span></span>
+<span id="cb52-26"><a href="#cb52-26" aria-hidden="true" tabindex="-1"></a>  <span class="ex">visudo</span> <span class="at">-c</span></span>
+<span id="cb52-27"><a href="#cb52-27" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span></code></pre></div>
 </details>
 <div class="compare">
 <section id="debian-idempotent-forsøgt-men-ufuldstændigt"
@@ -2049,12 +2032,11 @@ class="compare-side">
 (<code>if ! id admin</code>, <code>if ! grep -q ...</code>), men der er
 ingen samlet garanti for at hele scriptet kan køres igen uden
 bivirkninger, det er selv skrevet ind, funktion for funktion, ikke en
-egenskab af værktøjet. Den reelle fejl fundet ovenfor
-(<code>visudo -c</code> manglede efter de <em>senere</em>
-sudoers-tilføjelser, selvom den var til stede efter den første) er et
-konkret eksempel: idempotens her er noget man selv skal bevise, linje
-for linje, hver gang scriptet ændres, og det er let at glemme et
-sted.</p>
+egenskab af værktøjet. Manglen fundet ovenfor (<code>visudo -c</code>
+manglede efter de <em>senere</em> sudoers-tilføjelser, selvom den var
+til stede efter den første) er et konkret eksempel: idempotens her er
+noget man selv skal bevise, linje for linje, hver gang scriptet ændres,
+og det er let at glemme et sted.</p>
 </section>
 <section id="nixos-idempotent-arkitektonisk" class="compare-side">
 <h4>NixOS: idempotent, arkitektonisk</h4>
@@ -2070,95 +2052,95 @@ idempotens i sig selv.</p>
 <code>flake.nix</code>. Køres på <strong>værten</strong>:
 <code>./scripts/setup.sh</code>.</p>
 <details><summary>Vis kode (88 linjer)</summary>
-<div class="sourceCode" id="cb52"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
-<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">VM_NAME</span><span class="op">=</span><span class="st">&quot;nixos-comparison&quot;</span></span>
-<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">DISK_VOLUME</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${VM_NAME}</span><span class="st">.qcow2&quot;</span></span>
-<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">POOL_NAME</span><span class="op">=</span><span class="st">&quot;default&quot;</span></span>
-<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">POOL_PATH</span><span class="op">=</span><span class="st">&quot;/var/lib/libvirt/images&quot;</span></span>
-<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">DISK_SIZE_BYTES</span><span class="op">=</span>5196742656  <span class="co"># ~4.84 GiB, matcher diskstørrelsen fra modul 1</span></span>
-<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">VCPUS</span><span class="op">=</span>2</span>
-<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">MEMORY_MB</span><span class="op">=</span>3072</span>
-<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">REPO_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">dirname</span> <span class="st">&quot;</span><span class="va">${BASH_SOURCE</span><span class="op">[</span><span class="dv">0</span><span class="op">]</span><span class="va">}</span><span class="st">&quot;</span><span class="va">)</span><span class="st">/..&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">pwd</span><span class="va">)</span><span class="st">&quot;</span></span>
-<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a><span class="fu">log()</span> <span class="kw">{</span></span>
-<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;[setup.sh] </span><span class="va">$*</span><span class="st">&quot;</span></span>
-<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a><span class="fu">ensure_nix_in_path()</span> <span class="kw">{</span></span>
-<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># nix er ikke nødvendigvis i PATH i en non-interaktiv shell (fx cron eller en frisk login-shell)</span></span>
-<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="bu">command</span> <span class="at">-v</span> nix <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># shellcheck disable=SC1091</span></span>
-<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">source</span> /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
-<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="bu">command</span> <span class="at">-v</span> nix <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;FEJL: &#39;nix&#39; blev ikke fundet i PATH. Se docs/01-vm-og-netvaerk.md.&quot;</span> <span class="op">&gt;&amp;</span><span class="dv">2</span></span>
-<span id="cb52-25"><a href="#cb52-25" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
-<span id="cb52-26"><a href="#cb52-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb52-27"><a href="#cb52-27" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb52-28"><a href="#cb52-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-29"><a href="#cb52-29" aria-hidden="true" tabindex="-1"></a><span class="fu">ensure_storage_pool()</span> <span class="kw">{</span></span>
-<span id="cb52-30"><a href="#cb52-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">sudo</span> virsh pool-info <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb52-31"><a href="#cb52-31" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Opretter storage pool &#39;</span><span class="va">${POOL_NAME}</span><span class="st">&#39;...&quot;</span></span>
-<span id="cb52-32"><a href="#cb52-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-define-as <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> dir <span class="at">--target</span> <span class="st">&quot;</span><span class="va">$POOL_PATH</span><span class="st">&quot;</span></span>
-<span id="cb52-33"><a href="#cb52-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-autostart <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span></span>
-<span id="cb52-34"><a href="#cb52-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb52-35"><a href="#cb52-35" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">sudo</span> virsh pool-info <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;State: *running&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb52-36"><a href="#cb52-36" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Starter storage pool &#39;</span><span class="va">${POOL_NAME}</span><span class="st">&#39;...&quot;</span></span>
-<span id="cb52-37"><a href="#cb52-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># &quot;|| true&quot;: pool&#39;en kan være blevet startet af andet end scriptet (fx libvirtds egen</span></span>
-<span id="cb52-38"><a href="#cb52-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># autostart) i tidsrummet mellem tjekket og dette kald. Målet er en kørende pool, ikke</span></span>
-<span id="cb52-39"><a href="#cb52-39" aria-hidden="true" tabindex="-1"></a>    <span class="co"># at scriptet selv skal have startet den, så &quot;allerede aktiv&quot; er ikke en reel fejl her.</span></span>
-<span id="cb52-40"><a href="#cb52-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-start <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="fu">true</span></span>
-<span id="cb52-41"><a href="#cb52-41" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb52-42"><a href="#cb52-42" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb52-43"><a href="#cb52-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-44"><a href="#cb52-44" aria-hidden="true" tabindex="-1"></a><span class="fu">remove_existing_vm()</span> <span class="kw">{</span></span>
-<span id="cb52-45"><a href="#cb52-45" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="fu">sudo</span> virsh dominfo <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb52-46"><a href="#cb52-46" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Fjerner eksisterende VM &#39;</span><span class="va">${VM_NAME}</span><span class="st">&#39; (for idempotent genopbygning)...&quot;</span></span>
-<span id="cb52-47"><a href="#cb52-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh destroy <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
-<span id="cb52-48"><a href="#cb52-48" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh undefine <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
-<span id="cb52-49"><a href="#cb52-49" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb52-50"><a href="#cb52-50" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="fu">sudo</span> virsh vol-info <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb52-51"><a href="#cb52-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh vol-delete <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span></span>
-<span id="cb52-52"><a href="#cb52-52" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb52-53"><a href="#cb52-53" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb52-54"><a href="#cb52-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-55"><a href="#cb52-55" aria-hidden="true" tabindex="-1"></a><span class="fu">build_image()</span> <span class="kw">{</span></span>
-<span id="cb52-56"><a href="#cb52-56" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Bygger diskimage fra flake.nix (kan tage nogle minutter)...&quot;</span></span>
-<span id="cb52-57"><a href="#cb52-57" aria-hidden="true" tabindex="-1"></a>  <span class="kw">(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$REPO_DIR</span><span class="st">&quot;</span> <span class="kw">&amp;&amp;</span> <span class="ex">nix</span> build .#qcow <span class="at">-L</span><span class="kw">)</span></span>
-<span id="cb52-58"><a href="#cb52-58" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb52-59"><a href="#cb52-59" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-60"><a href="#cb52-60" aria-hidden="true" tabindex="-1"></a><span class="fu">import_vm()</span> <span class="kw">{</span></span>
-<span id="cb52-61"><a href="#cb52-61" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Opretter volume og importerer image i libvirt...&quot;</span></span>
-<span id="cb52-62"><a href="#cb52-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virsh vol-create-as <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_SIZE_BYTES</span><span class="st">&quot;</span> <span class="at">--format</span> qcow2</span>
-<span id="cb52-63"><a href="#cb52-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virsh vol-upload <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">${REPO_DIR}</span><span class="st">/result/nixos.qcow2&quot;</span></span>
-<span id="cb52-64"><a href="#cb52-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-65"><a href="#cb52-65" aria-hidden="true" tabindex="-1"></a>  <span class="co"># --import: springer OS-installation over, da diskimagen allerede har NixOS installeret</span></span>
-<span id="cb52-66"><a href="#cb52-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virt-install <span class="dt">\</span></span>
-<span id="cb52-67"><a href="#cb52-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">--name</span> <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="dt">\</span></span>
-<span id="cb52-68"><a href="#cb52-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">--memory</span> <span class="st">&quot;</span><span class="va">$MEMORY_MB</span><span class="st">&quot;</span> <span class="dt">\</span></span>
-<span id="cb52-69"><a href="#cb52-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">--vcpus</span> <span class="st">&quot;</span><span class="va">$VCPUS</span><span class="st">&quot;</span> <span class="dt">\</span></span>
-<span id="cb52-70"><a href="#cb52-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">--disk</span> <span class="st">&quot;vol=</span><span class="va">${POOL_NAME}</span><span class="st">/</span><span class="va">${DISK_VOLUME}</span><span class="st">,bus=virtio&quot;</span> <span class="dt">\</span></span>
-<span id="cb52-71"><a href="#cb52-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network</span> network=default,model=virtio <span class="dt">\</span></span>
-<span id="cb52-72"><a href="#cb52-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">--graphics</span> none <span class="dt">\</span></span>
-<span id="cb52-73"><a href="#cb52-73" aria-hidden="true" tabindex="-1"></a>    <span class="at">--console</span> pty,target_type=serial <span class="dt">\</span></span>
-<span id="cb52-74"><a href="#cb52-74" aria-hidden="true" tabindex="-1"></a>    <span class="at">--import</span> <span class="dt">\</span></span>
-<span id="cb52-75"><a href="#cb52-75" aria-hidden="true" tabindex="-1"></a>    <span class="at">--os-variant</span> generic <span class="dt">\</span></span>
-<span id="cb52-76"><a href="#cb52-76" aria-hidden="true" tabindex="-1"></a>    <span class="at">--noautoconsole</span></span>
-<span id="cb52-77"><a href="#cb52-77" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb52-78"><a href="#cb52-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-79"><a href="#cb52-79" aria-hidden="true" tabindex="-1"></a><span class="fu">main()</span> <span class="kw">{</span></span>
-<span id="cb52-80"><a href="#cb52-80" aria-hidden="true" tabindex="-1"></a>  <span class="ex">ensure_nix_in_path</span></span>
-<span id="cb52-81"><a href="#cb52-81" aria-hidden="true" tabindex="-1"></a>  <span class="ex">ensure_storage_pool</span></span>
-<span id="cb52-82"><a href="#cb52-82" aria-hidden="true" tabindex="-1"></a>  <span class="ex">remove_existing_vm</span></span>
-<span id="cb52-83"><a href="#cb52-83" aria-hidden="true" tabindex="-1"></a>  <span class="ex">build_image</span></span>
-<span id="cb52-84"><a href="#cb52-84" aria-hidden="true" tabindex="-1"></a>  <span class="ex">import_vm</span></span>
-<span id="cb52-85"><a href="#cb52-85" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Færdig. &#39;</span><span class="va">${VM_NAME}</span><span class="st">&#39; kører nu med den konfiguration, der er deklareret i flake.nix.&quot;</span></span>
-<span id="cb52-86"><a href="#cb52-86" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb52-87"><a href="#cb52-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb52-88"><a href="#cb52-88" aria-hidden="true" tabindex="-1"></a><span class="ex">main</span> <span class="st">&quot;</span><span class="va">$@</span><span class="st">&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb53"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">VM_NAME</span><span class="op">=</span><span class="st">&quot;nixos-comparison&quot;</span></span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">DISK_VOLUME</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${VM_NAME}</span><span class="st">.qcow2&quot;</span></span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">POOL_NAME</span><span class="op">=</span><span class="st">&quot;default&quot;</span></span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">POOL_PATH</span><span class="op">=</span><span class="st">&quot;/var/lib/libvirt/images&quot;</span></span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">DISK_SIZE_BYTES</span><span class="op">=</span>5196742656  <span class="co"># ~4.84 GiB, matcher diskstørrelsen fra modul 1</span></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">VCPUS</span><span class="op">=</span>2</span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">MEMORY_MB</span><span class="op">=</span>3072</span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">REPO_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">$(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$(</span><span class="fu">dirname</span> <span class="st">&quot;</span><span class="va">${BASH_SOURCE</span><span class="op">[</span><span class="dv">0</span><span class="op">]</span><span class="va">}</span><span class="st">&quot;</span><span class="va">)</span><span class="st">/..&quot;</span> <span class="kw">&amp;&amp;</span> <span class="bu">pwd</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a><span class="fu">log()</span> <span class="kw">{</span></span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;[setup.sh] </span><span class="va">$*</span><span class="st">&quot;</span></span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-17"><a href="#cb53-17" aria-hidden="true" tabindex="-1"></a><span class="fu">ensure_nix_in_path()</span> <span class="kw">{</span></span>
+<span id="cb53-18"><a href="#cb53-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># nix er ikke nødvendigvis i PATH i en non-interaktiv shell (fx cron eller en frisk login-shell)</span></span>
+<span id="cb53-19"><a href="#cb53-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="bu">command</span> <span class="at">-v</span> nix <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb53-20"><a href="#cb53-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># shellcheck disable=SC1091</span></span>
+<span id="cb53-21"><a href="#cb53-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">source</span> /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
+<span id="cb53-22"><a href="#cb53-22" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb53-23"><a href="#cb53-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="bu">command</span> <span class="at">-v</span> nix <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb53-24"><a href="#cb53-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;FEJL: &#39;nix&#39; blev ikke fundet i PATH.&quot;</span> <span class="op">&gt;&amp;</span><span class="dv">2</span></span>
+<span id="cb53-25"><a href="#cb53-25" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
+<span id="cb53-26"><a href="#cb53-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb53-27"><a href="#cb53-27" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb53-28"><a href="#cb53-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-29"><a href="#cb53-29" aria-hidden="true" tabindex="-1"></a><span class="fu">ensure_storage_pool()</span> <span class="kw">{</span></span>
+<span id="cb53-30"><a href="#cb53-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">sudo</span> virsh pool-info <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb53-31"><a href="#cb53-31" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Opretter storage pool &#39;</span><span class="va">${POOL_NAME}</span><span class="st">&#39;...&quot;</span></span>
+<span id="cb53-32"><a href="#cb53-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-define-as <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> dir <span class="at">--target</span> <span class="st">&quot;</span><span class="va">$POOL_PATH</span><span class="st">&quot;</span></span>
+<span id="cb53-33"><a href="#cb53-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-autostart <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span></span>
+<span id="cb53-34"><a href="#cb53-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb53-35"><a href="#cb53-35" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="ot">! </span><span class="fu">sudo</span> virsh pool-info <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="at">-q</span> <span class="st">&quot;State: *running&quot;</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb53-36"><a href="#cb53-36" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Starter storage pool &#39;</span><span class="va">${POOL_NAME}</span><span class="st">&#39;...&quot;</span></span>
+<span id="cb53-37"><a href="#cb53-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># &quot;|| true&quot;: pool&#39;en kan være blevet startet af andet end scriptet (fx libvirtds egen</span></span>
+<span id="cb53-38"><a href="#cb53-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># autostart) i tidsrummet mellem tjekket og dette kald. Målet er en kørende pool, ikke</span></span>
+<span id="cb53-39"><a href="#cb53-39" aria-hidden="true" tabindex="-1"></a>    <span class="co"># at scriptet selv skal have startet den, så &quot;allerede aktiv&quot; er ikke en reel fejl her.</span></span>
+<span id="cb53-40"><a href="#cb53-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh pool-start <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="kw">||</span> <span class="fu">true</span></span>
+<span id="cb53-41"><a href="#cb53-41" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb53-42"><a href="#cb53-42" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb53-43"><a href="#cb53-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-44"><a href="#cb53-44" aria-hidden="true" tabindex="-1"></a><span class="fu">remove_existing_vm()</span> <span class="kw">{</span></span>
+<span id="cb53-45"><a href="#cb53-45" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="fu">sudo</span> virsh dominfo <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb53-46"><a href="#cb53-46" aria-hidden="true" tabindex="-1"></a>    <span class="ex">log</span> <span class="st">&quot;Fjerner eksisterende VM &#39;</span><span class="va">${VM_NAME}</span><span class="st">&#39; (for idempotent genopbygning)...&quot;</span></span>
+<span id="cb53-47"><a href="#cb53-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh destroy <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
+<span id="cb53-48"><a href="#cb53-48" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh undefine <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null <span class="kw">||</span> <span class="fu">true</span></span>
+<span id="cb53-49"><a href="#cb53-49" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb53-50"><a href="#cb53-50" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="fu">sudo</span> virsh vol-info <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span> <span class="op">&amp;&gt;</span>/dev/null<span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb53-51"><a href="#cb53-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sudo</span> virsh vol-delete <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span></span>
+<span id="cb53-52"><a href="#cb53-52" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb53-53"><a href="#cb53-53" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb53-54"><a href="#cb53-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-55"><a href="#cb53-55" aria-hidden="true" tabindex="-1"></a><span class="fu">build_image()</span> <span class="kw">{</span></span>
+<span id="cb53-56"><a href="#cb53-56" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Bygger diskimage fra flake.nix (kan tage nogle minutter)...&quot;</span></span>
+<span id="cb53-57"><a href="#cb53-57" aria-hidden="true" tabindex="-1"></a>  <span class="kw">(</span><span class="bu">cd</span> <span class="st">&quot;</span><span class="va">$REPO_DIR</span><span class="st">&quot;</span> <span class="kw">&amp;&amp;</span> <span class="ex">nix</span> build .#qcow <span class="at">-L</span><span class="kw">)</span></span>
+<span id="cb53-58"><a href="#cb53-58" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb53-59"><a href="#cb53-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-60"><a href="#cb53-60" aria-hidden="true" tabindex="-1"></a><span class="fu">import_vm()</span> <span class="kw">{</span></span>
+<span id="cb53-61"><a href="#cb53-61" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Opretter volume og importerer image i libvirt...&quot;</span></span>
+<span id="cb53-62"><a href="#cb53-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virsh vol-create-as <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_SIZE_BYTES</span><span class="st">&quot;</span> <span class="at">--format</span> qcow2</span>
+<span id="cb53-63"><a href="#cb53-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virsh vol-upload <span class="at">--pool</span> <span class="st">&quot;</span><span class="va">$POOL_NAME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">$DISK_VOLUME</span><span class="st">&quot;</span> <span class="st">&quot;</span><span class="va">${REPO_DIR}</span><span class="st">/result/nixos.qcow2&quot;</span></span>
+<span id="cb53-64"><a href="#cb53-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-65"><a href="#cb53-65" aria-hidden="true" tabindex="-1"></a>  <span class="co"># --import: springer OS-installation over, da diskimagen allerede har NixOS installeret</span></span>
+<span id="cb53-66"><a href="#cb53-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sudo</span> virt-install <span class="dt">\</span></span>
+<span id="cb53-67"><a href="#cb53-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">--name</span> <span class="st">&quot;</span><span class="va">$VM_NAME</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb53-68"><a href="#cb53-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">--memory</span> <span class="st">&quot;</span><span class="va">$MEMORY_MB</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb53-69"><a href="#cb53-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">--vcpus</span> <span class="st">&quot;</span><span class="va">$VCPUS</span><span class="st">&quot;</span> <span class="dt">\</span></span>
+<span id="cb53-70"><a href="#cb53-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">--disk</span> <span class="st">&quot;vol=</span><span class="va">${POOL_NAME}</span><span class="st">/</span><span class="va">${DISK_VOLUME}</span><span class="st">,bus=virtio&quot;</span> <span class="dt">\</span></span>
+<span id="cb53-71"><a href="#cb53-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network</span> network=default,model=virtio <span class="dt">\</span></span>
+<span id="cb53-72"><a href="#cb53-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">--graphics</span> none <span class="dt">\</span></span>
+<span id="cb53-73"><a href="#cb53-73" aria-hidden="true" tabindex="-1"></a>    <span class="at">--console</span> pty,target_type=serial <span class="dt">\</span></span>
+<span id="cb53-74"><a href="#cb53-74" aria-hidden="true" tabindex="-1"></a>    <span class="at">--import</span> <span class="dt">\</span></span>
+<span id="cb53-75"><a href="#cb53-75" aria-hidden="true" tabindex="-1"></a>    <span class="at">--os-variant</span> generic <span class="dt">\</span></span>
+<span id="cb53-76"><a href="#cb53-76" aria-hidden="true" tabindex="-1"></a>    <span class="at">--noautoconsole</span></span>
+<span id="cb53-77"><a href="#cb53-77" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb53-78"><a href="#cb53-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-79"><a href="#cb53-79" aria-hidden="true" tabindex="-1"></a><span class="fu">main()</span> <span class="kw">{</span></span>
+<span id="cb53-80"><a href="#cb53-80" aria-hidden="true" tabindex="-1"></a>  <span class="ex">ensure_nix_in_path</span></span>
+<span id="cb53-81"><a href="#cb53-81" aria-hidden="true" tabindex="-1"></a>  <span class="ex">ensure_storage_pool</span></span>
+<span id="cb53-82"><a href="#cb53-82" aria-hidden="true" tabindex="-1"></a>  <span class="ex">remove_existing_vm</span></span>
+<span id="cb53-83"><a href="#cb53-83" aria-hidden="true" tabindex="-1"></a>  <span class="ex">build_image</span></span>
+<span id="cb53-84"><a href="#cb53-84" aria-hidden="true" tabindex="-1"></a>  <span class="ex">import_vm</span></span>
+<span id="cb53-85"><a href="#cb53-85" aria-hidden="true" tabindex="-1"></a>  <span class="ex">log</span> <span class="st">&quot;Færdig. &#39;</span><span class="va">${VM_NAME}</span><span class="st">&#39; kører nu med den konfiguration, der er deklareret i flake.nix.&quot;</span></span>
+<span id="cb53-86"><a href="#cb53-86" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb53-87"><a href="#cb53-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-88"><a href="#cb53-88" aria-hidden="true" tabindex="-1"></a><span class="ex">main</span> <span class="st">&quot;</span><span class="va">$@</span><span class="st">&quot;</span></span></code></pre></div>
 </details>
 <p><strong>Hvorfor er scriptet idempotent?</strong> Hver funktion
 tjekker den nuværende tilstand, før den handler, i stedet for at antage
@@ -2214,71 +2196,71 @@ kopieret og kørt som <code>bash /tmp/healthcheck.sh</code>, se eksemplet
 nedenfor). Kræver den granulære sudo-regel for
 <code>nft list ruleset</code> (modul 3/4).</p>
 <details><summary>Vis kode (64 linjer)</summary>
-<div class="sourceCode" id="cb54"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">DISK_WARN_THRESHOLD</span><span class="op">=</span>85</span>
-<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a><span class="fu">section()</span> <span class="kw">{</span></span>
-<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span></span>
-<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;== </span><span class="va">$1</span><span class="st"> ==&quot;</span></span>
-<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a><span class="fu">check_firewall()</span> <span class="kw">{</span></span>
-<span id="cb54-12"><a href="#cb54-12" aria-hidden="true" tabindex="-1"></a>  <span class="ex">section</span> <span class="st">&quot;Firewall-status&quot;</span></span>
-<span id="cb54-13"><a href="#cb54-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># $$ (scriptets PID) sikrer et unikt filnavn, hvis flere kørsler overlapper</span></span>
-<span id="cb54-14"><a href="#cb54-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="fu">sudo</span> <span class="at">-n</span> nft list ruleset <span class="op">&amp;&gt;</span>/tmp/hc-nft.<span class="va">$$</span> <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span><span class="kw">;</span> <span class="cf">then</span></span>
-<span id="cb54-15"><a href="#cb54-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">grep</span> <span class="at">-E</span> <span class="st">&#39;hook input|policy|accept|drop&#39;</span> /tmp/hc-nft.<span class="va">$$</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&#39;s/^[[:space:]]*/  /&#39;</span></span>
-<span id="cb54-16"><a href="#cb54-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
-<span id="cb54-17"><a href="#cb54-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;ADVARSEL: kunne ikke læse firewall-status (mangler sudo-adgang til &#39;nft list ruleset&#39;)&quot;</span></span>
-<span id="cb54-18"><a href="#cb54-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb54-19"><a href="#cb54-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span> <span class="at">-f</span> /tmp/hc-nft.<span class="va">$$</span></span>
-<span id="cb54-20"><a href="#cb54-20" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb54-21"><a href="#cb54-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-22"><a href="#cb54-22" aria-hidden="true" tabindex="-1"></a><span class="fu">check_disk()</span> <span class="kw">{</span></span>
-<span id="cb54-23"><a href="#cb54-23" aria-hidden="true" tabindex="-1"></a>  <span class="ex">section</span> <span class="st">&quot;Diskplads&quot;</span></span>
-<span id="cb54-24"><a href="#cb54-24" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">usage</span> <span class="va">avail</span></span>
-<span id="cb54-25"><a href="#cb54-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># df --output=pcent skriver en header-linje og et efterfølgende &quot;%&quot;; tail/tr strippes</span></span>
-<span id="cb54-26"><a href="#cb54-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># væk for at få et rent heltal, egnet til sammenligningen nedenfor</span></span>
-<span id="cb54-27"><a href="#cb54-27" aria-hidden="true" tabindex="-1"></a>  <span class="va">usage</span><span class="op">=</span><span class="va">$(</span><span class="fu">df</span> <span class="at">--output</span><span class="op">=</span>pcent / <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-1</span> <span class="kw">|</span> <span class="fu">tr</span> <span class="at">-dc</span> <span class="st">&#39;0-9&#39;</span><span class="va">)</span></span>
-<span id="cb54-28"><a href="#cb54-28" aria-hidden="true" tabindex="-1"></a>  <span class="va">avail</span><span class="op">=</span><span class="va">$(</span><span class="fu">df</span> <span class="at">-h</span> <span class="at">--output</span><span class="op">=</span>avail / <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-1</span> <span class="kw">|</span> <span class="fu">tr</span> <span class="at">-d</span> <span class="st">&#39;[:space:]&#39;</span><span class="va">)</span></span>
-<span id="cb54-29"><a href="#cb54-29" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Rodfilsystem: </span><span class="va">${usage}</span><span class="st">% brugt, </span><span class="va">${avail}</span><span class="st"> ledig diskplads&quot;</span></span>
-<span id="cb54-30"><a href="#cb54-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">((</span> <span class="va">usage</span> <span class="op">&gt;</span> <span class="va">DISK_WARN_THRESHOLD</span> <span class="kw">));</span> <span class="cf">then</span></span>
-<span id="cb54-31"><a href="#cb54-31" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;ADVARSEL: diskforbrug overstiger tærskel på </span><span class="va">${DISK_WARN_THRESHOLD}</span><span class="st">%&quot;</span></span>
-<span id="cb54-32"><a href="#cb54-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb54-33"><a href="#cb54-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">df</span> <span class="at">-h</span> /</span>
-<span id="cb54-34"><a href="#cb54-34" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb54-35"><a href="#cb54-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-36"><a href="#cb54-36" aria-hidden="true" tabindex="-1"></a><span class="fu">check_users()</span> <span class="kw">{</span></span>
-<span id="cb54-37"><a href="#cb54-37" aria-hidden="true" tabindex="-1"></a>  <span class="ex">section</span> <span class="st">&quot;Aktive/loggede ind brugere&quot;</span></span>
-<span id="cb54-38"><a href="#cb54-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># &#39;who&#39; viser kun AKTIVE sessioner, ikke historisk login-aktivitet; det er tilstrækkeligt</span></span>
-<span id="cb54-39"><a href="#cb54-39" aria-hidden="true" tabindex="-1"></a>  <span class="co"># her, da formålet er et øjebliksbillede, ikke en revisionslog (se journalctl, modul 5)</span></span>
-<span id="cb54-40"><a href="#cb54-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">who</span></span>
-<span id="cb54-41"><a href="#cb54-41" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb54-42"><a href="#cb54-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-43"><a href="#cb54-43" aria-hidden="true" tabindex="-1"></a><span class="fu">check_uid_zero()</span> <span class="kw">{</span></span>
-<span id="cb54-44"><a href="#cb54-44" aria-hidden="true" tabindex="-1"></a>  <span class="ex">section</span> <span class="st">&quot;Brugere med UID 0 (ud over root)&quot;</span></span>
-<span id="cb54-45"><a href="#cb54-45" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">extra</span></span>
-<span id="cb54-46"><a href="#cb54-46" aria-hidden="true" tabindex="-1"></a>  <span class="co"># felt 3 i /etc/passwd er UID; kun &#39;root&#39; bør have UID 0</span></span>
-<span id="cb54-47"><a href="#cb54-47" aria-hidden="true" tabindex="-1"></a>  <span class="va">extra</span><span class="op">=</span><span class="va">$(</span><span class="fu">awk</span> <span class="at">-F:</span> <span class="st">&#39;$3 == 0 &amp;&amp; $1 != &quot;root&quot; { print $1 }&#39;</span> /etc/passwd <span class="kw">||</span> <span class="fu">true</span><span class="va">)</span></span>
-<span id="cb54-48"><a href="#cb54-48" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="ot">-n</span> <span class="st">&quot;</span><span class="va">$extra</span><span class="st">&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
-<span id="cb54-49"><a href="#cb54-49" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;ADVARSEL: fandt uventede UID 0-brugere:&quot;</span></span>
-<span id="cb54-50"><a href="#cb54-50" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;</span><span class="va">$extra</span><span class="st">&quot;</span></span>
-<span id="cb54-51"><a href="#cb54-51" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
-<span id="cb54-52"><a href="#cb54-52" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;Ingen -- kun root har UID 0.&quot;</span></span>
-<span id="cb54-53"><a href="#cb54-53" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb54-54"><a href="#cb54-54" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb54-55"><a href="#cb54-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-56"><a href="#cb54-56" aria-hidden="true" tabindex="-1"></a><span class="fu">main()</span> <span class="kw">{</span></span>
-<span id="cb54-57"><a href="#cb54-57" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Healthcheck for </span><span class="va">$(</span><span class="fu">hostname</span><span class="va">)</span><span class="st"> -- </span><span class="va">$(</span><span class="fu">date</span> <span class="st">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="va">)</span><span class="st">&quot;</span></span>
-<span id="cb54-58"><a href="#cb54-58" aria-hidden="true" tabindex="-1"></a>  <span class="ex">check_firewall</span></span>
-<span id="cb54-59"><a href="#cb54-59" aria-hidden="true" tabindex="-1"></a>  <span class="ex">check_disk</span></span>
-<span id="cb54-60"><a href="#cb54-60" aria-hidden="true" tabindex="-1"></a>  <span class="ex">check_users</span></span>
-<span id="cb54-61"><a href="#cb54-61" aria-hidden="true" tabindex="-1"></a>  <span class="ex">check_uid_zero</span></span>
-<span id="cb54-62"><a href="#cb54-62" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb54-63"><a href="#cb54-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-64"><a href="#cb54-64" aria-hidden="true" tabindex="-1"></a><span class="ex">main</span> <span class="st">&quot;</span><span class="va">$@</span><span class="st">&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb55"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">DISK_WARN_THRESHOLD</span><span class="op">=</span>85</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a><span class="fu">section()</span> <span class="kw">{</span></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;== </span><span class="va">$1</span><span class="st"> ==&quot;</span></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a><span class="fu">check_firewall()</span> <span class="kw">{</span></span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>  <span class="ex">section</span> <span class="st">&quot;Firewall-status&quot;</span></span>
+<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># $$ (scriptets PID) sikrer et unikt filnavn, hvis flere kørsler overlapper</span></span>
+<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="fu">sudo</span> <span class="at">-n</span> nft list ruleset <span class="op">&amp;&gt;</span>/tmp/hc-nft.<span class="va">$$</span> <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">grep</span> <span class="at">-E</span> <span class="st">&#39;hook input|policy|accept|drop&#39;</span> /tmp/hc-nft.<span class="va">$$</span> <span class="kw">|</span> <span class="fu">sed</span> <span class="st">&#39;s/^[[:space:]]*/  /&#39;</span></span>
+<span id="cb55-16"><a href="#cb55-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
+<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;ADVARSEL: kunne ikke læse firewall-status (mangler sudo-adgang til &#39;nft list ruleset&#39;)&quot;</span></span>
+<span id="cb55-18"><a href="#cb55-18" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb55-19"><a href="#cb55-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rm</span> <span class="at">-f</span> /tmp/hc-nft.<span class="va">$$</span></span>
+<span id="cb55-20"><a href="#cb55-20" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb55-21"><a href="#cb55-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-22"><a href="#cb55-22" aria-hidden="true" tabindex="-1"></a><span class="fu">check_disk()</span> <span class="kw">{</span></span>
+<span id="cb55-23"><a href="#cb55-23" aria-hidden="true" tabindex="-1"></a>  <span class="ex">section</span> <span class="st">&quot;Diskplads&quot;</span></span>
+<span id="cb55-24"><a href="#cb55-24" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">usage</span> <span class="va">avail</span></span>
+<span id="cb55-25"><a href="#cb55-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># df --output=pcent skriver en header-linje og et efterfølgende &quot;%&quot;; tail/tr strippes</span></span>
+<span id="cb55-26"><a href="#cb55-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># væk for at få et rent heltal, egnet til sammenligningen nedenfor</span></span>
+<span id="cb55-27"><a href="#cb55-27" aria-hidden="true" tabindex="-1"></a>  <span class="va">usage</span><span class="op">=</span><span class="va">$(</span><span class="fu">df</span> <span class="at">--output</span><span class="op">=</span>pcent / <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-1</span> <span class="kw">|</span> <span class="fu">tr</span> <span class="at">-dc</span> <span class="st">&#39;0-9&#39;</span><span class="va">)</span></span>
+<span id="cb55-28"><a href="#cb55-28" aria-hidden="true" tabindex="-1"></a>  <span class="va">avail</span><span class="op">=</span><span class="va">$(</span><span class="fu">df</span> <span class="at">-h</span> <span class="at">--output</span><span class="op">=</span>avail / <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-1</span> <span class="kw">|</span> <span class="fu">tr</span> <span class="at">-d</span> <span class="st">&#39;[:space:]&#39;</span><span class="va">)</span></span>
+<span id="cb55-29"><a href="#cb55-29" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Rodfilsystem: </span><span class="va">${usage}</span><span class="st">% brugt, </span><span class="va">${avail}</span><span class="st"> ledig diskplads&quot;</span></span>
+<span id="cb55-30"><a href="#cb55-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">((</span> <span class="va">usage</span> <span class="op">&gt;</span> <span class="va">DISK_WARN_THRESHOLD</span> <span class="kw">));</span> <span class="cf">then</span></span>
+<span id="cb55-31"><a href="#cb55-31" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;ADVARSEL: diskforbrug overstiger tærskel på </span><span class="va">${DISK_WARN_THRESHOLD}</span><span class="st">%&quot;</span></span>
+<span id="cb55-32"><a href="#cb55-32" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb55-33"><a href="#cb55-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">df</span> <span class="at">-h</span> /</span>
+<span id="cb55-34"><a href="#cb55-34" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb55-35"><a href="#cb55-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-36"><a href="#cb55-36" aria-hidden="true" tabindex="-1"></a><span class="fu">check_users()</span> <span class="kw">{</span></span>
+<span id="cb55-37"><a href="#cb55-37" aria-hidden="true" tabindex="-1"></a>  <span class="ex">section</span> <span class="st">&quot;Aktive/loggede ind brugere&quot;</span></span>
+<span id="cb55-38"><a href="#cb55-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># &#39;who&#39; viser kun AKTIVE sessioner, ikke historisk login-aktivitet; det er tilstrækkeligt</span></span>
+<span id="cb55-39"><a href="#cb55-39" aria-hidden="true" tabindex="-1"></a>  <span class="co"># her, da formålet er et øjebliksbillede, ikke en revisionslog (se journalctl, modul 5)</span></span>
+<span id="cb55-40"><a href="#cb55-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">who</span></span>
+<span id="cb55-41"><a href="#cb55-41" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb55-42"><a href="#cb55-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-43"><a href="#cb55-43" aria-hidden="true" tabindex="-1"></a><span class="fu">check_uid_zero()</span> <span class="kw">{</span></span>
+<span id="cb55-44"><a href="#cb55-44" aria-hidden="true" tabindex="-1"></a>  <span class="ex">section</span> <span class="st">&quot;Brugere med UID 0 (ud over root)&quot;</span></span>
+<span id="cb55-45"><a href="#cb55-45" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">extra</span></span>
+<span id="cb55-46"><a href="#cb55-46" aria-hidden="true" tabindex="-1"></a>  <span class="co"># felt 3 i /etc/passwd er UID; kun &#39;root&#39; bør have UID 0</span></span>
+<span id="cb55-47"><a href="#cb55-47" aria-hidden="true" tabindex="-1"></a>  <span class="va">extra</span><span class="op">=</span><span class="va">$(</span><span class="fu">awk</span> <span class="at">-F:</span> <span class="st">&#39;$3 == 0 &amp;&amp; $1 != &quot;root&quot; { print $1 }&#39;</span> /etc/passwd <span class="kw">||</span> <span class="fu">true</span><span class="va">)</span></span>
+<span id="cb55-48"><a href="#cb55-48" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="ot">-n</span> <span class="st">&quot;</span><span class="va">$extra</span><span class="st">&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb55-49"><a href="#cb55-49" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;ADVARSEL: fandt uventede UID 0-brugere:&quot;</span></span>
+<span id="cb55-50"><a href="#cb55-50" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;</span><span class="va">$extra</span><span class="st">&quot;</span></span>
+<span id="cb55-51"><a href="#cb55-51" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
+<span id="cb55-52"><a href="#cb55-52" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;Ingen -- kun root har UID 0.&quot;</span></span>
+<span id="cb55-53"><a href="#cb55-53" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb55-54"><a href="#cb55-54" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb55-55"><a href="#cb55-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-56"><a href="#cb55-56" aria-hidden="true" tabindex="-1"></a><span class="fu">main()</span> <span class="kw">{</span></span>
+<span id="cb55-57"><a href="#cb55-57" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Healthcheck for </span><span class="va">$(</span><span class="fu">hostname</span><span class="va">)</span><span class="st"> -- </span><span class="va">$(</span><span class="fu">date</span> <span class="st">&#39;+%Y-%m-%d %H:%M:%S&#39;</span><span class="va">)</span><span class="st">&quot;</span></span>
+<span id="cb55-58"><a href="#cb55-58" aria-hidden="true" tabindex="-1"></a>  <span class="ex">check_firewall</span></span>
+<span id="cb55-59"><a href="#cb55-59" aria-hidden="true" tabindex="-1"></a>  <span class="ex">check_disk</span></span>
+<span id="cb55-60"><a href="#cb55-60" aria-hidden="true" tabindex="-1"></a>  <span class="ex">check_users</span></span>
+<span id="cb55-61"><a href="#cb55-61" aria-hidden="true" tabindex="-1"></a>  <span class="ex">check_uid_zero</span></span>
+<span id="cb55-62"><a href="#cb55-62" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb55-63"><a href="#cb55-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-64"><a href="#cb55-64" aria-hidden="true" tabindex="-1"></a><span class="ex">main</span> <span class="st">&quot;</span><span class="va">$@</span><span class="st">&quot;</span></span></code></pre></div>
 </details>
 <p><strong>Eksempeloutput fra det færdige system, kørt uændret på begge
 platforme:</strong></p>
@@ -2348,40 +2330,40 @@ id="scriptsverify-deploy.sh"><code>scripts/verify-deploy.sh</code></h2>
 deklarerede (<code>flake.nix</code>), uden at ændre noget selv. Køres på
 <strong>serveren</strong>: <code>./verify-deploy.sh</code>.</p>
 <details><summary>Vis kode (33 linjer)</summary>
-<div class="sourceCode" id="cb57"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">FLAKE_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${HOME}</span><span class="st">/nixos-comparison-config&quot;</span></span>
-<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">FLAKE_ATTR</span><span class="op">=</span><span class="st">&quot;nixosConfigurations.nixos-comparison.config.system.build.toplevel&quot;</span></span>
-<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a><span class="fu">main()</span> <span class="kw">{</span></span>
-<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="ot">!</span> <span class="ot">-d</span> <span class="st">&quot;</span><span class="va">$FLAKE_DIR</span><span class="st">&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
-<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;FEJL: fandt ikke flake-kilde i </span><span class="va">${FLAKE_DIR}</span><span class="st">&quot;</span> <span class="op">&gt;&amp;</span><span class="dv">2</span></span>
-<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 2</span>
-<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb57-12"><a href="#cb57-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb57-13"><a href="#cb57-13" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Evaluerer (uden at bygge) den deklarerede konfigurations output-sti...&quot;</span></span>
-<span id="cb57-14"><a href="#cb57-14" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">declared_path</span> <span class="va">current_path</span></span>
-<span id="cb57-15"><a href="#cb57-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># --raw undgår at output-stien bliver JSON-anført med citationstegn</span></span>
-<span id="cb57-16"><a href="#cb57-16" aria-hidden="true" tabindex="-1"></a>  <span class="va">declared_path</span><span class="op">=</span><span class="va">$(</span><span class="ex">nix</span> <span class="at">--extra-experimental-features</span> <span class="st">&quot;nix-command flakes&quot;</span> <span class="dt">\</span></span>
-<span id="cb57-17"><a href="#cb57-17" aria-hidden="true" tabindex="-1"></a>    eval <span class="at">--raw</span> <span class="st">&quot;</span><span class="va">${FLAKE_DIR}</span><span class="st">#</span><span class="va">${FLAKE_ATTR}</span><span class="st">&quot;</span><span class="va">)</span></span>
-<span id="cb57-18"><a href="#cb57-18" aria-hidden="true" tabindex="-1"></a>  <span class="va">current_path</span><span class="op">=</span><span class="va">$(</span><span class="fu">readlink</span> <span class="at">-f</span> /run/current-system<span class="va">)</span></span>
-<span id="cb57-19"><a href="#cb57-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb57-20"><a href="#cb57-20" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Kørende system:    </span><span class="va">${current_path}</span><span class="st">&quot;</span></span>
-<span id="cb57-21"><a href="#cb57-21" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Deklareret system: </span><span class="va">${declared_path}</span><span class="st">&quot;</span></span>
-<span id="cb57-22"><a href="#cb57-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb57-23"><a href="#cb57-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="st">&quot;</span><span class="va">$current_path</span><span class="st">&quot;</span> <span class="ot">==</span> <span class="st">&quot;</span><span class="va">$declared_path</span><span class="st">&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
-<span id="cb57-24"><a href="#cb57-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;OK: systemet stemmer overens med den deklarerede konfiguration.&quot;</span></span>
-<span id="cb57-25"><a href="#cb57-25" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 0</span>
-<span id="cb57-26"><a href="#cb57-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
-<span id="cb57-27"><a href="#cb57-27" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;ADVARSEL: systemet er drevet væk fra den deklarerede konfiguration.&quot;</span></span>
-<span id="cb57-28"><a href="#cb57-28" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;Kør: sudo nixos-rebuild switch --flake </span><span class="va">${FLAKE_DIR}</span><span class="st">&quot;</span></span>
-<span id="cb57-29"><a href="#cb57-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
-<span id="cb57-30"><a href="#cb57-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
-<span id="cb57-31"><a href="#cb57-31" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
-<span id="cb57-32"><a href="#cb57-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb57-33"><a href="#cb57-33" aria-hidden="true" tabindex="-1"></a><span class="ex">main</span> <span class="st">&quot;</span><span class="va">$@</span><span class="st">&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb58"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env bash</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="bu">set</span> <span class="at">-euo</span> pipefail</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">FLAKE_DIR</span><span class="op">=</span><span class="st">&quot;</span><span class="va">${HOME}</span><span class="st">/nixos-comparison-config&quot;</span></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a><span class="bu">readonly</span> <span class="va">FLAKE_ATTR</span><span class="op">=</span><span class="st">&quot;nixosConfigurations.nixos-comparison.config.system.build.toplevel&quot;</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a><span class="fu">main()</span> <span class="kw">{</span></span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="ot">!</span> <span class="ot">-d</span> <span class="st">&quot;</span><span class="va">$FLAKE_DIR</span><span class="st">&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;FEJL: fandt ikke flake-kilde i </span><span class="va">${FLAKE_DIR}</span><span class="st">&quot;</span> <span class="op">&gt;&amp;</span><span class="dv">2</span></span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 2</span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Evaluerer (uden at bygge) den deklarerede konfigurations output-sti...&quot;</span></span>
+<span id="cb58-14"><a href="#cb58-14" aria-hidden="true" tabindex="-1"></a>  <span class="bu">local</span> <span class="va">declared_path</span> <span class="va">current_path</span></span>
+<span id="cb58-15"><a href="#cb58-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># --raw undgår at output-stien bliver JSON-anført med citationstegn</span></span>
+<span id="cb58-16"><a href="#cb58-16" aria-hidden="true" tabindex="-1"></a>  <span class="va">declared_path</span><span class="op">=</span><span class="va">$(</span><span class="ex">nix</span> <span class="at">--extra-experimental-features</span> <span class="st">&quot;nix-command flakes&quot;</span> <span class="dt">\</span></span>
+<span id="cb58-17"><a href="#cb58-17" aria-hidden="true" tabindex="-1"></a>    eval <span class="at">--raw</span> <span class="st">&quot;</span><span class="va">${FLAKE_DIR}</span><span class="st">#</span><span class="va">${FLAKE_ATTR}</span><span class="st">&quot;</span><span class="va">)</span></span>
+<span id="cb58-18"><a href="#cb58-18" aria-hidden="true" tabindex="-1"></a>  <span class="va">current_path</span><span class="op">=</span><span class="va">$(</span><span class="fu">readlink</span> <span class="at">-f</span> /run/current-system<span class="va">)</span></span>
+<span id="cb58-19"><a href="#cb58-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-20"><a href="#cb58-20" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Kørende system:    </span><span class="va">${current_path}</span><span class="st">&quot;</span></span>
+<span id="cb58-21"><a href="#cb58-21" aria-hidden="true" tabindex="-1"></a>  <span class="bu">echo</span> <span class="st">&quot;Deklareret system: </span><span class="va">${declared_path}</span><span class="st">&quot;</span></span>
+<span id="cb58-22"><a href="#cb58-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-23"><a href="#cb58-23" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="kw">[[</span> <span class="st">&quot;</span><span class="va">$current_path</span><span class="st">&quot;</span> <span class="ot">==</span> <span class="st">&quot;</span><span class="va">$declared_path</span><span class="st">&quot;</span> <span class="kw">]];</span> <span class="cf">then</span></span>
+<span id="cb58-24"><a href="#cb58-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;OK: systemet stemmer overens med den deklarerede konfiguration.&quot;</span></span>
+<span id="cb58-25"><a href="#cb58-25" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 0</span>
+<span id="cb58-26"><a href="#cb58-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">else</span></span>
+<span id="cb58-27"><a href="#cb58-27" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;ADVARSEL: systemet er drevet væk fra den deklarerede konfiguration.&quot;</span></span>
+<span id="cb58-28"><a href="#cb58-28" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">&quot;Kør: sudo nixos-rebuild switch --flake </span><span class="va">${FLAKE_DIR}</span><span class="st">&quot;</span></span>
+<span id="cb58-29"><a href="#cb58-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">exit</span> 1</span>
+<span id="cb58-30"><a href="#cb58-30" aria-hidden="true" tabindex="-1"></a>  <span class="cf">fi</span></span>
+<span id="cb58-31"><a href="#cb58-31" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb58-32"><a href="#cb58-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-33"><a href="#cb58-33" aria-hidden="true" tabindex="-1"></a><span class="ex">main</span> <span class="st">&quot;</span><span class="va">$@</span><span class="st">&quot;</span></span></code></pre></div>
 </details>
 <div class="compare">
 <section id="debian-gælder-ikke-3" class="compare-side">
@@ -2412,155 +2394,93 @@ $ echo $?
 </section>
 </div>
 <h2 id="delkonklusion-5">Delkonklusion</h2>
-<p><code>provision.sh</code> og <code>setup.sh</code> viser to helt
-forskellige former for “idempotent”: Debian-siden opnår det ved at
-skrive tjek ind manuelt, funktion for funktion, en tilgang der reelt
-fejlede én gang undervejs (<code>visudo -c</code>-fundet ovenfor), mens
-NixOS’ idempotens er en egenskab af selve
-<code>nixos-rebuild switch</code>, uafhængig af hvor mange gange
-scriptet ændres. Samme mønster går igen i <code>verify-deploy.sh</code>:
-Debian har ingen deklareret facitliste at holde en kørende server op
-imod, kun den akkumulerede historik af kommandoer, der er kørt på den.
-Erfaringen samlet: automatisering under NixOS handler mindre om at
-skrive scripts, der selv er korrekte, og mere om at udnytte at
-<code>nixos-rebuild</code> allerede garanterer korrektheden, hvis
-konfigurationen først er rigtig.</p>
-<h1 id="konklusion-er-nixos-fremtidens-sikrere-valg">Konklusion: Er
-NixOS fremtidens sikrere valg?</h1>
-<p>Opgaven foreslog Debian eller Ubuntu Server. Rapporten har i stedet
-brugt NixOS til at undersøge et åbent spørgsmål: giver den deklarative
-tilgang reelle sikkerhedsmæssige fordele over den traditionelle,
-imperative arbejdsgang, eller er forskellen kosmetisk? Svaret, baseret
-på seks moduler og en reel A/B-sammenligning mod en faktisk Debian-VM,
-er hverken et ukvalificeret ja eller et “det kommer an på behovet”. Det
-er nedenfor forsøgt som en konkret stillingtagen, med evidensen
-navngivet, ikke kun påstået.</p>
-<h2 id="fordele-med-konkret-evidens">Fordele, med konkret evidens</h2>
-<p><strong>Konfigurationsdrift bliver synlig, i stedet for at kunne
-gemme sig.</strong> <code>00-tilgang.md</code>s “Samlet billede” viser
-at Debian-sidens seks moduler er spredt over mindst otte forskellige
-filer og kommandotyper, hver redigerbar for sig, uden noget der
-repræsenterer hele systemets tilstand som én genskabelig enhed. NixOS’
-<code>verify-deploy.sh</code> (modul 6) kan derfor stille et spørgsmål,
-Debian-siden strukturelt ikke kan besvare: “stemmer det kørende system
-overens med det, der er erklæret?” Der findes bevidst intet
-Debian-modstykke til det script, ikke fordi det ville være svært at
-skrive, men fordi der ikke findes nogen deklareret facitliste at holde
-en traditionel server op imod.</p>
-<p><strong>Reproducerbarhed, faktisk efterprøvet med et diff, ikke kun
-antaget.</strong> <code>nix build --rebuild</code> tvinger en ægte
-genbygning og sammenligner selv output-hashen
-(<code>00-tilgang.md</code>). Konklusionen er bevidst afgrænset: den
-gælder den deklarerede systemtilstand, ikke det færdige diskimage som
-artefakt (<code>mkfs.ext4</code>s tilfældige UUID gør det artefakt
-ikke-deterministisk). Den afgrænsning gør selve påstanden mere
-troværdig, ikke mindre, fordi dens grænser er kendte og testede.</p>
-<p><strong>Sudo-reglers sikre migration, demonstreret live.</strong>
-Modul 3 viste at <code>security.sudo.extraRules</code> kan udvides
-additivt (en ny regel tilføjes ved siden af den gamle, den gamle fjernes
-først når den nye er bekræftet), så en sti i den ene, hvidlistede
-sudo-kommando kunne ændres uden at <code>admin</code> på noget tidspunkt
-manglede en gyldig kommando at falde tilbage på. Den tilsvarende
-operation på Debian, en direkte <code>visudo</code>-redigering, har
-ingen sådan mellemtilstand.</p>
-<p><strong>Idempotens er en egenskab af værktøjet, ikke noget man selv
-skal bevise.</strong> Debians <code>provision.sh</code> (modul 6)
-forsøger idempotens ved at indbygge et tjek i hver enkelt funktion, og
-fejlede reelt én gang undervejs (<code>visudo -c</code> manglede efter
-senere sudoers-tilføjelser). <code>nixos-rebuild switch</code> er
-idempotent for hele systemtilstanden, uden at nogen skal huske at skrive
-det tjek ind.</p>
-<p><strong>Den direkte A/B-sammenligning viser en reel, målt forskel i
-friktion.</strong> En fuld, manuel genskabelse af modul 1-6 på den
-faktiske Debian-VM tog cirka 280 sekunders ren udførelsestid og
-afslørede undervejs fem uventede fund, tre manglende pakker på en
-minimal installation (<code>sudo</code>, <code>acl</code>,
-<code>cron</code>), én klassisk Unix-gruppekollision
-(<code>useradd -G</code> vs. <code>-g</code>), og én der direkte rettede
-en unøjagtig påstand i selve rapporten (<code>/var/log/auth.log</code>
-findes ikke uden <code>rsyslog</code>). NixOS-siden udtrykker den samme
-sluttilstand som én, allerede skrevet <code>nixos-rebuild switch</code>,
-uden pakkeopdagelse undervejs, fordi hele afhængighedstræet allerede er
-en del af den deklarerede konfiguration.</p>
-<p><strong>Samme effektive sikkerhedspolitik, markant mindre genereret
-kompleksitet.</strong> Modul 4 viser at <code>ufw</code>s genererede
-nftables-ruleset er 386 linjer over 69 chains, mod NixOS’ 33 linjer over
-4 chains, for præcis samme <code>drop</code>-standardpolitik og samme
-ene tilladte kilde. Årsagen er arkitektonisk, ikke et sikkerhedsproblem:
-<code>ufw</code> er reelt en iptables-regelgenerator, oversat gennem
-<code>iptables-nft</code> til nftables, og bærer 15+ års
-iptables-designarv med sig (adskilte IPv4/IPv6-skabeloner, fast
-kæde-staging), mens NixOS’ <code>nftables</code>-modul er skrevet
-direkte til nftables uden den bagage. Mindre genereret regelværk at
-holde styr på, hvis noget nogensinde skal fejlsøges direkte i
-output’et.</p>
-<h2 id="ulemper-ærligt-underbygget">Ulemper, ærligt underbygget</h2>
-<p><strong>Et ekstra fejlfindingslag, ikke et erstattende.</strong>
-Flere af projektets egne fund krævede forståelse af både almindelig
-Linux-fejlfinding og Nix’ eget evalueringslag: modul 3’s sudo-regel, der
-<em>så</em> korrekt ud i <code>sudo -l</code> men fejlede ved et faktisk
-deploy, fordi den forsøgte at forudsige <code>nixos-rebuild</code>s
-interne kommandoindpakning; det uventede <code>#</code>-tegn i en
-flake-reference, der stille afkorter en sudoers-linje; og modul 4’s
-<code>openFirewall</code>-standardværdi, der lægger sig oveni en
-eksplicit regel i stedet for at blive overskrevet, plus en separat
-<code>rpfilter</code>-kæde, der blokerede DNS-svar uden om selve
-input-kæden. Ingen af disse var synlige ved at læse konfigurationen
-alene, alle krævede faktisk at teste og fejlsøge live. Den deklarative
-tilgang fjerner ikke fejl, den flytter dem.</p>
-<p><strong>NixOS vinder ikke alle steder, og bør ikke antages at gøre
-det.</strong> Modul 2 er det tydeligste modeksempel: ACL-baseret
-adgangsstyring (<code>setfacl</code>/<code>getfacl</code>) er byte for
-byte identisk på begge platforme, fordi NixOS bevidst ikke gør
-datafil-rettigheder deklarative. Debian-sidens <code>provision.sh</code>
-var i øvrigt ikke systematisk sværere at skrive end at bruge NixOS, blot
-ramt af andre typer fejl (manglende pakker, en Unix-gruppekollision) end
-Nix-sidens (evalueringsfejl, modul-sammenlægning).</p>
-<p><strong>Det stive, bogstavelige sudo-eksakt-match har en reel
-omkostning, ikke kun en teoretisk.</strong> Modul 3 viste at
-<code>admin</code> på den hærdede NixOS-VM ikke har noget nødspor, hvis
-en kommando afviger bare en smule fra den præcise, hvidlistede streng,
-hverken en adgangskode eller en root-fallback. Debian, med samme
-neutraliserede <code>wheel</code>/<code>sudo</code>-gruppe-mekanisme,
-beholder stadig <code>root</code>-konsoladgang som et reelt, brugbart
-nødspor. Sikkerheden ved at fjerne det nødspor er reel, men den er ikke
-gratis.</p>
-<p><strong>Bemandings- og videnrisiko.</strong> Dette punkt er ikke
-testet empirisk i dette projekt, det kan det ikke være med én person og
-to VM’er, men det er en reel driftsmæssig faktor, ikke kun en
-indlæringskurve for én udvikler: markant færre sysadmins kender Nix’
-sprog og mentale model end kender
-<code>apt</code>/<code>systemctl</code>/<code>sudoers</code>, hvilket er
-en reel risiko ved overdragelse, oncall-vagter og rekruttering til en
-driftsorganisation, uafhængigt af hvor tekniske fordele NixOS i øvrigt
-har.</p>
-<h2 id="samlet-vurdering">Samlet vurdering</h2>
-<p>Evidensen samlet peger ikke på at NixOS er universelt bedre, men på
-at dens fordele er reelle og mest værd, når prisen for
-konfigurationsdrift er høj, og dens ulemper er reelle og mest tunge, når
-organisationens bindende begrænsning er tilgængelig viden, ikke teknisk
-kapacitet.</p>
-<p><strong>NixOS er det stærkere valg for:</strong> en organisation,
-hvor det at kunne bevise, hvad der reelt kører, og hvorfor, vejer
-tungere end at kunne rekruttere bredt til driften, typisk
-compliance-tunge eller sikkerhedskritiske miljøer, hvor
-<code>verify-deploy.sh</code>s spørgsmål (“stemmer det kørende system
-overens med det erklærede?”) reelt stilles jævnligt, og hvor et team
-allerede har eller kan investere i Nix-kompetence som en varig del af
-driftsorganisationen, ikke en engangsindsats.</p>
-<p><strong>Den traditionelle tilgang er stadig at foretrække
-for:</strong> en organisation, hvor bemanding og tilgængelig viden er
-den bindende begrænsning, hvor arbejdet i praksis domineres af opgaver,
-der er reelt værktøjs-identiske uanset platform (modul 2 er beviset på
-at dette forekommer, ikke kun en teoretisk mulighed), eller hvor et team
-ikke kan absorbere det ekstra Nix-evalueringslag oven i almindelig
-Linux-drift uden at det går ud over leveringshastighed på kort sigt.</p>
-<p>Den ærligste, enkeltstående konklusion er derfor: NixOS’
-sikkerhedsmæssige fordele er ikke en myte, tre af dem (drift-synlighed,
-efterprøvet reproducerbarhed, og en dokumenteret, sikker vej gennem en
-ellers stiv sudo-model) er direkte demonstreret i dette projekt, ikke
-kun påstået. Men de fordele købes med et reelt, ikke-teoretisk ekstra
-fejlfindingslag og en bemandingsrisiko, som en sikkerhedsvurdering, der
-kun ser på arkitektur, let overser.</p>
+<p><code>provision.sh</code> og <code>setup.sh</code> viser to
+forskellige former for idempotens: Debian-siden opnår den ved at skrive
+tjek ind manuelt, funktion for funktion, en tilgang der efterlod en
+mangel (<code>visudo -c</code>-fundet ovenfor), mens NixOS’ idempotens
+er en egenskab af selve <code>nixos-rebuild switch</code>, uafhængig af
+hvor mange gange scriptet ændres. Samme mønster går igen i
+<code>verify-deploy.sh</code>: Debian har ingen deklareret facitliste at
+holde en kørende server op imod, kun den akkumulerede historik af
+kommandoer, der er kørt på den. Under NixOS handler automatisering
+derfor mindre om at skrive scripts, der selv er korrekte, og mere om at
+udnytte at <code>nixos-rebuild</code> allerede garanterer korrektheden,
+hvis konfigurationen først er rigtig.</p>
+<h1 id="konklusion">Konklusion</h1>
+<p>Rapporten har sammenlignet en traditionel, imperativ Debian-server
+med en deklarativ NixOS-server, opsat til de samme seks opgaver på to
+virtuelle maskiner.</p>
+<h2 id="fordele">Fordele</h2>
+<div class="compare">
+<section id="debian-8" class="compare-side">
+<h4>Debian</h4>
+<ul>
+<li><strong>Nødspor:</strong> <code>root</code> kan nås via konsollen,
+hvis en <code>sudo</code>-regel er forkert (modul 3).</li>
+<li><strong>Direkte redigering:</strong> en ny regel er én linje i
+<code>sudoers.d</code> eller ét <code>ufw</code>-kald (modul 3, 4).</li>
+</ul>
+</section>
+<section id="nixos-9" class="compare-side">
+<h4>NixOS</h4>
+<ul>
+<li><strong>Verificerbar tilstand:</strong>
+<code>verify-deploy.sh</code> kan afgøre, om det kørende system svarer
+til det erklærede. Debian har intet tilsvarende (modul 6).</li>
+<li><strong>Afvisning ved build:</strong> en ugyldig
+<code>sudoers</code>-regel afvises, før den aktiveres (modul 3).</li>
+<li><strong>Indbygget idempotens:</strong>
+<code>nixos-rebuild switch</code> kræver ingen selvskrevne tjek, og der
+er ingen installationsfase (modul 6, 1).</li>
+<li><strong>Kompakt firewall:</strong> samme politik i 33 linjer og 4
+chains mod ufw’s 386 og 69 (modul 4).</li>
+</ul>
+</section>
+</div>
+<h2 id="ulemper">Ulemper</h2>
+<div class="compare">
+<section id="debian-9" class="compare-side">
+<h4>Debian</h4>
+<ul>
+<li><strong>Spredt tilstand:</strong> mindst otte filer og
+kommandotyper, og ingen facitliste at holde serveren op imod (se <a
+href="#samlet-billede-spredte-konfigurationsfiler-vs.-én-configuration.nix">Samlet
+billede</a>, modul 6).</li>
+<li><strong>Manuel validering:</strong> <code>provision.sh</code>
+manglede <code>visudo -c</code> efter de senere sudoers-tilføjelser
+(modul 6).</li>
+<li><strong>Ad hoc-vækst:</strong> <code>sudo</code>-regler uden
+argumentbegrænsning er bredere end tilsigtet, og <code>admin</code>
+endte i <code>projekt</code>-gruppen (modul 3).</li>
+<li><strong>Faldgruber under opsætning:</strong> <code>useradd -G</code>
+mod <code>-g</code>, og en værts-<code>ufw</code>-regel, der blokerede
+DHCP under installationen (modul 3, 1).</li>
+</ul>
+</section>
+<section id="nixos-10" class="compare-side">
+<h4>NixOS</h4>
+<ul>
+<li><strong>Ekstra fejlfindingslag:</strong> <code>sudo -l</code> så
+korrekt ud, men deploy fejlede. <code>#</code> i en flake-reference
+afkorter sudoers-linjen. <code>openFirewall</code> åbnede SSH for alle
+kilder trods kilde-IP-regel, og <code>rpfilter</code> blokerede
+DNS-svar. Ingen af dem viste sig ved at læse konfigurationen alene
+(modul 3, 4).</li>
+<li><strong>Stift <code>sudo</code> uden nødspor:</strong> hverken
+adgangskode eller root-fallback (modul 3).</li>
+<li><strong>Reproducerbarhed med grænse:</strong> gælder
+systemkonfigurationen, ikke diskimaget (se <a
+href="#flake-arkitektur-og-reproducerbarhed">Flake-arkitektur og
+reproducerbarhed</a>).</li>
+</ul>
+</section>
+</div>
+<p><strong>Ingen forskel:</strong> ACL og filrettigheder (modul 2) og
+selve <code>sudoers</code>-mekanikken (modul 3).</p>
+<p>NixOS gør det muligt at verificere kørende tilstand og afviser fejl
+ved build, til prisen af et ekstra lag at fejlsøge og et stift
+<code>sudo</code>-regelsæt uden nødspor. Debian beholder nødsporet og
+direkte redigering, til prisen af spredt, uverificerbar tilstand og
+manuelle tjek.</p>
 </body>
 </html>

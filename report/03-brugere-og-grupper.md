@@ -13,8 +13,8 @@ sudo med begrænsede rettigheder reducerer skadesomfanget, hvis en konto komprom
 
 ## Rollestruktur
 
-Samme tre roller er oprettet på begge VM'er, med samme tilsigtede adgang, verificeret direkte med
-`id` på begge platforme (se nedenfor):
+Samme tre roller er oprettet på begge VM'er, med samme tilsigtede adgang, vist med `id` på begge
+platforme (se nedenfor):
 
 | Bruger | Debian-gruppe(r) | NixOS-gruppe (`extraGroups`) | Rolle-specifik adgang | Begrundelse |
 |---|---|---|---|---|
@@ -22,12 +22,12 @@ Samme tre roller er oprettet på begge VM'er, med samme tilsigtede adgang, verif
 | `developer` | `projekt` | `projekt` *(fra modul 2)* | Læse-/skriveadgang til `/srv/projekt` via gruppe-rettigheder | Udviklere skal kunne bidrage til det fælles projektområde |
 | `guest` | `guest` | `guest` *(ny)* | Læseadgang til `/srv/projekt` via gruppe-ACL, ingen skriveadgang | En ekstern part skal kunne se, men ikke ændre, projektdata |
 
-**En reel, lille afvigelse:** Debians `admin` endte selv som medlem af `projekt`
+**Afvigelse:** Debians `admin` endte selv som medlem af `projekt`
 (`sudo chown admin:projekt /srv/projekt` kræver ikke dette, men gruppen blev tilføjet undervejs i
 den traditionelle opsætning), mens NixOS' `admin` aldrig er medlem af `projekt`, fordi
 `systemd.tmpfiles.rules` (modul 2) sætter ejerskabet direkte og deklarativt, uden at nogen bruger
-behøver være medlem af gruppen for at det virker. Et lille, konkret eksempel på at den
-imperative tilgang har en tendens til at akkumulere adgang, den deklarative tilgang beder kun om
+behøver være medlem af gruppen for at det virker. Et eksempel på at den
+imperative tilgang har en tendens til at akkumulere adgang, mens den deklarative kun beder om
 præcis den tilstand, der er behov for.
 
 Alle tre NixOS-brugeres faktiske primære gruppe er `users` (gid 100), NixOS' standard for
@@ -42,7 +42,7 @@ bruger, for at undgå at systemet låser sig selv ude. I praksis er denne adgang
 adgangskode, så almindelig wheel-baseret sudo reelt er uopnåeligt. Al faktisk adgang kommer i
 stedet fra `security.sudo.extraRules`.
 
-**Debian-siden har, verificeret direkte, samme underliggende mønster.** `admin` på
+**Debian-siden har samme underliggende mønster.** `admin` på
 `debian-comparison` er medlem af standardgruppen `sudo` (`groups=...,27(sudo),...`), som Debians
 eget `/etc/sudoers` som udgangspunkt giver fuld, password-krævende root-adgang
 (`(ALL : ALL) ALL`, synligt i `sudo -l`). Denne adgang er, akkurat som `wheel` ovenfor,
@@ -58,7 +58,9 @@ nogen adgangskode at opgive. Al faktisk, brugbar adgang kommer i stedet fra de e
 
 ```bash
 $ sudo useradd -m -G projekt developer
-$ sudo useradd -m -G guest guest
+$ sudo groupadd guest
+# -g (primær gruppe), ikke -G: useradd opretter ellers selv en gruppe "guest", der allerede findes
+$ sudo useradd -m -g guest guest
 
 # /etc/sudoers.d/admin (reelt indhold, akkumuleret modul for modul)
 admin ALL=(ALL) NOPASSWD: /usr/bin/mkdir, /usr/bin/chown, /usr/bin/chmod, /usr/sbin/setfacl, /usr/bin/getfacl
@@ -94,7 +96,7 @@ security.sudo.extraRules = [{
 
 Begge tilgange er granulære i princippet, men mekanikken, og dermed hvad "granulær" reelt betyder,
 er forskellig: Debian samler regler i separate filer under `/etc/sudoers.d/`, tilføjet én linje ad
-gangen i takt med at behovet opstod, NixOS har slet ikke denne mappe, verificeret direkte:
+gangen i takt med at behovet opstod, NixOS har slet ikke denne mappe:
 
 | Kommando | Debian | NixOS |
 |---|---|---|
@@ -116,9 +118,8 @@ sudo: a password is required
 ```
 
 **Delt succes:** `sudo -n nft list ruleset` lykkes uden adgangskode på begge platforme, det eneste
-punkt hvor de to regelsæt reelt er identiske, ikke bare begge har en regel for samme kommando
-(Debians output starter endda med en advarsel om at `ufw` og `iptables-nft` deler samme
-nftables-lag, en reel driftsdetalje, ikke tilføjet for effekt).
+punkt hvor de to regelsæt er identiske (Debians output starter med en advarsel om at `ufw` og
+`iptables-nft` deler samme nftables-lag).
 
 ::: {.compare}
 ::: {.compare-side}
@@ -150,11 +151,10 @@ argumenter inklusive.
 :::
 :::
 
-Ingen af platformene er entydigt bedst her, samme underliggende sudoers-mekanisme giver
-modsatrettede konsekvenser, afhængig af hvor præcist den enkelte regel er skrevet: NixOS' fulde
-kommandolinje-match kan blive for snæver (et harmløst tillæg afvises, se nedenfor), mens Debians
-sti-kun-match her viste sig bredere end formentlig tilsigtet, ikke fordi platformen er mindre
-sikker, men fordi disse specifikke linjer blev skrevet uden argumentbegrænsning.
+Samme sudoers-mekanisme giver modsatrettede konsekvenser, afhængigt af hvor præcist den enkelte
+regel er skrevet: NixOS' fulde kommandolinje-match kan blive for snæver (et harmløst tillæg
+afvises, se nedenfor), mens Debians sti-kun-regler er bredere end tilsigtet, fordi de er skrevet
+uden argumentbegrænsning.
 
 **Den genererede sudoers-konfiguration, fuldt indhold, begge platforme:**
 
@@ -180,6 +180,31 @@ admin     ALL=(ALL:ALL)    NOPASSWD: /run/current-system/sw/bin/nixos-rebuild sw
     NOPASSWD: /run/current-system/sw/bin/chmod g+s /srv/projekt,
     NOPASSWD: /run/current-system/sw/bin/nft list ruleset
 ```
+:::
+:::
+
+**Ugyldig regel:**
+
+::: {.compare}
+::: {.compare-side}
+#### Debian: `visudo -c` skal kaldes manuelt
+
+`visudo -c` er et separat kald, som scriptet selv skal huske. `provision.sh` udelod det efter de
+senere sudoers-tilføjelser (modul 6).
+:::
+::: {.compare-side}
+#### NixOS: afvist ved build
+
+```
+# en bevidst ugyldig linje i security.sudo.extraRules
+$ nix build .#nixosConfigurations.nixos-comparison.config.environment.etc.sudoers.source
+error: Cannot build '/nix/store/...-sudoers.drv'.
+       Reason: builder failed with exit code 1.
+       > /nix/store/...-sudoers-in:7:9: syntax error
+       > this is not valid sudoers
+```
+
+NixOS' `sudo`-modul kører `visudo -c` på den genererede fil, før den installeres. Intet aktiveres.
 :::
 :::
 
@@ -211,27 +236,22 @@ hvorfor selve reglen ikke kan indeholde et `#`-tegn).
 :::
 :::
 
-Konsekvensen er reel: `admin` har ingen adgangskode, og `root` har hverken SSH-adgang
+Konsekvensen: `admin` har ingen adgangskode, og `root` har hverken SSH-adgang
 (`PermitRootLogin = "no"`, modul 1) eller en gyldig adgangskode til konsollen, så der findes intet
 fallback, hvis en kommando afviger bare en smule fra den præcise, hvidlistede streng.
 `debian-comparison` har, som vist ovenfor, samme neutraliserede `sudo`-gruppe-fallback som NixOS'
-`wheel`, men til forskel fra NixOS har Debian-siden stadig `root`-konsoladgang som et reelt,
-brugbart nødspor (se VM-sammenligningstabellen i `00-tilgang.md`). Den granulære sudo-model er
+`wheel`, men til forskel fra NixOS har Debian-siden stadig `root`-konsoladgang som et
+brugbart nødspor (se tabellen [Begge VM'er, side om side](#begge-vmer-side-om-side)). Den granulære sudo-model er
 derfor ikke gratis: den fjerner ikke kun uautoriseret adgang, den fjerner også ens eget nødspor,
 hvis noget ikke er forudset præcist, medmindre man, som Debian-siden her, bevidst har bevaret én
 anden vej ind.
 
 Skulle selve stien i den hvidlistede kommando nogensinde skulle ændres (fx hvis config-mappen
-omdøbes), findes der dog en sikker vej uden om denne stivhed: fordi `security.sudo.extraRules` blot
-er en deklareret liste, kan en ny sti tilføjes som en **ekstra** regel, ved siden af den gamle,
-appliceret via den kommando der allerede virker. Først når den nye sti er bekræftet at virke,
-fjernes den gamle regel, via den nu-virkende, nye kommando. På intet tidspunkt i den overgang
-mangler `admin` en gyldig, hvidlistet kommando at falde tilbage på. Den tilsvarende operation på
-Debian, en direkte `visudo`-redigering af `/etc/sudoers.d/admin`, har ingen sådan mellemtilstand: en
-fejlskrevet sti er øjeblikkeligt aktiv, uden en tidligere, stadig gyldig generation at falde tilbage
-på. Den stive, bogstavelige matchning bliver ikke mindre stiv af det, men fordi konfigurationen er
-data, man kan udvide additivt og derefter indskrænke igen i stedet for en fil man redigerer
-destruktivt på stedet, koster selve stivheden ikke det samme som den ville på en traditionel server.
+omdøbes), kan den nye sti tilføjes som en **ekstra** regel ved siden af den gamle, appliceret via
+den kommando der allerede virker. Først når den nye sti er bekræftet at virke, fjernes den gamle
+regel via den nye kommando. På intet tidspunkt mangler `admin` en gyldig, hvidlistet kommando.
+Samme fremgangsmåde virker på Debian med en ekstra linje i `sudoers.d`. Forskellen er, at NixOS
+afviser en ugyldig regel ved build (se ovenfor), mens Debian kræver et manuelt `visudo -c`.
 
 ## Dokumentation: `/etc/group` og `id`
 
@@ -274,18 +294,13 @@ uid=1002(guest) gid=100(users) groups=100(users),999(guest)
 
 ## Delkonklusion
 
-Begge platforme bygger på den samme sudoers-mekanisme, men det viste sig, at "granulær" ikke
-betyder det samme i praksis: Debian-sidens sti-kun-regler var bredere end tilsigtet (vilkårlige
-`chmod`/`mkdir`-argumenter), mens NixOS' fulde-kommandolinje-match var strengere, til tider for
-strengt (et harmløst `#attribut`-tillæg afvist). Ingen af delene er en fejl i selve
-sammenligningen, det er to reelt forskellige konsekvenser af samme underliggende værktøj, afhængig
-af om reglen udtrykkes som en sti eller en hel linje. Den erfaring, der derudover er værd at
-fremhæve, er at den deklarative tilgang ikke er immun over for reelle fejl: den
-oprindelige `security.sudo.extraRules`-regel for fjern-deployment *så* korrekt ud (`sudo -l` viste
-den rigtige adgang), men fejlede alligevel ved et faktisk deploy-forsøg, fordi den forsøgte at
+Begge platforme bygger på den samme sudoers-mekanisme, men "granulær" betyder ikke det samme i
+praksis: Debian-sidens sti-kun-regler er bredere end tilsigtet (vilkårlige `chmod`/`mkdir`-argumenter),
+mens NixOS' fulde kommandolinje-match er strengere, til tider for strengt (et harmløst
+`#attribut`-tillæg afvises). På NixOS så den oprindelige `security.sudo.extraRules`-regel for
+fjern-deployment korrekt ud i `sudo -l`, men fejlede ved et faktisk deploy, fordi den forsøgte at
 forudsige `nixos-rebuild`s interne kommandoindpakning i stedet for at pege på selve værktøjet (se
-kommentaren "ARKITEKTUR-REVISION" i `nixos/modules/users.nix`). Der blev også fundet en konkret,
-uventet faldgrube: `#`-tegnet i en flake-reference (`--flake sti#attribut`) bliver læst som
-sudoers' eget kommentartegn og afkorter resten af linjen. Pointen er ikke at NixOS er skrøbeligt,
-men at den deklarative tilgang flytter fejlene, den fjerner dem ikke, og de kræver stadig at man
-rent faktisk tester et deploy, ikke kun læser konfigurationen.
+kommentaren "ARKITEKTUR-REVISION" i `nixos/modules/users.nix`). Desuden bliver `#` i en
+flake-reference (`--flake sti#attribut`) læst som sudoers' kommentartegn og afkorter resten af
+linjen. Fejlene flyttes altså, de forsvinder ikke, og de findes kun ved at teste et deploy, ikke ved
+at læse konfigurationen.
