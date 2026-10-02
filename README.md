@@ -8,11 +8,14 @@ tilgange i hvert modul.
 
 **[Driftsguide til begge VM'er](https://lolcatatonia.github.io/NixOS_vs_Debian_server/guide.html)**
 
+**[Se præsentationen](https://lolcatatonia.github.io/NixOS_vs_Debian_server/presentation/dist/)**
+
 ## Struktur
 
 | Mappe | Indhold |
 |---|---|
 | `report/` | Rapporten (kildefiler + byggescript til `index.html`) |
+| `presentation/` | Slidev-præsentationen (kilde `slides.md` + bygget statisk version i `dist/`) |
 | `docs/` | Uddybende teknisk logbog: fejl, fund og beslutninger undervejs |
 | `nixos/` | Den deklarative serverkonfiguration (`configuration.nix` + moduler) |
 | `scripts/` | Driftsscripts: opsætning, healthcheck, overvågning, driftsverifikation |
